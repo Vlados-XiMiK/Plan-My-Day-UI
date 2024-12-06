@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useNotification } from '@/contexts/notification-context'
 
 interface TaskEditPopupProps {
   isOpen: boolean
@@ -33,6 +34,7 @@ export default function TaskEditPopup({
   const [dueTime, setDueTime] = useState(initialData?.dueTime || '23:59')
   const [priority, setPriority] = useState(initialData?.priority || 'medium')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const { addNotification } = useNotification()
 
   useEffect(() => {
     if (isOpen) {
@@ -62,6 +64,9 @@ export default function TaskEditPopup({
     if (!title.trim()) {
       newErrors.title = 'Title is required'
     }
+    if (!description.trim()) {
+      newErrors.description = 'Description is required'
+    }
     if (!dueDate) {
       newErrors.dueDate = 'Due date is required'
     }
@@ -82,6 +87,7 @@ export default function TaskEditPopup({
       setTimeout(() => {
         form?.classList.remove('animate-shake')
       }, 500)
+      addNotification('error', 'Please fix the errors in the form.')
       return
     }
 
@@ -95,6 +101,7 @@ export default function TaskEditPopup({
 
     setErrors({})
     onClose()
+    addNotification('success', 'Task updated successfully!')
   }
 
   return (
@@ -157,18 +164,22 @@ export default function TaskEditPopup({
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <div className="flex items-start space-x-2">
-                    <ListTodo className="w-5 h-5 text-gray-400 mt-2" />
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={2}
-                      className="flex-grow rounded-lg border border-gray-300 px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200"
-                      placeholder="Enter task description"
-                    />
-                  </div>
-                </div>
+  <label className="block text-sm font-medium text-gray-700">Description</label>
+  <div className="flex items-start space-x-2">
+    <ListTodo className="w-5 h-5 text-gray-400 mt-2" />
+    <textarea
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+      rows={2}
+      className={`flex-grow rounded-lg border ${
+        errors.description ? 'border-red-500' : 'border-gray-300'
+      } px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200`}
+      placeholder="Enter task description"
+    />
+  </div>
+  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+</div>
+
 
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">Category</label>
