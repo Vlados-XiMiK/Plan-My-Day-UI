@@ -53,8 +53,8 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
     >
       <div className="flex h-16 shrink-0 items-center justify-center border-b border-gray-200 px-4">
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start w-full'}`}>
-          <div className="h-10 w-10 overflow-hidden rounded-full">
-            <Image src="/logo.png?height=100&width=100" alt="Logo" width={100} height={1000} />
+          <div className="h-15 w-20 overflow-hidden rounded-full">
+            <Image src="/logo.png?height=100&width=100" alt="Logo" width={80} height={80} />
           </div>
           {!isCollapsed && <h1 className="ml-3 text-xl font-bold">Plan My Day</h1>}
         </div>
