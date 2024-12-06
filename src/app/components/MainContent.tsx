@@ -14,6 +14,7 @@ interface Task {
   category: string;
   priority: 'high' | 'medium' | 'low';
   completed: boolean;
+  starred: boolean;
 }
 
 export default function MainContent() {
@@ -27,6 +28,7 @@ export default function MainContent() {
       category: 'Work',
       priority: 'high',
       completed: false,
+      starred: false,
     },
     {
       id: 2,
@@ -37,6 +39,7 @@ export default function MainContent() {
       category: 'Shopping',
       priority: 'medium',
       completed: true,
+      starred: true,
     },
     {
       id: 3,
@@ -47,6 +50,7 @@ export default function MainContent() {
       category: 'Personal',
       priority: 'low',
       completed: false,
+      starred: false,
     },
   ])
   
@@ -60,6 +64,12 @@ export default function MainContent() {
     ))
   }
 
+  const toggleTaskStarred = (id: number) => {
+    setTasks(tasks.map(task => 
+      task.id === id ? { ...task, starred: !task.starred } : task
+    ));
+  };
+
   const handleCreateTask = (task: Partial<Task>) => {
     setTasks(prev => [
       ...prev,
@@ -72,6 +82,7 @@ export default function MainContent() {
         category: task.category || 'Uncategorized',
         priority: task.priority || 'low',
         completed: false,
+        starred: false,
       },
     ])
   }
@@ -125,7 +136,7 @@ export default function MainContent() {
           isOpen={isEditPopupOpen}
           onClose={() => setEditPopupOpen(false)}
           onSave={handleEditTask}
-          task={taskToEdit}
+          
           categories={['Work', 'Shopping', 'Personal']}
         />
       )}
@@ -212,7 +223,16 @@ export default function MainContent() {
                   </div>
                   <div className="flex space-x-2">
                     <button onClick={() => openEditPopup(task)} className="text-gray-400 transition-colors hover:text-purple-600 duration-200"><Edit size={20} /></button>
-                    <button className="text-gray-400 transition-colors hover:text-yellow-500 duration-200"><Star size={20} /></button>
+                
+                    <button 
+                             onClick={() => toggleTaskStarred(task.id)} 
+                            className={`text-gray-400 transition-colors hover:text-yellow-500 duration-200 ${
+                            task.starred ? 'text-yellow-500' : 'text-gray-400'
+                              }`}
+                              >
+  <Star size={20} fill={task.starred ? 'currentColor' : 'none'} />
+</button>
+                    
                     <button className="text-gray-400 transition-colors hover:text-red-500 duration-200"><Trash size={20} /></button>
                   </div>
                 </div>
