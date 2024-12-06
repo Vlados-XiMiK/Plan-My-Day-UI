@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Search, Filter, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock } from 'lucide-react'
-import TaskCreationPopup from './TaskCreationPopup' // Импортируем поп-ап
+import TaskCreationPopup from './TaskCreationPopup'
+import TaskEditPopup from './TaskEditPopup'
 
 interface Task {
   id: number;
@@ -25,7 +26,7 @@ export default function MainContent() {
       dueDate: '2023-06-15T17:00:00',
       category: 'Work',
       priority: 'high',
-      completed: false
+      completed: false,
     },
     {
       id: 2,
@@ -35,7 +36,7 @@ export default function MainContent() {
       dueDate: '2023-06-10T18:00:00',
       category: 'Shopping',
       priority: 'medium',
-      completed: true
+      completed: true,
     },
     {
       id: 3,
@@ -45,40 +46,18 @@ export default function MainContent() {
       dueDate: '2023-06-20T11:00:00',
       category: 'Personal',
       priority: 'low',
-      completed: false
+      completed: false,
     },
   ])
-
-  const [isPopupOpen, setPopupOpen] = useState(false)
+  
+  const [isCreationPopupOpen, setCreationPopupOpen] = useState(false)
+  const [isEditPopupOpen, setEditPopupOpen] = useState(false)
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
 
   const toggleTaskCompletion = (id: number) => {
-    setTasks(tasks.map(task => 
+    setTasks(tasks.map(task =>
       task.id === id ? { ...task, completed: !task.completed } : task
     ))
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-500';
-      case 'medium':
-        return 'bg-orange-500';
-      case 'low':
-        return 'bg-green-500';
-      default:
-        return 'bg-gray-500';
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   }
 
   const handleCreateTask = (task: Partial<Task>) => {
@@ -92,19 +71,64 @@ export default function MainContent() {
         dueDate: task.dueDate || new Date().toISOString(),
         category: task.category || 'Uncategorized',
         priority: task.priority || 'low',
-        completed: false
-      }
+        completed: false,
+      },
     ])
+  }
+
+  const handleEditTask = (updatedTask: Task) => {
+    setTasks(prev =>
+      prev.map(task => (task.id === updatedTask.id ? updatedTask : task))
+    )
+    setEditPopupOpen(false)
+  }
+
+  const openEditPopup = (task: Task) => {
+    setTaskToEdit(task)
+    setEditPopupOpen(true)
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-500'
+      case 'medium':
+        return 'bg-orange-500'
+      case 'low':
+        return 'bg-green-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
   }
 
   return (
     <div className="flex flex-col h-full overflow-hidden animate-fadeIn">
       <TaskCreationPopup
-        isOpen={isPopupOpen}
-        onClose={() => setPopupOpen(false)}
+        isOpen={isCreationPopupOpen}
+        onClose={() => setCreationPopupOpen(false)}
         onSave={handleCreateTask}
         categories={['Work', 'Shopping', 'Personal']}
       />
+      {taskToEdit && (
+        <TaskEditPopup
+          isOpen={isEditPopupOpen}
+          onClose={() => setEditPopupOpen(false)}
+          onSave={handleEditTask}
+          task={taskToEdit}
+          categories={['Work', 'Shopping', 'Personal']}
+        />
+      )}
 
       <div className="mb-6">
         <div className="inline-block bg-white rounded-full px-4 py-2 shadow-md">
@@ -115,6 +139,7 @@ export default function MainContent() {
       </div>
       
       <div className="flex-1 overflow-y-auto space-y-6">
+        {/* Filters and Search */}
         <div className="rounded-lg bg-white bg-opacity-75 p-6 shadow-lg">
           <h3 className="mb-4 text-xl font-semibold">Filters and Search</h3>
           <div className="mb-4 flex flex-wrap gap-4">
@@ -163,7 +188,7 @@ export default function MainContent() {
         
         <div className="mb-6">
           <button
-            onClick={() => setPopupOpen(true)}
+            onClick={() => setCreationPopupOpen(true)}
             className="flex items-center rounded-md bg-purple-600 px-4 py-2 text-white shadow-md transition-colors hover:bg-purple-700 duration-200"
           >
             <Plus className="mr-2" size={20} />
@@ -186,7 +211,7 @@ export default function MainContent() {
                     <h4 className={`text-lg font-semibold ${task.completed ? 'line-through text-gray-400' : ''} transition-all duration-200`}>{task.title}</h4>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="text-gray-400 transition-colors hover:text-purple-600 duration-200"><Edit size={20} /></button>
+                    <button onClick={() => openEditPopup(task)} className="text-gray-400 transition-colors hover:text-purple-600 duration-200"><Edit size={20} /></button>
                     <button className="text-gray-400 transition-colors hover:text-yellow-500 duration-200"><Star size={20} /></button>
                     <button className="text-gray-400 transition-colors hover:text-red-500 duration-200"><Trash size={20} /></button>
                   </div>
