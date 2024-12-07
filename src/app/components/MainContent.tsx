@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Search, Filter, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock } from 'lucide-react'
 import TaskCreationPopup from './TaskCreationPopup'
 import TaskEditPopup from './TaskEditPopup'
+import { useNotification } from '@/contexts/notification-context'
 
 interface Task {
   id: number;
@@ -57,17 +58,32 @@ export default function MainContent() {
   const [isCreationPopupOpen, setCreationPopupOpen] = useState(false)
   const [isEditPopupOpen, setEditPopupOpen] = useState(false)
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
+  const { addNotification } = useNotification();
 
   const toggleTaskCompletion = (id: number) => {
     setTasks(tasks.map(task =>
       task.id === id ? { ...task, completed: !task.completed } : task
     ))
+    const task = tasks.find(task => task.id === id);
+    if (task) {
+      addNotification(
+        'info',
+        task.completed ? 'Task marked as incomplete.' : 'Task completed!'
+      );
+    }
   }
 
   const toggleTaskStarred = (id: number) => {
     setTasks(tasks.map(task => 
       task.id === id ? { ...task, starred: !task.starred } : task
     ));
+    const task = tasks.find(task => task.id === id);
+    if (task) {
+      addNotification(
+        'success',
+        task.starred ? 'Task removed from favorites.' : 'Task added to favorites!'
+      );
+    }
   };
 
   const handleCreateTask = (task: Partial<Task>) => {
@@ -85,6 +101,7 @@ export default function MainContent() {
         starred: false,
       },
     ])
+    
   }
 
   const handleEditTask = (updatedTask: Task) => {
@@ -92,12 +109,18 @@ export default function MainContent() {
       prev.map(task => (task.id === updatedTask.id ? updatedTask : task))
     )
     setEditPopupOpen(false)
+    addNotification('info', 'Task updated successfully!');
   }
 
   const openEditPopup = (task: Task) => {
     setTaskToEdit(task)
     setEditPopupOpen(true)
   }
+
+  const handleDeleteTask = (id: number) => {
+    setTasks(tasks.filter(task => task.id !== id));
+    addNotification('success', 'Task deleted successfully!');
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -233,7 +256,7 @@ export default function MainContent() {
   <Star size={20} fill={task.starred ? 'currentColor' : 'none'} />
 </button>
                     
-                    <button className="text-gray-400 transition-colors hover:text-red-500 duration-200"><Trash size={20} /></button>
+                    <button onClick={() => handleDeleteTask(task.id)} className="text-gray-400 transition-colors hover:text-red-500 duration-200"><Trash size={20} /></button>
                   </div>
                 </div>
                 <div className="p-4">
