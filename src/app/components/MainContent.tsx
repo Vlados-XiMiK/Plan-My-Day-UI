@@ -282,6 +282,11 @@ export default function MainContent() {
               </li>
             ))}
           </ul>
+          <div className="mt-4 flex justify-center">
+            <button className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2">
+              Load More
+            </button>
+          </div>
         </div>
       </div>
     </div>
