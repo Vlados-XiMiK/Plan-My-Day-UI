@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { BarChart, ListTodo, Calendar, Plus, Trash2 } from 'lucide-react'
+import { useNotification } from '@/contexts/notification-context'
 
 interface SidebarProps {
   isVisible: boolean;
@@ -17,17 +18,34 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [tempCategory, setTempCategory] = useState('');
+  const { addNotification } = useNotification();
+
+  const isValidCategoryName = (name: string) => {
+    const isLatin = /^[a-zA-Z\s]+$/.test(name);
+    return isLatin && name.trim().length > 0;
+  };
 
   const addCategory = () => {
-    if (newCategoryName.trim()) {
-      setCategories([...categories, newCategoryName.trim()]);
+    if (!isValidCategoryName(newCategoryName)) {
+      addNotification('error', 'Category name must contain only Latin letters and cannot be empty.');
+      setNewCategory(false); // Close the input field
+      return;
     }
+    if (categories.includes(newCategoryName.trim())) {
+      addNotification('error', 'This category already exists.');
+      setNewCategory(false); // Close the input field
+      return;
+    }
+    setCategories([...categories, newCategoryName.trim()]);
+    addNotification('success', `Category "${newCategoryName.trim()}" added.`);
     setNewCategory(false);
     setNewCategoryName('');
   };
 
   const deleteCategory = (index: number) => {
+    const categoryToDelete = categories[index];
     setCategories(categories.filter((_, i) => i !== index));
+    addNotification('info', `Category "${categoryToDelete}" deleted.`);
   };
 
   const startEditing = (index: number) => {
@@ -36,11 +54,25 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
   };
 
   const saveEditing = (index: number) => {
-    if (tempCategory.trim()) {
-      const updatedCategories = [...categories];
-      updatedCategories[index] = tempCategory.trim();
-      setCategories(updatedCategories);
+    if (!isValidCategoryName(tempCategory)) {
+      addNotification('error', 'Category name must contain only Latin letters and cannot be empty.');
+      setEditingIndex(null); // Close the input field
+      return;
     }
+    if (categories[index] === tempCategory.trim()) {
+      addNotification('info', 'No changes were made.');
+      setEditingIndex(null); // Close the input field
+      return;
+    }
+    if (categories.includes(tempCategory.trim())) {
+      addNotification('error', 'This category already exists.');
+      setEditingIndex(null); // Close the input field
+      return;
+    }
+    const updatedCategories = [...categories];
+    updatedCategories[index] = tempCategory.trim();
+    setCategories(updatedCategories);
+    addNotification('success', `Category "${tempCategory.trim()}" updated.`);
     setEditingIndex(null);
   };
 
@@ -115,9 +147,12 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
                       <input
                         type="text"
                         value={tempCategory}
-                        onChange={(e) =>
-                          e.target.value.length <= 15 && setTempCategory(e.target.value)
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^[a-zA-Z\s]*$/.test(value)) {
+                            setTempCategory(value);
+                          }
+                        }}
                         onKeyDown={(e) => e.key === 'Enter' && saveEditing(index)}
                         onBlur={() => saveEditing(index)}
                         className="ml-2 flex-1 rounded border border-gray-300 px-2 py-1"
@@ -146,9 +181,12 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
                   <input
                     type="text"
                     value={newCategoryName}
-                    onChange={(e) =>
-                      e.target.value.length <= 15 && setNewCategoryName(e.target.value)
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^[a-zA-Z\s]*$/.test(value)) {
+                        setNewCategoryName(value);
+                      }
+                    }}
                     onKeyDown={(e) => e.key === 'Enter' && addCategory()}
                     onBlur={addCategory}
                     className="ml-2 flex-1 rounded border border-gray-300 px-2 py-1"
