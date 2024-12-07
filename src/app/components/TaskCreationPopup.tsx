@@ -36,18 +36,23 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
+    const currentDate = new Date()
+    const selectedDate = new Date(`${dueDate}T${dueTime}`)
+
     if (!title.trim()) {
       newErrors.title = 'Title is required'
     }
     if (!description.trim()) {
       newErrors.description = 'Description is required'
     }
-    if (!dueDate) {
+    if (!dueDate || !dueTime) {
       newErrors.dueDate = 'Due date is required'
-    }
-    if (!dueTime) {
       newErrors.dueTime = 'Due time is required'
+    } else if (selectedDate < currentDate) {
+      newErrors.dueDate = 'Date and time cannot be in the past'
+      newErrors.dueTime = 'Date and time cannot be in the past'
     }
+    
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -146,22 +151,21 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
-  <label className="block text-sm font-medium text-gray-700">Description</label>
-  <div className="flex items-start space-x-2">
-    <ListTodo className="w-5 h-5 text-gray-400 mt-2" />
-    <textarea
-      value={description}
-      onChange={(e) => setDescription(e.target.value)}
-      rows={2}
-      className={`flex-grow rounded-lg border ${
-        errors.description ? 'border-red-500' : 'border-gray-300'
-      } px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200`}
-      placeholder="Enter task description"
-    />
-  </div>
-  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-</div>
-
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <div className="flex items-start space-x-2">
+                    <ListTodo className="w-5 h-5 text-gray-400 mt-2" />
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={2}
+                      className={`flex-grow rounded-lg border ${
+                        errors.description ? 'border-red-500' : 'border-gray-300'
+                      } px-3 py-2 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-200`}
+                      placeholder="Enter task description"
+                    />
+                  </div>
+                  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                </div>
 
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">Category</label>
@@ -251,4 +255,3 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
     </AnimatePresence>
   )
 }
-

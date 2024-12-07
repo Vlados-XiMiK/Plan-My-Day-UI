@@ -60,6 +60,8 @@ export default function TaskEditPopup({
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
+    const currentDate = new Date()
+    const selectedDate = new Date(`${dueDate}T${dueTime}`)
 
     if (!title.trim()) {
       newErrors.title = 'Title is required'
@@ -67,11 +69,12 @@ export default function TaskEditPopup({
     if (!description.trim()) {
       newErrors.description = 'Description is required'
     }
-    if (!dueDate) {
+    if (!dueDate || !dueTime) {
       newErrors.dueDate = 'Due date is required'
-    }
-    if (!dueTime) {
       newErrors.dueTime = 'Due time is required'
+    } else if (selectedDate < currentDate) {
+      newErrors.dueDate = 'Date and time cannot be in the past'
+      newErrors.dueTime = 'Date and time cannot be in the past'
     }
 
     setErrors(newErrors)

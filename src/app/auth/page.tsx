@@ -17,8 +17,8 @@ export default function AuthPage() {
     const isDarkMode = localStorage.getItem('darkMode')
     if (isDarkMode === null) {
       // If no theme is set in localStorage, use dark mode by default
-      setDarkMode(false)
-      localStorage.setItem('darkMode', 'false')
+      setDarkMode(true)
+      localStorage.setItem('darkMode', 'true')
     } else {
       setDarkMode(isDarkMode === 'true')
     }
