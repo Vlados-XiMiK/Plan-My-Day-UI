@@ -11,7 +11,7 @@ export default function Logo() {
     <div className="flex items-center justify-center mb-8">
       <div className="flex items-center gap-4">
         <motion.div 
-          className="relative w-16 h-16"
+          className="relative w-100 h-100"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
@@ -19,7 +19,7 @@ export default function Logo() {
             <Image
               src="/logo.png"
               alt="Plan My Day Logo"
-              width={64}
+              width={120}
               height={64}
               className="object-contain rounded-full"
               priority
