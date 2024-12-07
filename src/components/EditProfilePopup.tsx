@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useRef } from 'react'
 import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide-react'
+import { useNotification } from '@/contexts/notification-context'
 
 interface EditProfilePopupProps {
   isOpen: boolean
@@ -17,13 +18,74 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     placeOfWork: '',
     phoneNumber: ''
   })
-  const [success, setSuccess] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [notificationShown, setNotificationShown] = useState(false) // Флаг для уведомления
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { addNotification } = useNotification()
+
+  const validateField = (name: string, value: string) => {
+    let error = ''
+    const containsCyrillic = /[а-яА-ЯёЁ]/.test(value)
+
+    if (containsCyrillic) {
+      error = 'Only Latin characters are allowed.'
+    } else {
+      switch (name) {
+        case 'username':
+          if (!value.trim()) error = 'Username is required.'
+          break
+        case 'email':
+          if (!value.trim()) error = 'Email is required.'
+          else if (!/\S+@\S+\.\S+/.test(value)) error = 'Invalid email format.'
+          break
+        case 'age':
+          if (value.trim() && (isNaN(Number(value)) || Number(value) <= 0)) {
+            error = 'Age must be a positive number.'
+          }
+          break
+        case 'phoneNumber':
+          if (value.trim() && (!/^\+?[0-9\s-]{0,15}$/.test(value))) {
+            error = 'Phone number must contain only digits, spaces, "+" or "-".'
+          } else if (value.trim() && value.replace(/[^0-9]/g, '').length > 15) {
+            error = 'Invalid phone number (max 15 digits).'
+          }
+          break
+      }
+    }
+
+    return error
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    Object.entries(formData).forEach(([key, value]) => {
+      const error = validateField(key, value)
+      if (error) newErrors[key] = error
+    })
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    const error = validateField(name, value)
+
+    // Ограничение длины числовых символов для номера телефона
+    if (name === 'phoneNumber' && value.replace(/[^0-9]/g, '').length > 15) {
+      return
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setErrors((prev) => ({ ...prev, [name]: error }))
+
+    if (error && !notificationShown) {
+      addNotification('error', error)
+      setNotificationShown(true)
+    } else if (!error) {
+      setNotificationShown(false) // Сброс флага при устранении ошибки
+    }
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,23 +101,23 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setSuccess(true)
-    setTimeout(() => {
-      setSuccess(false)
+    if (!validateForm()) {
+      addNotification('error', 'Please fix validation errors.')
+      return
+    }
+
+    try {
+      addNotification('info', 'Updating profile...')
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      addNotification('success', 'Profile updated successfully!')
       onClose()
-    }, 2000)
+    } catch {
+      addNotification('error', 'Failed to update profile. Please try again.')
+    }
   }
 
   const inputVariants = {
     focus: { scale: 1.02, transition: { type: 'spring', stiffness: 300, damping: 10 } }
-  }
-
-  const successVariants = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
   }
 
   return (
@@ -65,7 +127,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
           onClick={onClose}
         >
           <motion.div
@@ -76,15 +138,9 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
             className="bg-white rounded-xl shadow-2xl p-3 sm:p-4 w-full max-w-xl relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-purple-100 to-purple-200 opacity-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ duration: 0.5 }}
-            />
             <div className="relative">
               <div className="flex justify-between items-center mb-6">
-                <motion.h2 
+                <motion.h2
                   className="text-2xl font-semibold text-gray-800"
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -102,52 +158,40 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                 </motion.button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <motion.div 
-                  className="space-y-3"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  {[
-                    { icon: User, label: 'Username', name: 'username', type: 'text', placeholder: 'Enter username' },
-                    { icon: Mail, label: 'Email', name: 'email', type: 'email', placeholder: 'Enter email' },
-                    { icon: Cake, label: 'Age', name: 'age', type: 'number', placeholder: 'Enter age' },
-                    { icon: Building2, label: 'Place of Work', name: 'placeOfWork', type: 'text', placeholder: 'Enter workplace' },
-                    { icon: Phone, label: 'Phone Number', name: 'phoneNumber', type: 'tel', placeholder: 'Enter phone number' }
-                  ].map(({ icon: Icon, label, name, type, placeholder }) => (
-                    <div key={name} className="relative">
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {label}
-                      </label>
-                      <div className="relative">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">
-                          <Icon className="h-5 w-5 bg-white p-0.5 rounded-full" />
-                        </div>
-                        <motion.input
-                          type={type}
-                          name={name}
-                          value={formData[name as keyof typeof formData]}
-                          onChange={handleChange}
-                          placeholder={placeholder}
-                          whileFocus="focus"
-                          variants={inputVariants}
-                          className="w-full pl-10 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all duration-300 text-gray-800 bg-white hover:border-purple-300 relative z-0"
-                        />
+              <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+                {[
+                  { icon: User, label: 'Username', name: 'username', type: 'text', placeholder: 'Enter username' },
+                  { icon: Mail, label: 'Email', name: 'email', type: 'email', placeholder: 'Enter email' },
+                  { icon: Cake, label: 'Age', name: 'age', type: 'number', placeholder: 'Enter age' },
+                  { icon: Building2, label: 'Place of Work', name: 'placeOfWork', type: 'text', placeholder: 'Enter workplace' },
+                  { icon: Phone, label: 'Phone Number', name: 'phoneNumber', type: 'text', placeholder: 'Enter phone number' }
+                ].map(({ icon: Icon, label, name, type, placeholder }) => (
+                  <div key={name} className="relative">
+                    <label className="text-sm font-medium text-gray-700 mb-1 block">{label}</label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">
+                        <Icon className="h-5 w-5 bg-white p-0.5 rounded-full" />
                       </div>
+                      <motion.input
+                        type={type}
+                        name={name}
+                        value={formData[name as keyof typeof formData]}
+                        onChange={handleChange}
+                        placeholder={placeholder}
+                        whileFocus="focus"
+                        variants={inputVariants}
+                        maxLength={name === 'phoneNumber' ? 15 : undefined}
+                        className={`w-full pl-10 pr-4 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all duration-300 text-gray-800 bg-white ${
+                          errors[name] ? 'border-red-500' : 'border-gray-200'
+                        }`}
+                      />
                     </div>
-                  ))}
-                </motion.div>
+                    {errors[name] && <span className="text-red-500 text-xs mt-1 block">{errors[name]}</span>}
+                  </div>
+                ))}
 
-                <motion.div 
-                  className="relative"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Profile Picture (Optional)
-                  </label>
+                <div className="relative">
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Profile Picture (Optional)</label>
                   <div className="mt-1 flex items-center gap-4">
                     {image ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
@@ -183,14 +227,9 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                       className="hidden"
                     />
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div 
-                  className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6"
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
+                <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6">
                   <motion.button
                     type="button"
                     onClick={onClose}
@@ -208,22 +247,8 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   >
                     Update Profile
                   </motion.button>
-                </motion.div>
+                </div>
               </form>
-
-              <AnimatePresence>
-                {success && (
-                  <motion.div
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={successVariants}
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium"
-                  >
-                    Profile updated successfully!
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           </motion.div>
         </motion.div>
@@ -231,4 +256,3 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     </AnimatePresence>
   )
 }
-
