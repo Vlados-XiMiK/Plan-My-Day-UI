@@ -3,11 +3,13 @@
 Welcome to the Task Manager Application built with Next.js! This project allows you to manage tasks, assign them to users or groups, and track their progress with a modern, user-friendly interface.
 
 ## Overview
+
 This README provides step-by-step instructions to set up and run the application locally on your machine using Next.js. Instructions are available in English, Ukrainian, and Russian for your convenience.
 
 ---
 
 ## Table of Contents
+
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Running the Application](#running-the-application)
@@ -21,7 +23,9 @@ This README provides step-by-step instructions to set up and run the application
 ---
 
 ## Prerequisites
+
 Before you begin, ensure you have the following installed:
+
 - **Node.js** (v16 or higher)
 - **npm** (or Yarn)
 - **Git** (optional, for cloning the repository)
@@ -30,6 +34,7 @@ Before you begin, ensure you have the following installed:
 ---
 
 ## Installation
+
 1. Clone the repository (if available):
    \`\`\`bash
    git clone <repository-url>
@@ -49,6 +54,7 @@ Before you begin, ensure you have the following installed:
 ## Running the Application
 
 ### English
+
 Follow these steps to run the Task Manager application locally:
 
 1. **Ensure Prerequisites**: Verify that Node.js, npm, and Git (if cloning) are installed on your machine.
@@ -76,6 +82,7 @@ Follow these steps to run the Task Manager application locally:
 5. **Open in Browser**: Open your browser and navigate to \`http://localhost:3000\` to view the application.
 
 ### Українська
+
 Слідуйте цим крокам, щоб запустити додаток Task Manager локально:
 
 1. **Перевірте передумови**: Переконайтеся, що на вашому комп’ютері встановлені Node.js, npm і Git (якщо клонуєте репозиторій).
@@ -103,6 +110,7 @@ Follow these steps to run the Task Manager application locally:
 5. **Відкрийте в браузері**: Відкрийте браузер і перейдіть за адресою \`http://localhost:3000\`, щоб переглянути додаток.
 
 ### Русский
+
 Следуйте этим шагам, чтобы запустить приложение Task Manager локально:
 
 1. **Проверьте предпосылки**: Убедитесь, что на вашем компьютере установлены Node.js, npm и Git (если клонируете репозиторий).
@@ -132,6 +140,7 @@ Follow these steps to run the Task Manager application locally:
 ---
 
 ## Technologies Used
+
 - **Next.js**: React framework for server-side rendering and static site generation.
 - **TypeScript**: For type safety and better code maintainability.
 - **Tailwind CSS**: For styling and responsive design.
@@ -142,7 +151,9 @@ Follow these steps to run the Task Manager application locally:
 ---
 
 ## Contributing
+
 We welcome contributions! Please follow these steps:
+
 1. Fork the repository.
 2. Create a new branch for your feature or bug fix.
 3. Submit a pull request with your changes.
@@ -150,5 +161,6 @@ We welcome contributions! Please follow these steps:
 ---
 
 ## License
-This project is licensed under the MIT License. See the \`LICENSE\` file for details.
+
+This project is proprietary and all rights are reserved. You may not use, modify, or distribute this code without explicit permission from the author, Vladyslav Tymoshchuk. Please contact me for any inquiries.
 `
