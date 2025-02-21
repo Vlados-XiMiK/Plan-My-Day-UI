@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { User2, Mail, Phone, Building2, Clock, Edit2, Settings, LogOut, ArrowLeft } from 'lucide-react'
 import { PieChart } from '@/components/ui/pie-chart'
-import EditProfilePopup from '@/components/EditProfilePopup'
+import EditProfilePopup from '@/components/main/pop-up/EditProfilePopup'
 
 interface ProfileStats {
   completedTasks: number;

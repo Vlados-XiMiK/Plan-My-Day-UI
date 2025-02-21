@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Filter, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock } from 'lucide-react'
-import TaskCreationPopup from '../../../components/TaskCreationPopup'
-import TaskEditPopup from '../../../components/TaskEditPopup'
+import TaskCreationPopup from '../../../components/main/pop-up/TaskCreationPopup'
+import TaskEditPopup from '../../../components/main/pop-up/TaskEditPopup'
 import { useNotification } from '@/contexts/notification-context'
 
 interface Task {
@@ -24,8 +24,8 @@ export default function MainContent() {
       id: 1,
       title: 'Complete project proposal',
       description: 'Finish the draft and send it for review',
-      createdAt: '2023-06-08T10:00:00',
-      dueDate: '2023-06-15T17:00:00',
+      createdAt: '2024-06-08T10:00:00',
+      dueDate: '2026-06-15T17:00:00',
       category: 'Work',
       priority: 'high',
       completed: false,
@@ -35,8 +35,8 @@ export default function MainContent() {
       id: 2,
       title: 'Buy groceries',
       description: 'Get items for the week',
-      createdAt: '2023-06-09T14:30:00',
-      dueDate: '2023-06-10T18:00:00',
+      createdAt: '2024-06-09T14:30:00',
+      dueDate: '2026-06-10T18:00:00',
       category: 'Shopping',
       priority: 'medium',
       completed: true,
@@ -46,8 +46,8 @@ export default function MainContent() {
       id: 3,
       title: 'Schedule dentist appointment',
       description: 'Call the clinic for a check-up',
-      createdAt: '2023-06-10T09:15:00',
-      dueDate: '2023-06-20T11:00:00',
+      createdAt: '2024-06-10T09:15:00',
+      dueDate: '2026-06-20T11:00:00',
       category: 'Personal',
       priority: 'low',
       completed: false,
@@ -58,7 +58,12 @@ export default function MainContent() {
   const [isCreationPopupOpen, setCreationPopupOpen] = useState(false)
   const [isEditPopupOpen, setEditPopupOpen] = useState(false)
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
+  const [currentDate, setCurrentDate] = useState<string>('')
   const { addNotification } = useNotification();
+
+  useEffect(() => {
+    setCurrentDate(new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }))
+  }, [])
 
   const toggleTaskCompletion = (id: number) => {
     setTasks(tasks.map(task =>
@@ -101,7 +106,6 @@ export default function MainContent() {
         starred: false,
       },
     ])
-    
   }
 
   const handleEditTask = (updatedTask: Task) => {
@@ -159,7 +163,6 @@ export default function MainContent() {
           isOpen={isEditPopupOpen}
           onClose={() => setEditPopupOpen(false)}
           onSave={handleEditTask}
-          
           categories={['Work', 'Shopping', 'Personal']}
         />
       )}
@@ -167,7 +170,7 @@ export default function MainContent() {
       <div className="mb-6">
         <div className="inline-block bg-white rounded-full px-4 py-2 shadow-md">
           <h2 className="text-lg font-semibold text-gray-800">
-            My Day · {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            My Day · {currentDate}
           </h2>
         </div>
       </div>
@@ -245,48 +248,38 @@ export default function MainContent() {
                     <h4 className={`text-lg font-semibold ${task.completed ? 'line-through text-gray-400' : ''} transition-all duration-200`}>{task.title}</h4>
                   </div>
                   <div className="flex space-x-2">
-                    <button onClick={() => openEditPopup(task)} className="text-gray-400 transition-colors hover:text-purple-600 duration-200"><Edit size={20} /></button>
-                
-                    <button 
-                             onClick={() => toggleTaskStarred(task.id)} 
-                            className={`text-gray-400 transition-colors hover:text-yellow-500 duration-200 ${
-                            task.starred ? 'text-yellow-500' : 'text-gray-400'
-                              }`}
-                              >
-  <Star size={20} fill={task.starred ? 'currentColor' : 'none'} />
-</button>
-                    
-                    <button onClick={() => handleDeleteTask(task.id)} className="text-gray-400 transition-colors hover:text-red-500 duration-200"><Trash size={20} /></button>
+                    <button onClick={() => openEditPopup(task)} className="rounded-md p-2 text-gray-500 hover:bg-gray-100">
+                      <Edit size={18} />
+                    </button>
+                    <button onClick={() => handleDeleteTask(task.id)} className="rounded-md p-2 text-gray-500 hover:bg-gray-100">
+                      <Trash size={18} />
+                    </button>
+                    <button onClick={() => toggleTaskStarred(task.id)} className="rounded-md p-2 text-gray-500 hover:bg-gray-100">
+                      <Star size={18} className={`${task.starred ? 'text-yellow-400' : 'text-gray-500'}`} />
+                    </button>
                   </div>
                 </div>
-                <div className="p-4">
-                  <p className="mb-4 text-gray-600">{task.description}</p>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                <div className="p-4 text-gray-600">
+                  <p>{task.description}</p>
+                  <div className="mt-2 flex items-center space-x-4 text-sm">
                     <div className="flex items-center">
-                      <Calendar size={16} className="mr-1" />
-                      <span>Created: {formatDate(task.createdAt)}</span>
+                      <Calendar size={16} className="mr-2 text-gray-500" />
+                      <span>{formatDate(task.dueDate)}</span>
                     </div>
                     <div className="flex items-center">
-                      <Clock size={16} className="mr-1" />
-                      <span>Due: {formatDate(task.dueDate)}</span>
+                      <Clock size={16} className="mr-2 text-gray-500" />
+                      <span>{formatDate(task.createdAt)}</span>
                     </div>
-                    <div className="flex items-center">
-                      <div className="mr-1 h-3 w-3 rounded-full bg-[#9d75b5]" />
-                      <span>{task.category}</span>
-                    </div>
-                    <div className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(task.priority)} transition-all duration-200`}>
-                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                    <div
+                      className={`flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(task.priority)}`}
+                    >
+                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                     </div>
                   </div>
                 </div>
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex justify-center">
-            <button className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2">
-              Load More
-            </button>
-          </div>
         </div>
       </div>
     </div>
