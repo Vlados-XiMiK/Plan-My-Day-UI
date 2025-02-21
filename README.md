@@ -14,7 +14,6 @@ This README provides step-by-step instructions to set up and run the application
   - [English](#english)
   - [Українська](#українська)
   - [Русский](#русский)
-- [Project Structure](#project-structure)
 - [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
 - [License](#license)
@@ -129,25 +128,6 @@ Follow these steps to run the Task Manager application locally:
    yarn dev
    \`\`\`
 5. **Откройте в браузере**: Откройте браузер и перейдите по адресу \`http://localhost:3000\`, чтобы просмотреть приложение.
-
----
-
-## Project Structure
-Here’s a brief overview of the project structure:
-\`\`\`
-task-manager/
-├── components/
-│   └── main/
-│       └── pop-up/
-│           ├── TaskCreationPopup.tsx
-│           └── TaskEditPopup.tsx
-├── pages/
-│   └── page.tsx
-├── public/
-├── styles/
-├── package.json
-└── README.md
-\`\`\`
 
 ---
 
