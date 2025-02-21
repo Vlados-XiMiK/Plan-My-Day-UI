@@ -58,7 +58,7 @@ export default function MainContent() {
   const [isEditPopupOpen, setEditPopupOpen] = useState(false)
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
   const [users, setUsers] = useState<User[]>([]) // User list
-  const [groups, setGroups] = useState<Group[]>([]) // List of groups
+  const [groups, setGroups] = useState<Group[]>([]) // Group List
   const { addNotification } = useNotification()
 
 
@@ -106,7 +106,6 @@ export default function MainContent() {
         groupId: task.groupId || null,
       },
     ])
-    // Отправка задачи на бэкенд
     fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -126,7 +125,6 @@ export default function MainContent() {
     setEditPopupOpen(false)
     addNotification('info', 'Task updated successfully!')
 
-    // Обновление задачи на бэкенде
     fetch(`/api/tasks/${updatedTask.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -143,7 +141,6 @@ export default function MainContent() {
     setTasks(tasks.filter(task => task.id !== id))
     addNotification('success', 'Task deleted successfully!')
 
-    // Удаление задачи на бэкенде
     fetch(`/api/tasks/${id}`, {
       method: 'DELETE',
     }).catch(error => addNotification('error', 'Failed to delete task'));
