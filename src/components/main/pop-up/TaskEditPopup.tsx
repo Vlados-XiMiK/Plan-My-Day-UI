@@ -97,7 +97,7 @@ export default function TaskEditPopup({
       setTimeout(() => {
         form?.classList.remove('animate-shake')
       }, 500)
-      addNotification('error', 'Please fix the errors in the form.')
+      addNotification('error', 'Error validation', 'Please fix the errors in the form.')
       return
     }
 
@@ -111,7 +111,7 @@ export default function TaskEditPopup({
 
     setErrors({})
     onClose()
-    addNotification('success', 'Task updated successfully!')
+    addNotification('success', 'Task updated', 'Task updated successfully!')
   }
 
   return (

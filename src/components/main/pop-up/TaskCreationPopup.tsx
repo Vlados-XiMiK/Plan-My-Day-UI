@@ -74,7 +74,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
       setTimeout(() => {
         form?.classList.remove('animate-shake')
       }, 500)
-      addNotification('error', 'Please fix the errors in the form.')
+      addNotification('error','Error validation', 'Please fix the errors in the form.')
       return
     }
 
@@ -86,7 +86,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
       priority,
     })
 
-    addNotification('success', 'Task created successfully!')
+    addNotification('success','Task created', 'Task created successfully!')
 
     setTitle('')
     setDescription('')

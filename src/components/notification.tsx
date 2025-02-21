@@ -1,126 +1,174 @@
-'use client'
+"use client"
 
-import React, { useEffect, useState } from 'react'
-import { AlertCircle, CheckCircle, Info, X, XCircle } from 'lucide-react'
-import { motion, AnimatePresence, MotionProps } from 'framer-motion'
-import { HTMLAttributes } from 'react'
+import React, { useEffect, useState } from "react"
+import { AlertCircle, CheckCircle, Info, X, XCircle, Bell } from "lucide-react"
+import { motion, AnimatePresence, MotionProps } from "framer-motion"
+import { HTMLAttributes } from "react"
+import { useTheme } from "next-themes"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
-export type NotificationType = 'success' | 'error' | 'warning' | 'info'
+export type NotificationType = "success" | "error" | "warning" | "info" | "welcome"
 
 export interface NotificationProps {
   id: string
   type: NotificationType
   message: string
+  title: string
   duration?: number
   onClose: (id: string) => void
+  index: number
 }
 
-const iconMap: Record<NotificationType, React.ReactNode> = {
-  success: <CheckCircle className="w-5 h-5" />,
-  error: <XCircle className="w-5 h-5" />,
-  warning: <AlertCircle className="w-5 h-5" />,
-  info: <Info className="w-5 h-5" />,
-}
-
-const bgColorMap: Record<NotificationType, string> = {
-  success: 'bg-green-100 dark:bg-green-800',
-  error: 'bg-red-100 dark:bg-red-800',
-  warning: 'bg-yellow-100 dark:bg-yellow-800',
-  info: 'bg-blue-100 dark:bg-blue-800',
-}
-
-const textColorMap: Record<NotificationType, string> = {
-  success: 'text-green-800 dark:text-green-100',
-  error: 'text-red-800 dark:text-red-100',
-  warning: 'text-yellow-800 dark:text-yellow-100',
-  info: 'text-blue-800 dark:text-blue-100',
-}
-
-const iconAnimationMap: Record<NotificationType, React.ReactNode> = {
-  success: (
-    <motion.div
-      initial={{ scale: 0.5, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3, repeat: Infinity, repeatType: 'reverse' }}
-      className="absolute inset-0 bg-green-400 rounded-full opacity-30"
-      {...({} as MotionDivProps)}
-    />
-  ),
-  error: (
-    <motion.div
-      initial={{ rotate: 0 }}
-      animate={{ rotate: 360 }}
-      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-      className="absolute inset-0 border-2 border-red-500 rounded-full border-t-transparent"
-      {...({} as MotionDivProps)}
-    />
-  ),
-  warning: (
-    <motion.div
-      animate={{ x: [-2, 2, -2] }}
-      transition={{ duration: 0.5, repeat: Infinity }}
-      className="absolute inset-0"
-      {...({} as MotionDivProps)}
-    />
-  ),
-  info: (
-    <motion.div
-      animate={{ y: [-2, 2, -2] }}
-      transition={{ duration: 0.5, repeat: Infinity }}
-      className="absolute inset-0"
-      {...({} as MotionDivProps)}
-    />
-  ),
+const typeConfig = {
+  success: {
+    icon: CheckCircle,
+    darkColor: "from-green-500 to-green-600",
+    lightColor: "from-green-400 to-green-500",
+    effect: "rotate-z-6",
+  },
+  error: {
+    icon: XCircle,
+    darkColor: "from-red-500 to-red-600",
+    lightColor: "from-red-400 to-red-500",
+    effect: "-rotate-x-6",
+  },
+  warning: {
+    icon: AlertCircle,
+    darkColor: "from-yellow-500 to-orange-500",
+    lightColor: "from-yellow-400 to-orange-400",
+    effect: "rotate-x-6",
+  },
+  info: {
+    icon: Info,
+    darkColor: "from-cyan-500 to-blue-500",
+    lightColor: "from-cyan-400 to-blue-400",
+    effect: "-rotate-y-6",
+  },
+  welcome: {
+    icon: Bell,
+    darkColor: "from-blue-500 to-purple-600",
+    lightColor: "from-blue-400 to-purple-500",
+    effect: "rotate-y-6",
+  },
 }
 
 export const Notification: React.FC<NotificationProps> = ({
   id,
   type,
+  title,
   message,
-  duration = 5000,
+  duration = 2500,
   onClose,
+  index,
 }) => {
   const [isVisible, setIsVisible] = useState(true)
+  const [progress, setProgress] = useState(100)
+  const { theme } = useTheme()
+  const { icon: Icon, darkColor, lightColor, effect } = typeConfig[type]
+  const isDarkTheme = theme === "dark"
 
   useEffect(() => {
+    const startTime = Date.now()
     const timer = setTimeout(() => {
       setIsVisible(false)
+      onClose(id)
     }, duration)
 
-    return () => clearTimeout(timer)
-  }, [duration])
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const remaining = Math.max(0, 100 - (elapsed / duration) * 100)
+      setProgress(remaining)
+
+      if (remaining === 0) {
+        clearInterval(progressInterval)
+      }
+    }, 10)
+
+    return () => {
+      clearTimeout(timer)
+      clearInterval(progressInterval)
+    }
+  }, [duration, id, onClose])
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -50, x: 50 }}
-          animate={{ opacity: 1, y: 0, x: 0 }}
-          exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-          className={`flex items-center p-3 mb-2 rounded-lg shadow-md ${bgColorMap[type]} ${textColorMap[type]} transition-all duration-300 ease-in-out max-w-sm`}
-          role="alert"
+          initial={{ x: 300, opacity: 0, scale: 0.8 }}
+          animate={{
+            x: 0,
+            opacity: 1,
+            scale: 1,
+          }}
+          exit={{ x: 300, opacity: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 25,
+            duration: 0.5,
+          }}
+          style={{
+            transformStyle: "preserve-3d",
+            perspective: "1000px",
+          }}
+          className={`w-80 mb-2 ${effect}`}
           {...({} as MotionDivProps)}
         >
-          <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 mr-3 relative">
-            {iconAnimationMap[type]}
-            {iconMap[type]}
-          </div>
-          <p className="text-sm font-medium">{message}</p>
-          <button
-            type="button"
-            className={`ml-auto -mx-1.5 -my-1.5 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 inline-flex h-8 w-8 ${textColorMap[type]} hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-white`}
-            onClick={() => {
-              setIsVisible(false)
-              onClose(id)
-            }}
-            aria-label="Close"
+          <div
+            className={`rounded-lg shadow-lg ${
+              isDarkTheme
+                ? "bg-gradient-to-r from-gray-800 to-gray-900 text-white"
+                : "bg-gradient-to-r from-white to-gray-100 text-gray-800"
+            } backdrop-blur-md border ${isDarkTheme ? "border-gray-700" : "border-gray-200"} overflow-hidden`}
           >
-            <span className="sr-only">Close</span>
-            <X className="w-5 h-5" />
-          </button>
+            <div className="p-4">
+              <div className="flex items-start">
+                <motion.div
+                  className="flex-shrink-0"
+                  animate={{
+                    rotate: [0, -10, 10, -10, 0],
+                    transition: { duration: 0.5, delay: 0.2 },
+                  }}
+                  {...({} as MotionDivProps)}
+                >
+                  <div
+                    className={`h-8 w-8 rounded-full bg-gradient-to-r ${isDarkTheme ? darkColor : lightColor} flex items-center justify-center`}
+                  >
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                </motion.div>
+                <div className="ml-3 w-full">
+                  <div className="flex justify-between items-start">
+                    <p className="text-sm font-medium">{title}</p>
+                    <button
+                      onClick={() => {
+                        setIsVisible(false)
+                        onClose(id)
+                      }}
+                      className={`ml-2 ${
+                        isDarkTheme ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700"
+                      } transition-colors`}
+                      aria-label="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <p className={`mt-1 text-xs ${isDarkTheme ? "text-gray-300" : "text-gray-600"}`}>{message}</p>
+                </div>
+              </div>
+            </div>
+            <motion.div
+              className={`h-1 bg-gradient-to-r ${isDarkTheme ? darkColor : lightColor}`}
+              initial={{ width: "100%" }}
+              animate={{
+                width: `${progress}%`,
+                transition: { duration: 0.01, ease: "linear" },
+              }}
+              {...({} as MotionDivProps)}
+            />
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -134,4 +182,3 @@ export const NotificationContainer: React.FC<{ children: React.ReactNode }> = ({
     </div>
   )
 }
-

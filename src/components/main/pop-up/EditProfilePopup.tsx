@@ -93,7 +93,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     setErrors((prev) => ({ ...prev, [name]: error }))
 
     if (error && !notificationShown) {
-      addNotification('error', error)
+      addNotification('error', 'Server error' ,error)
       setNotificationShown(true)
     } else if (!error) {
       setNotificationShown(false)
@@ -114,17 +114,17 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) {
-      addNotification('error', 'Please fix validation errors.')
+      addNotification('error', 'Error validation' , 'Please fix validation errors.')
       return
     }
 
     try {
-      addNotification('info', 'Updating profile...')
+      addNotification('info', 'Updating Profile' , 'Updating profile...')
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      addNotification('success', 'Profile updated successfully!')
+      addNotification('success', 'Profile Update' ,'Profile updated successfully!')
       onClose()
     } catch {
-      addNotification('error', 'Failed to update profile. Please try again.')
+      addNotification('error','Server error' , 'Failed to update profile. Please try again.')
     }
   }
 
