@@ -1,36 +1,166 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task Manager Application
 
-## Getting Started
+Welcome to the Task Manager Application built with Next.js! This project allows you to manage tasks, assign them to users or groups, and track their progress with a modern, user-friendly interface.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This README provides step-by-step instructions to set up and run the application locally on your machine using Next.js. Instructions are available in English, Ukrainian, and Russian for your convenience.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Table of Contents
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+  - [English](#english)
+  - [Українська](#українська)
+  - [Русский](#русский)
+- [Technologies Used](#technologies-used)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Before you begin, ensure you have the following installed:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Node.js** (v16 or higher)
+- **npm** (or Yarn)
+- **Git** (optional, for cloning the repository)
+- A code editor (e.g., VS Code)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Clone the repository (if available):
+   \`\`\`bash
+   git clone <repository-url>
+   cd task-manager
+   \`\`\`
+2. Install dependencies:
+   \`\`\`bash
+   npm install
+   \`\`\`
+   or if using Yarn:
+   \`\`\`bash
+   yarn install
+   \`\`\`
+
+---
+
+## Running the Application
+
+### English
+
+Follow these steps to run the Task Manager application locally:
+
+1. **Ensure Prerequisites**: Verify that Node.js, npm, and Git (if cloning) are installed on your machine.
+2. **Clone the Repository**: If you haven’t already, clone the repository and navigate to the project directory:
+   \`\`\`bash
+   git clone <repository-url>
+   cd task-manager
+   \`\`\`
+3. **Install Dependencies**: Run the following command to install all necessary packages:
+   \`\`\`bash
+   npm install
+   \`\`\`
+   or use Yarn:
+   \`\`\`bash
+   yarn install
+   \`\`\`
+4. **Start the Development Server**: Launch the application in development mode:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+   or with Yarn:
+   \`\`\`bash
+   yarn dev
+   \`\`\`
+5. **Open in Browser**: Open your browser and navigate to \`http://localhost:3000\` to view the application.
+
+### Українська
+
+Слідуйте цим крокам, щоб запустити додаток Task Manager локально:
+
+1. **Перевірте передумови**: Переконайтеся, що на вашому комп’ютері встановлені Node.js, npm і Git (якщо клонуєте репозиторій).
+2. **Склонуйте репозиторій**: Якщо ви ще не зробили цього, склонуйте репозиторій і перейдіть до директорії проекту:
+   \`\`\`bash
+   git clone <адреса-репозиторію>
+   cd task-manager
+   \`\`\`
+3. **Встановіть залежності**: Виконайте наступну команду, щоб встановити всі необхідні пакети:
+   \`\`\`bash
+   npm install
+   \`\`\`
+   або використовуйте Yarn:
+   \`\`\`bash
+   yarn install
+   \`\`\`
+4. **Запустіть сервер розробки**: Запустіть додаток у режимі розробки:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+   або з Yarn:
+   \`\`\`bash
+   yarn dev
+   \`\`\`
+5. **Відкрийте в браузері**: Відкрийте браузер і перейдіть за адресою \`http://localhost:3000\`, щоб переглянути додаток.
+
+### Русский
+
+Следуйте этим шагам, чтобы запустить приложение Task Manager локально:
+
+1. **Проверьте предпосылки**: Убедитесь, что на вашем компьютере установлены Node.js, npm и Git (если клонируете репозиторий).
+2. **Склонируйте репозиторий**: Если вы ещё не сделали этого, склонируйте репозиторий и перейдите в директорию проекта:
+   \`\`\`bash
+   git clone <адрес-репозитория>
+   cd task-manager
+   \`\`\`
+3. **Установите зависимости**: Выполните следующую команду, чтобы установить все необходимые пакеты:
+   \`\`\`bash
+   npm install
+   \`\`\`
+   или используйте Yarn:
+   \`\`\`bash
+   yarn install
+   \`\`\`
+4. **Запустите сервер разработки**: Запустите приложение в режиме разработки:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+   или с Yarn:
+   \`\`\`bash
+   yarn dev
+   \`\`\`
+5. **Откройте в браузере**: Откройте браузер и перейдите по адресу \`http://localhost:3000\`, чтобы просмотреть приложение.
+
+---
+
+## Technologies Used
+
+- **Next.js**: React framework for server-side rendering and static site generation.
+- **TypeScript**: For type safety and better code maintainability.
+- **Tailwind CSS**: For styling and responsive design.
+- **date-fns**: For date formatting and manipulation.
+- **Lucide React**: For icons.
+- **Node.js & npm**: For runtime and package management.
+
+---
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Submit a pull request with your changes.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE). See the `LICENSE` file for details.
+`
