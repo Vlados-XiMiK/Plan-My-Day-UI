@@ -2,7 +2,11 @@
 
 import React, { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle, Info, X, XCircle } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, MotionProps } from 'framer-motion'
+import { HTMLAttributes } from 'react'
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info'
 
@@ -42,6 +46,7 @@ const iconAnimationMap: Record<NotificationType, React.ReactNode> = {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3, repeat: Infinity, repeatType: 'reverse' }}
       className="absolute inset-0 bg-green-400 rounded-full opacity-30"
+      {...({} as MotionDivProps)}
     />
   ),
   error: (
@@ -50,6 +55,7 @@ const iconAnimationMap: Record<NotificationType, React.ReactNode> = {
       animate={{ rotate: 360 }}
       transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
       className="absolute inset-0 border-2 border-red-500 rounded-full border-t-transparent"
+      {...({} as MotionDivProps)}
     />
   ),
   warning: (
@@ -57,6 +63,7 @@ const iconAnimationMap: Record<NotificationType, React.ReactNode> = {
       animate={{ x: [-2, 2, -2] }}
       transition={{ duration: 0.5, repeat: Infinity }}
       className="absolute inset-0"
+      {...({} as MotionDivProps)}
     />
   ),
   info: (
@@ -64,6 +71,7 @@ const iconAnimationMap: Record<NotificationType, React.ReactNode> = {
       animate={{ y: [-2, 2, -2] }}
       transition={{ duration: 0.5, repeat: Infinity }}
       className="absolute inset-0"
+      {...({} as MotionDivProps)}
     />
   ),
 }
@@ -94,6 +102,7 @@ export const Notification: React.FC<NotificationProps> = ({
           exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
           className={`flex items-center p-3 mb-2 rounded-lg shadow-md ${bgColorMap[type]} ${textColorMap[type]} transition-all duration-300 ease-in-out max-w-sm`}
           role="alert"
+          {...({} as MotionDivProps)}
         >
           <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 mr-3 relative">
             {iconAnimationMap[type]}

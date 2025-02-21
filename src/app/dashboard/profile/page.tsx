@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { User2, Mail, Phone, Building2, Clock, Edit2, Settings, LogOut, ArrowLeft } from 'lucide-react'
 import { PieChart } from '@/components/ui/pie-chart'
@@ -22,7 +22,7 @@ interface ProfileProps {
     avatarUrl: string;
   };
   stats?: ProfileStats;
-  onBackToTasks: () => void;
+  onBackToTasks?: () => void;
 }
 
 export default function Profile({ 
