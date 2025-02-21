@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, CalendarIcon, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-interface Task {
+export interface Task {  // add export
   id: number;
   title: string;
   dueDate: string;
@@ -144,4 +144,3 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
 };
 
 export default Calendar;
-

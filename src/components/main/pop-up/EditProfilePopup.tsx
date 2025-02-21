@@ -1,9 +1,22 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, MotionProps } from 'framer-motion'
 import { useState, useRef } from 'react'
 import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
+import { InputHTMLAttributes, HTMLAttributes, ButtonHTMLAttributes } from 'react'
+
+// type for motion.input
+type MotionInputProps = MotionProps & InputHTMLAttributes<HTMLInputElement>
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+
+// type for motion.button
+type MotionButtonProps = MotionProps & ButtonHTMLAttributes<HTMLButtonElement>
+
+// type for motion.h2
+type MotionH2Props = MotionProps & HTMLAttributes<HTMLHeadingElement>
 
 interface EditProfilePopupProps {
   isOpen: boolean
@@ -19,7 +32,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     phoneNumber: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [notificationShown, setNotificationShown] = useState(false) // Флаг для уведомления
+  const [notificationShown, setNotificationShown] = useState(false)
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
@@ -72,7 +85,6 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     
     const error = validateField(name, value)
 
-    // Ограничение длины числовых символов для номера телефона
     if (name === 'phoneNumber' && value.replace(/[^0-9]/g, '').length > 15) {
       return
     }
@@ -84,7 +96,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
       addNotification('error', error)
       setNotificationShown(true)
     } else if (!error) {
-      setNotificationShown(false) // Сброс флага при устранении ошибки
+      setNotificationShown(false)
     }
   }
 
@@ -99,7 +111,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) {
       addNotification('error', 'Please fix validation errors.')
@@ -129,6 +141,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
           onClick={onClose}
+          {...({} as MotionDivProps)}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
@@ -136,7 +149,8 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
             className="bg-white rounded-xl shadow-2xl p-3 sm:p-4 w-full max-w-xl relative overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+            {...({} as MotionDivProps)}
           >
             <div className="relative">
               <div className="flex justify-between items-center mb-6">
@@ -145,6 +159,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}
+                  {...({} as MotionH2Props)}
                 >
                   Update Profile
                 </motion.h2>
@@ -153,6 +168,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   whileTap={{ scale: 0.9 }}
                   onClick={onClose}
                   className="text-gray-500 hover:text-gray-700 transition-colors"
+                  {...({} as MotionButtonProps)}
                 >
                   <X className="h-6 w-6" />
                 </motion.button>
@@ -184,6 +200,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                         className={`w-full pl-10 pr-4 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all duration-300 text-gray-800 bg-white ${
                           errors[name] ? 'border-red-500' : 'border-gray-200'
                         }`}
+                        {...({} as MotionInputProps)}
                       />
                     </div>
                     {errors[name] && <span className="text-red-500 text-xs mt-1 block">{errors[name]}</span>}
@@ -215,6 +232,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                       whileTap={{ scale: 0.95 }}
                       onClick={() => fileInputRef.current?.click()}
                       className="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      {...({} as MotionButtonProps)}
                     >
                       <Upload className="h-4 w-4 inline-block mr-2" />
                       Upload
@@ -236,6 +254,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="px-4 py-1.5 text-sm rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-300 w-full sm:w-auto"
+                    {...({} as MotionButtonProps)}
                   >
                     Cancel
                   </motion.button>
@@ -244,6 +263,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="px-4 py-1.5 text-sm rounded-lg text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-300 w-full sm:w-auto"
+                    {...({} as MotionButtonProps)}
                   >
                     Update Profile
                   </motion.button>

@@ -2,14 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, MotionProps } from 'framer-motion'
 import { useNotification } from '@/contexts/notification-context'
+import { HTMLAttributes } from 'react'
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface TaskCreationPopupProps {
   isOpen: boolean
   onClose: () => void
   onSave: (task: any) => void
   categories: string[]
+  users: User[];
+  groups: Group[];
+  
 }
 
 export default function TaskCreationPopup({ isOpen, onClose, onSave, categories }: TaskCreationPopupProps) {
@@ -99,6 +106,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+          {...({} as MotionDivProps)}
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -106,6 +114,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm"
             onClick={onClose}
+            {...({} as MotionDivProps)}
           />
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -113,6 +122,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
             className="relative w-full max-w-3xl overflow-hidden rounded-xl shadow-xl"
+            {...({} as MotionDivProps)}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-300 via-pink-200 to-blue-300 opacity-80" />
             <motion.div
@@ -121,6 +131,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                 backgroundPosition: ['0% 0%', '100% 100%'],
                 transition: { duration: 5, repeat: Infinity, repeatType: 'reverse' },
               }}
+              {...({} as MotionDivProps)}
             />
             <div className="relative bg-white bg-opacity-60 p-6 backdrop-blur-sm">
               <button

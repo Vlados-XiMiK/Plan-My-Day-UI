@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock, User, Users } from 'lucide-react'
+import { Search, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock, User as UserIcon, Users } from 'lucide-react'
 import { format } from 'date-fns' // Import date-fns for consistent formatting
 import TaskCreationPopup from '../../../components/main/pop-up/TaskCreationPopup'
 import TaskEditPopup from '../../../components/main/pop-up/TaskEditPopup'
@@ -10,29 +10,6 @@ import { useNotification } from '@/contexts/notification-context'
 // Precompute current date outside the component
 const currentDate = format(new Date(), 'EEE, MMM d, yyyy') // e.g., "Fri, Feb 21, 2025"
 
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  createdAt: string;
-  dueDate: string;
-  category: string;
-  priority: 'high' | 'medium' | 'low';
-  completed: boolean;
-  starred: boolean;
-  assignedTo: string | null; // ID пользователя или группы
-  groupId: string | null;    // ID группы
-}
-
-interface User {
-  id: string;
-  name: string;
-}
-
-interface Group {
-  id: string;
-  name: string;
-}
 
 export default function MainContent() {
   const [tasks, setTasks] = useState<Task[]>([
@@ -46,7 +23,7 @@ export default function MainContent() {
       priority: 'high',
       completed: false,
       starred: false,
-      assignedTo: 'user123', // Пример назначенного пользователя
+      assignedTo: 'user123', // Example of a designated user
       groupId: null,
     },
     {
@@ -60,7 +37,7 @@ export default function MainContent() {
       completed: true,
       starred: true,
       assignedTo: null,
-      groupId: 'group456', // Пример назначенной группы
+      groupId: 'group456', // Example of an assigned group
     },
     {
       id: 3,
@@ -80,8 +57,8 @@ export default function MainContent() {
   const [isCreationPopupOpen, setCreationPopupOpen] = useState(false)
   const [isEditPopupOpen, setEditPopupOpen] = useState(false)
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
-  const [users, setUsers] = useState<User[]>([]) // Список пользователей
-  const [groups, setGroups] = useState<Group[]>([]) // Список групп
+  const [users, setUsers] = useState<User[]>([]) // User list
+  const [groups, setGroups] = useState<Group[]>([]) // Group List
   const { addNotification } = useNotification()
 
 
@@ -129,7 +106,6 @@ export default function MainContent() {
         groupId: task.groupId || null,
       },
     ])
-    // Отправка задачи на бэкенд
     fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -149,7 +125,6 @@ export default function MainContent() {
     setEditPopupOpen(false)
     addNotification('info', 'Task updated successfully!')
 
-    // Обновление задачи на бэкенде
     fetch(`/api/tasks/${updatedTask.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -166,7 +141,6 @@ export default function MainContent() {
     setTasks(tasks.filter(task => task.id !== id))
     addNotification('success', 'Task deleted successfully!')
 
-    // Удаление задачи на бэкенде
     fetch(`/api/tasks/${id}`, {
       method: 'DELETE',
     }).catch(error => addNotification('error', 'Failed to delete task'));
@@ -349,7 +323,7 @@ export default function MainContent() {
                     {task.assignedTo || task.groupId ? (
                       <div className="flex items-center">
                         {task.assignedTo ? (
-                          <User size={16} className="mr-1 text-blue-500" />
+                          <UserIcon size={16} className="mr-1 text-blue-500" />
                         ) : (
                           <Users size={16} className="mr-1 text-green-500" />
                         )}

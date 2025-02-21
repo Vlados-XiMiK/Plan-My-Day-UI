@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { UserCircle, LogOut, Menu, ChevronDown, User2 } from 'lucide-react'
 
@@ -8,7 +8,7 @@ interface HeaderProps {
   toggleSidebar: () => void;
   toggleCollapse: () => void;
   isCollapsed: boolean;
-  onProfileClick: () => void;
+  onProfileClick?: () => void;
 }
 
 export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onProfileClick }: HeaderProps) {
