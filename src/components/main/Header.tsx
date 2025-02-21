@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter, usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { UserCircle, LogOut, Menu, ChevronDown, User2 } from 'lucide-react'
 
@@ -11,6 +12,7 @@ interface HeaderProps {
 }
 
 export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onProfileClick }: HeaderProps) {
+  const router = useRouter()
   const [showDropdown, setShowDropdown] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -69,10 +71,10 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
               <p className="truncate text-sm font-medium">john@example.com</p>
             </div>
             <div className="border-t border-gray-100">
-              <button
+            <button
                 onClick={() => {
-                  onProfileClick();
-                  setShowDropdown(false);
+                  router.push('/dashboard/profile') // Переход на страницу профиля
+                  setShowDropdown(false)
                 }}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
@@ -81,14 +83,15 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
               </button>
               <button
                 onClick={() => {
-                  // Add logout logic here
                   console.log('Logging out...')
+                  router.push('/login') // Перенаправление на страницу входа после выхода
                 }}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
               </button>
+              
             </div>
           </div>
         )}
