@@ -162,5 +162,5 @@ We welcome contributions! Please follow these steps:
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE). See the `LICENSE` file for details.
+This project is licensed under the MIT License. See the \`LICENSE\` file for details.
 `
