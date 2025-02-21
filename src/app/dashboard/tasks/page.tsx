@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Search, Filter, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock } from 'lucide-react'
-import TaskCreationPopup from './TaskCreationPopup'
-import TaskEditPopup from './TaskEditPopup'
+import TaskCreationPopup from '../../../components/TaskCreationPopup'
+import TaskEditPopup from '../../../components/TaskEditPopup'
 import { useNotification } from '@/contexts/notification-context'
 
 interface Task {

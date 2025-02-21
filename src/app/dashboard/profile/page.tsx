@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { User2, Mail, Phone, Building2, Clock, Edit2, Settings, LogOut, ArrowLeft } from 'lucide-react'
 import { PieChart } from '@/components/ui/pie-chart'
@@ -38,6 +39,7 @@ export default function Profile({
 }: ProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
   const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0
+  const router = useRouter()
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn">
@@ -46,7 +48,9 @@ export default function Profile({
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Profile</h1>
           <button
-            onClick={onBackToTasks}
+            onClick={()=>{
+              router.push('/dashboard/tasks')
+            }}
             className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 hover:scale-105"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

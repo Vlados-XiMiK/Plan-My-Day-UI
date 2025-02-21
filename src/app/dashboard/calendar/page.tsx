@@ -1,4 +1,4 @@
-import Calendar from './Calendar';
+import Calendar from '../../../components/Calendar';
 
 // Sample tasks data
 const sampleTasks = [

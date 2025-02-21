@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import Image from 'next/image'
 import { BarChart, ListTodo, Calendar, Plus, Trash2 } from 'lucide-react'
@@ -8,11 +9,11 @@ import { useNotification } from '@/contexts/notification-context'
 interface SidebarProps {
   isVisible: boolean;
   isCollapsed: boolean;
-  currentView: 'tasks' | 'calendar' | 'stats' | 'profile';
-  onChangeView: (view: 'tasks' | 'calendar' | 'stats' | 'profile') => void;
 }
 
-export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeView }: SidebarProps) {
+export default function Sidebar({ isVisible, isCollapsed}: SidebarProps) {
+  const router = useRouter()
+  const pathname = usePathname()
   const [categories, setCategories] = useState(['Work', 'Personal', 'Shopping']);
   const [newCategory, setNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -94,34 +95,33 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
 
       <nav className="flex-1 space-y-1 overflow-y-auto p-2">
         <button
-          onClick={() => onChangeView('stats')}
+          onClick={() => router.push('/dashboard/stats')}
           className={`flex w-full items-center rounded-md p-2 text-gray-700 hover:bg-white/50 transition-colors duration-200
             ${isCollapsed ? 'justify-center' : ''} 
-            ${currentView === 'stats' ? 'bg-purple-100 text-purple-700' : ''}`}
+            ${pathname === '/dashboard/stats' ? 'bg-purple-100 text-purple-700' : ''}`}
         >
           <BarChart className={isCollapsed ? 'h-6 w-6' : 'mr-3 h-6 w-6'} />
           {!isCollapsed && <span>Stats</span>}
         </button>
         <button
-          onClick={() => onChangeView('tasks')}
+          onClick={() => router.push('/dashboard/tasks')}
           className={`flex w-full items-center rounded-md p-2 text-gray-700 hover:bg-white/50 transition-colors duration-200
             ${isCollapsed ? 'justify-center' : ''} 
-            ${currentView === 'tasks' ? 'bg-purple-100 text-purple-700' : ''}`}
+            ${pathname === '/dashboard/tasks' ? 'bg-purple-100 text-purple-700' : ''}`}
         >
           <ListTodo className={isCollapsed ? 'h-6 w-6' : 'mr-3 h-6 w-6'} />
           {!isCollapsed && <span>All Tasks</span>}
         </button>
         <button
-          onClick={() => onChangeView('calendar')}
+          onClick={() => router.push('/dashboard/calendar')}
           className={`flex w-full items-center rounded-md p-2 text-gray-700 hover:bg-white/50 transition-colors duration-200
             ${isCollapsed ? 'justify-center' : ''} 
-            ${currentView === 'calendar' ? 'bg-purple-100 text-purple-700' : ''}`}
+            ${pathname === '/dashboard/calendar' ? 'bg-purple-100 text-purple-700' : ''}`}
         >
           <Calendar className={isCollapsed ? 'h-6 w-6' : 'mr-3 h-6 w-6'} />
           {!isCollapsed && <span>Calendar</span>}
         </button>
       </nav>
-
       {!isCollapsed && (
         <div className="flex-1 p-4">
           <div className="mb-2 flex items-center justify-between">
@@ -198,6 +198,7 @@ export default function Sidebar({ isVisible, isCollapsed, currentView, onChangeV
           </div>
         </div>
       )}
+      
     </aside>
   );
 }
