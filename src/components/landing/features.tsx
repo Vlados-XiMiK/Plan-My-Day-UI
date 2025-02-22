@@ -2,12 +2,19 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useState, HTMLAttributes } from "react"
+import { motion, MotionProps } from "framer-motion"
 import { Calendar, ListTodo, Sparkles, Zap, Users, Bell } from "lucide-react"
 import { useLanguage } from "@/contexts/LanguageContext"
 import en from "@/translations/en.json"
 import uk from "@/translations/uk.json"
+import type { Feature, Features } from "@/types"
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+
+// type for motion.h2
+type MotionH2Props = MotionProps & HTMLAttributes<HTMLHeadingElement>
 
 const featureIcons = {
   smartCalendar: Calendar,
@@ -36,6 +43,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      {...({} as MotionDivProps)}
     >
       <div className="flex flex-col h-full">
         <div className="flex-grow">
@@ -48,6 +56,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
           animate={{ opacity: isHovered ? 1 : 0, height: isHovered ? "auto" : 0 }}
           transition={{ duration: 0.3 }}
           className="mt-4 overflow-hidden"
+          {...({} as MotionDivProps)}
         >
           <p className="text-sm text-gray-600 dark:text-gray-400">{details}</p>
         </motion.div>
@@ -79,6 +88,7 @@ export default function Features() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
+        {...({} as MotionH2Props)}
         >
           {t.features.title}
         </motion.h2>
@@ -88,6 +98,7 @@ export default function Features() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
+          {...({} as MotionDivProps)}
         >
           {Object.entries(t.features).map(([key, feature]) => {
             if (key === "title") return null
@@ -96,9 +107,9 @@ export default function Features() {
               <FeatureCard
                 key={key}
                 icon={Icon}
-                title={feature.title}
-                description={feature.description}
-                details={feature.details}
+                title={(feature as Feature).title}
+                  description={(feature as Feature).description}
+                  details={(feature as Feature).details}
               />
             )
           })}

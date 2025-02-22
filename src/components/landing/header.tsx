@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, HTMLAttributes } from "react"
 import { useRouter } from "next/navigation"
-import { motion, useScroll } from "framer-motion"
+import { motion, useScroll, MotionProps } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import Logo from "@/components/shared/logo"
 import { ThemeLanguageToggle } from "@/components/shared/theme-language-toggle"
@@ -10,6 +10,9 @@ import { useLanguage } from "@/contexts/LanguageContext"
 import { Menu } from "lucide-react"
 import en from "@/translations/en.json"
 import uk from "@/translations/uk.json"
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 export default function Header() {
   const { scrollY } = useScroll()
@@ -33,6 +36,7 @@ export default function Header() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      {...({} as MotionDivProps)}
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
@@ -66,6 +70,7 @@ export default function Header() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           className="md:hidden bg-white dark:bg-gray-800 py-4"
+          {...({} as MotionDivProps)}
         >
           <div className="container mx-auto px-4 flex flex-col space-y-4">
             <ThemeLanguageToggle />

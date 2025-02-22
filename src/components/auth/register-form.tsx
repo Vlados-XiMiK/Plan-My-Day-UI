@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, MotionProps } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,15 @@ import { useLanguage } from "@/contexts/LanguageContext"
 import en from "@/translations/en.json"
 import uk from "@/translations/uk.json"
 import type React from "react"
+import { HTMLAttributes } from "react"
+
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+
+// type for motion.p
+type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
+
 
 interface FormData {
   email: string
@@ -196,6 +205,7 @@ export default function RegisterForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="bg-white dark:bg-[#16213e] p-8 rounded-lg shadow-lg relative z-10"
+      {...({} as MotionDivProps)}
     >
       <div className="flex flex-col space-y-2 text-center mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{t.auth.register.title}</h1>
@@ -234,6 +244,7 @@ export default function RegisterForm() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
+                {...({} as MotionPProps)}
                 >
                   {errors.email}
                 </motion.p>
@@ -262,6 +273,7 @@ export default function RegisterForm() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
+                    {...({} as MotionPProps)}
                   >
                     {errors.name}
                   </motion.p>
@@ -286,6 +298,7 @@ export default function RegisterForm() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
+                    {...({} as MotionPProps)}
                   >
                     {errors.username}
                   </motion.p>
@@ -323,6 +336,7 @@ export default function RegisterForm() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
+                    {...({} as MotionPProps)}
                   >
                     {errors.password}
                   </motion.p>
@@ -355,6 +369,7 @@ export default function RegisterForm() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
+                    {...({} as MotionPProps)}
                   >
                     {errors.confirmPassword}
                   </motion.p>

@@ -2,6 +2,17 @@
 
 import { useEffect, useRef } from "react"
 
+interface Particle {
+  x: number
+  y: number
+  size: number
+  speedX: number
+  speedY: number
+  color: string
+  update: () => void
+  draw: (ctx: CanvasRenderingContext2D) => void
+}
+
 export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -45,8 +56,7 @@ export function AnimatedBackground() {
         if (this.y < 0 || this.y > canvas.height) this.speedY *= -1
       }
 
-      draw() {
-        if (!ctx) return
+      draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color
         ctx.strokeStyle = this.color
         ctx.lineWidth = 2
@@ -58,21 +68,23 @@ export function AnimatedBackground() {
       }
     }
 
-    function createParticles() {
+    const createParticles = () => {
+      particles.length = 0
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle())
       }
     }
 
-    function animateParticles() {
-      if (!ctx) return
+    let animationFrameId: number // Для хранения ID анимации
+
+    const animateParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       for (let i = 0; i < particles.length; i++) {
         particles[i].update()
-        particles[i].draw()
+        particles[i].draw(ctx)
 
-        for (let j = i; j < particles.length; j++) {
+        for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x
           const dy = particles[i].y - particles[j].y
           const distance = Math.sqrt(dx * dx + dy * dy)
@@ -88,11 +100,11 @@ export function AnimatedBackground() {
         }
       }
 
-      requestAnimationFrame(animateParticles)
+      animationFrameId = requestAnimationFrame(animateParticles)
     }
 
     createParticles()
-    animateParticles()
+    animationFrameId = requestAnimationFrame(animateParticles)
 
     const handleResize = () => {
       canvas.width = window.innerWidth
@@ -104,6 +116,7 @@ export function AnimatedBackground() {
 
     return () => {
       window.removeEventListener("resize", handleResize)
+      cancelAnimationFrame(animationFrameId) // Очистка анимации
     }
   }, [])
 
@@ -161,8 +174,7 @@ export function LightAnimatedBackground() {
         if (this.y < 0 || this.y > canvas.height) this.speedY *= -1
       }
 
-      draw() {
-        if (!ctx) return
+      draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color
         ctx.beginPath()
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
@@ -171,21 +183,23 @@ export function LightAnimatedBackground() {
       }
     }
 
-    function createParticles() {
+    const createParticles = () => {
+      particles.length = 0
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle())
       }
     }
 
-    function animateParticles() {
-      if (!ctx) return
+    let animationFrameId: number
+
+    const animateParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       for (let i = 0; i < particles.length; i++) {
         particles[i].update()
-        particles[i].draw()
+        particles[i].draw(ctx)
 
-        for (let j = i; j < particles.length; j++) {
+        for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x
           const dy = particles[i].y - particles[j].y
           const distance = Math.sqrt(dx * dx + dy * dy)
@@ -201,11 +215,11 @@ export function LightAnimatedBackground() {
         }
       }
 
-      requestAnimationFrame(animateParticles)
+      animationFrameId = requestAnimationFrame(animateParticles)
     }
 
     createParticles()
-    animateParticles()
+    animationFrameId = requestAnimationFrame(animateParticles)
 
     const handleResize = () => {
       canvas.width = window.innerWidth
@@ -217,6 +231,7 @@ export function LightAnimatedBackground() {
 
     return () => {
       window.removeEventListener("resize", handleResize)
+      cancelAnimationFrame(animationFrameId)
     }
   }, [])
 
@@ -228,4 +243,3 @@ export function LightAnimatedBackground() {
     />
   )
 }
-

@@ -3,10 +3,21 @@
 import type React from "react"
 
 import { useRef, useState } from "react"
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
+import { motion, useScroll, useTransform, AnimatePresence, MotionProps } from "framer-motion"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import Image from "next/image"
+import { HTMLAttributes } from "react"
 import { Button } from "@/components/ui/button"
+import type { Feature } from "@/types"
+
+// type for motion.div
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+
+// type for motion.h2
+type MotionH2Props = MotionProps & HTMLAttributes<HTMLHeadingElement>
+
+// type for motion.p
+type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
 
 interface ParallaxPanelProps {
   title: string
@@ -28,7 +39,7 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
   accent = "#ef4444",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const ref = useRef(null)
+  const ref = useRef(null!)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -45,6 +56,7 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
       style={{
         opacity,
       }}
+      {...({} as MotionDivProps)}
     >
       <div className="container mx-auto">
         <motion.div
@@ -52,12 +64,14 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
           style={{
             scale,
           }}
+          {...({} as MotionDivProps)}
         >
           <motion.div
             className={`order-2 md:order-${index % 2 === 0 ? 2 : 1}`}
             style={{ y }}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
+            {...({} as MotionDivProps)}
           >
             <div
               className="relative aspect-[4/3] rounded-lg overflow-hidden transform transition-transform duration-500 hover:rotate-1"
@@ -84,6 +98,7 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
           <motion.div
             className={`space-y-4 order-1 md:order-${index % 2 === 0 ? 1 : 2}`}
             style={{ y: useTransform(y, (value) => value * -0.5) }}
+            {...({} as MotionDivProps)}
           >
             <motion.h2
               className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold bg-clip-text text-transparent leading-tight mb-8"
@@ -91,11 +106,14 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
                 backgroundImage: `linear-gradient(135deg, ${accent}, ${accent}bb)`,
               }}
               whileHover={{ scale: 1.02 }}
+              {...({} as MotionH2Props)}
             >
               {title}
             </motion.h2>
-            <motion.p className="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-10">
-              {description}
+            <motion.p className="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-10"
+            {...({} as MotionPProps)}
+            >
+              {description}   
             </motion.p>
 
             <Button variant="ghost" className="mt-4" onClick={() => setIsExpanded(!isExpanded)}>
@@ -118,6 +136,7 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
+                  {...({} as MotionDivProps)}
                 >
                   <div className="space-y-4 pt-6">
                     <div>
@@ -140,12 +159,13 @@ const ParallaxPanel: React.FC<ParallaxPanelProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.5 }}
         transition={{ duration: 1 }}
+        {...({} as MotionDivProps)}
       />
     </motion.div>
   )
 }
 
-export function ParallaxScroll({ features }) {
+export function ParallaxScroll({ features }: { features: Feature[] }) {
   return (
     <div>
       {features.map((feature, index) => (

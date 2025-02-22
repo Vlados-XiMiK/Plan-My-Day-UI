@@ -10,30 +10,36 @@
     "learnMore": "Learn More"
   },
   "features": {
-    "title": "Key Features",
+    "title": "Discover Our Powerful Features",
     "smartCalendar": {
       "title": "Smart Calendar",
-      "description": "Seamlessly plan your day with our intelligent calendar integration."
+      "description": "Seamlessly plan your day with our intelligent calendar integration.",
+      "details": "Our Smart Calendar uses AI to learn your productivity patterns and schedule tasks at the times when you're most likely to complete them effectively."
     },
     "taskManagement": {
       "title": "Task Management",
-      "description": "Create, organize, and prioritize tasks with our intuitive interface."
+      "description": "Create, organize, and prioritize tasks with our intuitive interface.",
+      "details": "Our task management system allows you to break down complex projects into manageable subtasks, set recurring tasks, and use custom tags to categorize your work."
     },
     "aiAssistant": {
       "title": "AI Assistant",
-      "description": "Get smart suggestions and automate your task management."
+      "description": "Get smart suggestions and automate your task management.",
+      "details": "Our AI assistant analyzes your task patterns and performance data to provide insights into when you are most effective."
     },
     "teamCollaboration": {
       "title": "Team Collaboration",
-      "description": "Work together effectively with real-time task sharing."
+      "description": "Work together effectively with real-time task sharing.",
+      "details": "Our team collaboration features include shared project boards, real-time task status updates, and in-app messaging."
     },
     "quickActions": {
       "title": "Quick Actions",
-      "description": "Boost productivity with shortcuts and quick task creation."
+      "description": "Boost productivity with shortcuts and quick task creation.",
+      "details": "Quick actions allow you to add tasks from anywhere in the app using customizable keyboard shortcuts and voice commands."
     },
     "smartNotifications": {
       "title": "Smart Notifications",
-      "description": "Never miss important tasks with intelligent reminders."
+      "description": "Never miss important tasks with intelligent reminders.",
+      "details": "Our smart notification system uses machine learning to determine the best time to remind you about tasks, taking into account factors like your location and past behavior."
     }
   },
   "footer": {
@@ -87,26 +93,7 @@
     }
   },
   "featuresPage": {
-    "title": "Discover Our Powerful Features",
-    "subtitle": "Plan My Day offers a comprehensive set of tools to boost your productivity and streamline your workflow.",
-    "getStarted": "Get Started",
-    "analytics": {
-      "title": "Analytics Dashboard",
-      "description": "Gain insights into your productivity with detailed analytics."
-    },
-    "crossPlatform": {
-      "title": "Cross-platform Sync",
-      "description": "Access your tasks from anywhere, on any device."
-    },
-    "dataSecurity": {
-      "title": "Data Security",
-      "description": "Your data is encrypted and securely stored."
-    },
-    "mobileApp": {
-      "title": "Mobile App",
-      "description": "Stay organized on-the-go with our mobile application."
-    },
-    "startPlanning": "Start planning your day today!"
+    "subtitle": "Plan My Day offers a comprehensive set of tools to boost your productivity and streamline your workflow."
   },
   "legal": {
     "terms": {

@@ -21,3 +21,28 @@ interface Group {
   id: string;
   name: string;
 }
+
+// src/types.ts
+
+export interface Feature {
+  title: string;
+  subtitle?: string;
+  description: string;
+  details: string;
+  color?: string;
+}
+
+export interface Features {
+  title: string;
+  [key: string]: Feature | string;
+}
+
+export interface FeaturesPage {
+  subtitle: string;
+  [key: string]: Feature | string;
+}
+
+export interface Translation {
+  features: Features;
+  featuresPage: FeaturesPage;
+}
