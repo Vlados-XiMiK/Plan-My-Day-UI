@@ -162,5 +162,5 @@ We welcome contributions! Please follow these steps:
 
 ## License
 
-This project is proprietary and all rights are reserved. You may not use, modify, or distribute this code without explicit permission from the author, Vladyslav Tymoshchuk. Please contact me for any inquiries.
+This project is licensed under the MIT License. See the \`LICENSE\` file for details.
 `
