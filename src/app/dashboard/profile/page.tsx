@@ -35,7 +35,6 @@ export default function Profile({
     avatarUrl: '/profile-image.jpg?height=128&width=128'
   }, 
   stats = { completedTasks: 0, ongoingTasks: 0, totalTasks: 0 },
-  onBackToTasks
 }: ProfileProps) {
   const [isEditing, setIsEditing] = useState(false)
   const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0
