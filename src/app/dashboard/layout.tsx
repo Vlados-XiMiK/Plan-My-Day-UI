@@ -1,11 +1,13 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
 import Sidebar from '@/components/main/Sidebar'
 import Header from '@/components/main/Header'
+import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
+import { useTheme } from "next-themes"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme()
   const [isSidebarVisible, setIsSidebarVisible] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -25,27 +27,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const toggleSidebarCollapse = () => setIsSidebarCollapsed(!isSidebarCollapsed)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-b from-[#8f31f2] to-[#e0dee1]">
-      <Sidebar isVisible={isSidebarVisible} isCollapsed={isSidebarCollapsed} />
-      
-      <div className="flex flex-1 flex-col">
-        <Header 
-          toggleSidebar={toggleSidebar}
-          toggleCollapse={toggleSidebarCollapse}
-          isCollapsed={isSidebarCollapsed}
-        />
-        <main className="flex-1 overflow-hidden transition-all duration-300 ease-in-out p-6">
-          {children}
-        </main>
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-[#1a1a2e] relative">
+      <div className="absolute inset-0 z-0">
+        {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
       </div>
+      
+      <div className="relative z-10 flex h-full w-full">
+        <Sidebar isVisible={isSidebarVisible} isCollapsed={isSidebarCollapsed} />
+        
+        <div className="flex flex-1 flex-col">
+          <Header 
+            toggleSidebar={toggleSidebar}
+            toggleCollapse={toggleSidebarCollapse}
+            isCollapsed={isSidebarCollapsed}
+          />
+          <main className="flex-1 overflow-hidden transition-all duration-300 ease-in-out p-6">
+            {children}
+          </main>
+        </div>
 
-      {/* Mobile overlay */}
-      {isSidebarVisible && isMobile && (
-        <div 
-          className="fixed inset-0 md:hidden"
-          onClick={toggleSidebar}
-        />
-      )}
+        {/* Mobile overlay */}
+        {isSidebarVisible && isMobile && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-20"
+            onClick={toggleSidebar}
+          />
+        )}
+      </div>
     </div>
   )
 }

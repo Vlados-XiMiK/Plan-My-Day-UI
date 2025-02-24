@@ -1,18 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Search, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock, User as UserIcon, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup'
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup'
 import { useNotification } from '@/contexts/notification-context'
-import type { Task } from '@/types'
-import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
 import { useTheme } from "next-themes"
+import type { Task, User, Group } from '@/types'
 
 const currentDate = format(new Date(), 'EEE, MMM d, yyyy')
 
 export default function MainContent() {
+  const { theme } = useTheme()
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
@@ -61,7 +61,6 @@ export default function MainContent() {
   const [users, setUsers] = useState<User[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const { addNotification } = useNotification()
-  const { theme } = useTheme()
 
   const toggleTaskCompletion = (id: number) => {
     setTasks(tasks.map(task =>
@@ -70,9 +69,10 @@ export default function MainContent() {
     const task = tasks.find(task => task.id === id)
     if (task) {
       addNotification(
-        'info',
-        task.completed ? 'Task marked as incomplete.' : 'Task completed!'
-      )
+        'info', 
+        task.completed ? 'Task Reopened' : 'Task Completed', 
+        task.completed ? 'The task has been reopened and is now active again.' : 'You have successfully marked the task as completed.'
+      );
     }
   }
 
@@ -83,9 +83,10 @@ export default function MainContent() {
     const task = tasks.find(task => task.id === id)
     if (task) {
       addNotification(
-        'success',
-        task.starred ? 'Task removed from favorites.' : 'Task added to favorites!'
-      )
+        'success', 
+        task.starred ? 'Removed from Favorites' : 'Added to Favorites', 
+        task.starred ? 'The task has been removed from your favorites list.' : 'The task has been added to your favorites list.'
+      );
     }
   }
 
@@ -116,7 +117,11 @@ export default function MainContent() {
         completed: false,
         starred: false,
       }),
-    }).catch(error => addNotification('error', 'Failed to create task'));
+    }).catch(error => addNotification(
+      'error', 
+      'Task Creation Failed', 
+      'An error occurred while creating the task. Please try again.'
+    ));
   }
 
   const handleEditTask = (updatedTask: Task) => {
@@ -124,12 +129,12 @@ export default function MainContent() {
       prev.map(task => (task.id === updatedTask.id ? updatedTask : task))
     )
     setEditPopupOpen(false)
-    addNotification('info', 'Task updated successfully!')
+    addNotification('success', 'Task Updated', 'The task has been successfully updated.')
     fetch(`/api/tasks/${updatedTask.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedTask),
-    }).catch(error => addNotification('error', 'Failed to update task'));
+    }).catch(error => addNotification('error', 'Update Failed', 'An error occurred while updating the task. Please try again.'));
   }
 
   const openEditPopup = (task: Task) => {
@@ -139,10 +144,10 @@ export default function MainContent() {
 
   const handleDeleteTask = (id: number) => {
     setTasks(tasks.filter(task => task.id !== id))
-    addNotification('success', 'Task deleted successfully!')
+    addNotification('success', 'Task Deleted', 'The task has been successfully removed.')
     fetch(`/api/tasks/${id}`, {
       method: 'DELETE',
-    }).catch(error => addNotification('error', 'Failed to delete task'));
+    }).catch(error => addNotification('error', 'Deletion Failed', 'An error occurred while deleting the task. Please try again.'));
   }
 
   const getPriorityColor = (priority: string) => {
@@ -171,178 +176,173 @@ export default function MainContent() {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden animate-fadeIn min-h-screen bg-white dark:bg-[#1a1a2e] relative">
-      <div className="absolute inset-0 z-0">
-        {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
-      </div>
-      <div className="relative z-20 flex flex-col h-full">
-        <TaskCreationPopup
-          isOpen={isCreationPopupOpen}
-          onClose={() => setCreationPopupOpen(false)}
-          onSave={handleCreateTask}
+    <div className="flex flex-col h-full overflow-hidden animate-fadeIn">
+      <TaskCreationPopup
+        isOpen={isCreationPopupOpen}
+        onClose={() => setCreationPopupOpen(false)}
+        onSave={handleCreateTask}
+        categories={['Work', 'Shopping', 'Personal']}
+        users={users}
+        groups={groups}
+      />
+      {taskToEdit && (
+        <TaskEditPopup
+          isOpen={isEditPopupOpen}
+          onClose={() => setEditPopupOpen(false)}
+          onSave={handleEditTask}
+          task={taskToEdit}
           categories={['Work', 'Shopping', 'Personal']}
           users={users}
           groups={groups}
         />
-        {taskToEdit && (
-          <TaskEditPopup
-            isOpen={isEditPopupOpen}
-            onClose={() => setEditPopupOpen(false)}
-            onSave={handleEditTask}
-            task={taskToEdit}
-            categories={['Work', 'Shopping', 'Personal']}
-            users={users}
-            groups={groups}
-          />
-        )}
+      )}
 
-        <div className="mb-6">
-          <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-4 py-2 shadow-md">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-              My Day · {currentDate}
-            </h2>
+      <div className="mb-6 px-6 pt-6">
+        <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-4 py-2 shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            My Day · {currentDate}
+          </h2>
+        </div>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+        <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg">
+          <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">Filters and Search</h3>
+          <div className="mb-4 flex flex-wrap gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <input 
+                  type="text" 
+                  className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100" 
+                  placeholder="Search tasks..." 
+                />
+                <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
+              </div>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <select className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100">
+                  <option>All Status</option>
+                  <option>Completed</option>
+                  <option>Incomplete</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
+              </div>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <select className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100">
+                  <option>All Priority</option>
+                  <option>High</option>
+                  <option>Medium</option>
+                  <option>Low</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
+              </div>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <select className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100">
+                  <option>Sort by Due Date</option>
+                  <option>Sort by Priority</option>
+                  <option>Sort Alphabetically</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
+              </div>
+            </div>
           </div>
+          <button className="rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200">
+            Clear Filters
+          </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto space-y-6">
-          <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg">
-            <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200">Filters and Search</h3>
-            <div className="mb-4 flex flex-wrap gap-4">
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    className="w-full rounded-md border border-gray-300 dark:border-[#3a3a5e] bg-white dark:bg-[#2a2a3e] py-2 pl-10 pr-3 text-gray-800 dark:text-gray-200 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200" 
-                    placeholder="Search tasks..." 
-                  />
-                  <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
+        <div className="mb-6">
+          <button
+            onClick={() => setCreationPopupOpen(true)}
+            className="flex items-center rounded-md bg-purple-600 px-4 py-2 text-white shadow-md transition-colors hover:bg-purple-700 duration-200"
+          >
+            <Plus className="mr-2" size={20} />
+            Create Task
+          </button>
+        </div>
+        
+        <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg">
+          <ul className="space-y-4">
+            {tasks.map(task => (
+              <li key={task.id} className="overflow-hidden rounded-lg bg-white dark:bg-[#2a2a3e] shadow-md transition-all duration-200 hover:shadow-lg">
+                <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => toggleTaskCompletion(task.id)}
+                      className="mr-4 h-5 w-5 rounded text-purple-600 focus:ring-purple-500 transition-all duration-200"
+                    />
+                    <h4 className={`text-lg font-semibold ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'} transition-all duration-200`}>{task.title}</h4>
+                  </div>
+                  <div className="task-actions flex space-x-2">
+                    <button 
+                      onClick={() => openEditPopup(task)} 
+                      className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                      title="Edit task"
+                    >
+                      <Edit size={24} />
+                    </button>
+                    <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
+                    <button 
+                      onClick={() => toggleTaskStarred(task.id)} 
+                      className={`task-action-btn ${task.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'} hover:text-yellow-500 transition-colors duration-200`}
+                      title={task.starred ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Star size={24} fill={task.starred ? 'currentColor' : 'none'} />
+                    </button>
+                    <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
+                    <button 
+                      onClick={() => handleDeleteTask(task.id)} 
+                      className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
+                      title="Delete task"
+                    >
+                      <Trash size={24} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <select className="w-full appearance-none rounded-md border border-gray-300 dark:border-[#3a3a5e] bg-white dark:bg-[#2a2a3e] py-2 pl-3 pr-10 text-gray-800 dark:text-gray-200 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200">
-                    <option>All Status</option>
-                    <option>Completed</option>
-                    <option>Incomplete</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
-                </div>
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <select className="w-full appearance-none rounded-md border border-gray-300 dark:border-[#3a3a5e] bg-white dark:bg-[#2a2a3e] py-2 pl-3 pr-10 text-gray-800 dark:text-gray-200 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200">
-                    <option>All Priority</option>
-                    <option>High</option>
-                    <option>Medium</option>
-                    <option>Low</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
-                </div>
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <select className="w-full appearance-none rounded-md border border-gray-300 dark:border-[#3a3a5e] bg-white dark:bg-[#2a2a3e] py-2 pl-3 pr-10 text-gray-800 dark:text-gray-200 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200">
-                    <option>Sort by Due Date</option>
-                    <option>Sort by Priority</option>
-                    <option>Sort Alphabetically</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
-                </div>
-              </div>
-            </div>
-            <button className="rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200">
-              Clear Filters
-            </button>
-          </div>
-          
-          <div className="mb-6">
-            <button
-              onClick={() => setCreationPopupOpen(true)}
-              className="flex items-center rounded-md bg-purple-600 px-4 py-2 text-white shadow-md transition-colors hover:bg-purple-700 duration-200"
-            >
-              <Plus className="mr-2" size={20} />
-              Create Task
-            </button>
-          </div>
-          
-          <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg">
-            <ul className="space-y-4">
-              {tasks.map(task => (
-                <li key={task.id} className="overflow-hidden rounded-lg bg-white dark:bg-[#3a3a5e] shadow-md transition-all duration-200 hover:shadow-lg">
-                  <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#4a4a7e] p-4">
+                <div className="p-4">
+                  <p className="mb-4 text-gray-600 dark:text-gray-400">{task.description}</p>
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={() => toggleTaskCompletion(task.id)}
-                        className="mr-4 h-5 w-5 rounded text-purple-600 focus:ring-purple-500 transition-all duration-200"
-                      />
-                      <h4 className={`text-lg font-semibold ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'} transition-all duration-200`}>{task.title}</h4>
+                      <Calendar size={16} className="mr-1" />
+                      <span>Created: {formatDate(task.createdAt)}</span>
                     </div>
-                    <div className="task-actions flex space-x-2">
-                      <button 
-                        onClick={() => openEditPopup(task)} 
-                        className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-                        title="Edit task"
-                      >
-                        <Edit size={24} />
-                      </button>
-                      <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
-                      <button 
-                        onClick={() => toggleTaskStarred(task.id)} 
-                        className={`task-action-btn ${task.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'} hover:text-yellow-500 transition-colors duration-200`}
-                        title={task.starred ? 'Remove from favorites' : 'Add to favorites'}
-                      >
-                        <Star size={24} fill={task.starred ? 'currentColor' : 'none'} />
-                      </button>
-                      <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
-                      <button 
-                        onClick={() => handleDeleteTask(task.id)} 
-                        className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
-                        title="Delete task"
-                      >
-                        <Trash size={24} />
-                      </button>
+                    <div className="flex items-center">
+                      <Clock size={16} className="mr-1" />
+                      <span>Due: {formatDate(task.dueDate)}</span>
                     </div>
+                    <div className="flex items-center">
+                      <div className="mr-1 h-3 w-3 rounded-full bg-[#9d75b5]" />
+                      <span>{task.category}</span>
+                    </div>
+                    <div className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(task.priority)} transition-all duration-200`}>
+                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                    </div>
+                    {task.assignedTo || task.groupId ? (
+                      <div className="flex items-center">
+                        {task.assignedTo ? (
+                          <UserIcon size={16} className="mr-1 text-blue-500" />
+                        ) : (
+                          <Users size={16} className="mr-1 text-green-500" />
+                        )}
+                        <span>{getAssignedDisplay(task)}</span>
+                      </div>
+                    ) : null}
                   </div>
-                  <div className="p-4">
-                    <p className="mb-4 text-gray-600 dark:text-gray-400">{task.description}</p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center">
-                        <Calendar size={16} className="mr-1 text-purple-500 dark:text-purple-400" />
-                        <span>Created: {formatDate(task.createdAt)}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Clock size={16} className="mr-1 text-purple-500 dark:text-purple-400" />
-                        <span>Due: {formatDate(task.dueDate)}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="mr-1 h-3 w-3 rounded-full bg-[#9d75b5]" />
-                        <span>{task.category}</span>
-                      </div>
-                      <div className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(task.priority)} transition-all duration-200`}>
-                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-                      </div>
-                      {task.assignedTo || task.groupId ? (
-                        <div className="flex items-center">
-                          {task.assignedTo ? (
-                            <UserIcon size={16} className="mr-1 text-blue-500 dark:text-blue-400" />
-                          ) : (
-                            <Users size={16} className="mr-1 text-green-500 dark:text-green-400" />
-                          )}
-                          <span>{getAssignedDisplay(task)}</span>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 flex justify-center">
-              <button className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2">
-                Load More
-              </button>
-            </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 flex justify-center">
+            <button className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2">
+              Load More
+            </button>
           </div>
         </div>
       </div>

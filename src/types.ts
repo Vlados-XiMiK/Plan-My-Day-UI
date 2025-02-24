@@ -12,12 +12,12 @@ export interface Task {
   groupId: string | null;    // Group ID
 }
 
-interface User {
+export interface User {
   id: string;
   name: string;
 }
 
-interface Group {
+export interface Group {
   id: string;
   name: string;
 }

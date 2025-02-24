@@ -5,8 +5,6 @@ import { useState } from 'react'
 import { User2, Mail, Phone, Building2, Clock, Edit2, Settings, LogOut, ArrowLeft } from 'lucide-react'
 import { PieChart } from '@/components/ui/pie-chart'
 import EditProfilePopup from '@/components/main/pop-up/EditProfilePopup'
-import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
-import { useTheme } from "next-themes"
 
 interface ProfileStats {
   completedTasks: number;
@@ -41,13 +39,9 @@ export default function Profile({
   const [isEditing, setIsEditing] = useState(false)
   const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0
   const router = useRouter()
-  const { theme } = useTheme()
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn relative min-h-screen bg-white dark:bg-[#1a1a2e]">
-      <div className="absolute inset-0 z-0">
-        {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
-      </div>
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn relative min-h-screen">
       <div className="relative z-20">
         <div className="bg-white dark:bg-[#2a2a3e] rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl animate-scaleIn">
           {/* Profile Header */}

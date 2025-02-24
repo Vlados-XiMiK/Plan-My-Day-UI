@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
-import { useTheme } from "next-themes"
 
 export interface Task {
   id: number;
@@ -20,7 +18,6 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
   const [filter, setFilter] = useState<'all' | 'events' | 'deadlines'>('all');
-  const { theme } = useTheme()
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -114,9 +111,6 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
 
   return (
     <div className="p-4 rounded-lg shadow-md min-h-screen bg-white dark:bg-[#1a1a2e] relative">
-      <div className="absolute inset-0 z-0">
-        {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
-      </div>
       <div className="relative z-20">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">

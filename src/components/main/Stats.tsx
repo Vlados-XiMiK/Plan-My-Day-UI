@@ -1,17 +1,12 @@
 "use client"
 
 import { BarChart2, PieChart, TrendingUp } from 'lucide-react'
-import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
-import { useTheme } from "next-themes"
+
 
 export default function StatsView() {
-  const { theme } = useTheme()
 
   return (
-    <div className="flex flex-col h-full overflow-hidden animate-fadeIn min-h-screen bg-white dark:bg-[#1a1a2e] relative">
-      <div className="absolute inset-0 z-0">
-        {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
-      </div>
+    <div className="flex flex-col h-full overflow-hidden animate-fadeIn min-h-screen relative">
       <div className="relative z-20 flex flex-col h-full">
         <div className="mb-6 bg-white dark:bg-[#2a2a3e] p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Statistics</h2>
