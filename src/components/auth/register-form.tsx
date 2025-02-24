@@ -73,7 +73,7 @@ export default function RegisterForm() {
   const t = language === "uk" ? uk : en
 
   const socialLogins = [
-    { name: "Telegram", icon: FaTelegram, color: "bg-purple-600 hover:bg-purple-700" },
+    { name: "Telegram", icon: FaTelegram, color: "bg-[#0088cc] hover:bg-[#0077b5]" },
     { name: "Gmail", icon: FaGoogle, color: "bg-red-600 hover:bg-red-700" },
     { name: "Discord", icon: FaDiscord, color: "bg-indigo-600 hover:bg-indigo-700" },
     { name: "GitHub", icon: FaGithub, color: "bg-gray-800 hover:bg-gray-900" },
