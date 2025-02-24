@@ -16,6 +16,8 @@ import uk from "@/translations/uk.json"
 import type React from "react"
 import { HTMLAttributes } from "react"
 
+import { useNotification } from "@/contexts/notification-context"
+
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -56,6 +58,7 @@ const steps = [
 ]
 
 export default function RegisterForm() {
+  const { addNotification } = useNotification();
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(0)
@@ -92,6 +95,8 @@ export default function RegisterForm() {
             newErrors.email = t.auth.register.invalidEmail
           } else if (formData.email.length > 255) {
             newErrors.email = t.auth.register.emailTooLong
+          } else if (!/^[a-zA-Z0-9@._-]+$/.test(formData.email)) {
+            newErrors.email = t.auth.register.invalidEmail
           }
           break
         case "name":
@@ -173,6 +178,7 @@ export default function RegisterForm() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000))
+      addNotification("success", "Welcome!", "You have successfully registered.", 3000);
       router.push("/dashboard")
     } catch (error) {
       console.error("Registration failed:", error)
@@ -211,7 +217,7 @@ export default function RegisterForm() {
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{t.auth.register.title}</h1>
         <p className="text-xs text-gray-600 dark:text-gray-400">{t.auth.register.subtitle}</p>
       </div>
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <motion.div
           key={step}
           variants={slideVariants}

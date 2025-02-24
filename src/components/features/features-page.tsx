@@ -12,7 +12,7 @@ import { useTheme } from "next-themes"
 import { HTMLAttributes, ButtonHTMLAttributes } from "react"
 import en from "@/translations/en.json"
 import uk from "@/translations/uk.json"
-import type { Feature, Features, Translation } from "@/types"
+import type { Feature, Translation } from "@/types"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>

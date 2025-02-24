@@ -16,6 +16,8 @@ import uk from "@/translations/uk.json"
 import type React from "react"
 import { HTMLAttributes } from "react"
 
+import { useNotification } from "@/contexts/notification-context"
+
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -28,6 +30,7 @@ interface FormErrors {
 }
 
 export default function LoginForm() {
+  const { addNotification } = useNotification();
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -51,10 +54,12 @@ export default function LoginForm() {
 
     if (!formData.email) {
       newErrors.email = `${t.auth.login.email} ${t.auth.register.required}`
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      newErrors.email = t.auth.register.invalidEmail
+    } else if (!/^[a-zA-Z0-9@._-]+$/.test(formData.email)) {
       newErrors.email = t.auth.register.invalidEmail
     }
-
+  
     if (!formData.password) {
       newErrors.password = `${t.auth.login.password} ${t.auth.register.required}`
     }
@@ -76,24 +81,25 @@ export default function LoginForm() {
   }
 
   const onSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (!validateForm()) return
-
-    setIsLoading(true)
-
-    const sanitizedEmail = sanitizeInput(formData.email)
-    const sanitizedPassword = sanitizeInput(formData.password)
-
+    event.preventDefault();
+    if (!validateForm()) return;
+  
+    setIsLoading(true);
+  
+    const sanitizedEmail = sanitizeInput(formData.email);
+    const sanitizedPassword = sanitizeInput(formData.password);
+  
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      router.push("/dashboard")
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      addNotification("success", "Welcome!", "You have successfully logged in.", 3000);
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Login failed:", error)
-      setErrors({ password: t.auth.login.invalidCredentials })
+      console.error("Login failed:", error);
+      setErrors({ password: t.auth.login.invalidCredentials });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <motion.div
@@ -107,7 +113,7 @@ export default function LoginForm() {
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{t.auth.login.title}</h1>
         <p className="text-sm text-gray-600 dark:text-gray-400">{t.auth.login.subtitle}</p>
       </div>
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <div className="space-y-2">
           <Label htmlFor="email" className="text-sm text-gray-700 dark:text-gray-200">
             {t.auth.login.email}
