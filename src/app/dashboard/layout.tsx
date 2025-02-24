@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Mobile overlay */}
       {isSidebarVisible && isMobile && (
         <div 
-          className="fixed inset-0 bg-black/50 md:hidden"
+          className="fixed inset-0 md:hidden"
           onClick={toggleSidebar}
         />
       )}
