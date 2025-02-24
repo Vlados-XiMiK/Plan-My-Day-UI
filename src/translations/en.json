@@ -1,7 +1,12 @@
 {
   "header": {
     "signIn": "Sign In",
-    "getStarted": "Get Started"
+    "getStarted": "Get Started",
+    "signOut": "Sign out",
+    "profile": "Profile",
+    "signed": "Signed in as",
+    "lightTheme": "Light Theme",
+    "darkTheme": "Dark Theme"
   },
   "hero": {
     "title": "Organize Your Day Effectively",
@@ -134,6 +139,9 @@
         "content": "Plan My Day takes reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration, and destruction. However, no internet or email transmission is ever fully secure or error-free."
       }
     }
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme"
   }
 }
-
