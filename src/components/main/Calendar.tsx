@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
+import { useTheme } from "next-themes"
 
-export interface Task {  // add export
+export interface Task {
   id: number;
   title: string;
   dueDate: string;
@@ -18,6 +20,7 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
   const [filter, setFilter] = useState<'all' | 'events' | 'deadlines'>('all');
+  const { theme } = useTheme()
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -41,13 +44,13 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
   };
 
   const getTaskColor = (type: 'event' | 'deadline') => {
-    return type === 'event' ? 'bg-blue-500' : 'bg-red-500';
+    return type === 'event' ? 'bg-blue-500 dark:bg-blue-400' : 'bg-red-500 dark:bg-red-400';
   };
 
   const renderMonthView = () => (
     <div className="grid grid-cols-7 gap-2">
       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-        <div key={day} className="text-center font-bold">{day}</div>
+        <div key={day} className="text-center font-bold text-gray-800 dark:text-gray-200">{day}</div>
       ))}
       {Array.from({ length: firstDayOfMonth }).map((_, index) => (
         <div key={`empty-${index}`} />
@@ -58,9 +61,9 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
         return (
           <div
             key={day}
-            className="border p-2 h-24 overflow-y-auto hover:bg-gray-100 transition-colors duration-200 calendar-day-hover"
+            className="border border-gray-200 dark:border-[#3a3a5e] p-2 h-24 overflow-y-auto hover:bg-gray-100 dark:hover:bg-[#3a3a5e] transition-colors duration-200 calendar-day-hover bg-white dark:bg-[#2a2a3e]"
           >
-            <div className="font-semibold">{day}</div>
+            <div className="font-semibold text-gray-800 dark:text-gray-200">{day}</div>
             {dayTasks.map(task => (
               <div
                 key={task.id}
@@ -88,8 +91,11 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
           const dayTasks = getDayTasks(day.getDate());
           
           return (
-            <div key={index} className="border p-2 min-h-[200px] overflow-y-auto hover:bg-gray-100 transition-colors duration-200 calendar-day-hover">
-              <div className="font-semibold">{day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</div>
+            <div
+              key={index}
+              className="border border-gray-200 dark:border-[#3a3a5e] p-2 min-h-[200px] overflow-y-auto hover:bg-gray-100 dark:hover:bg-[#3a3a5e] transition-colors duration-200 calendar-day-hover bg-white dark:bg-[#2a2a3e]"
+            >
+              <div className="font-semibold text-gray-800 dark:text-gray-200">{day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}</div>
               {dayTasks.map(task => (
                 <div
                   key={task.id}
@@ -107,38 +113,49 @@ const Calendar: React.FC<CalendarProps> = ({ tasks }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">
-          {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-        </h2>
-        <div className="flex items-center space-x-4">
-          <select
-            value={view}
-            onChange={(e) => setView(e.target.value as 'month' | 'week')}
-            className="border rounded p-1"
-          >
-            <option value="month">Month</option>
-            <option value="week">Week</option>
-          </select>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as 'all' | 'events' | 'deadlines')}
-            className="border rounded p-1"
-          >
-            <option value="all">All Tasks</option>
-            <option value="events">Events Only</option>
-            <option value="deadlines">Deadlines Only</option>
-          </select>
-          <button onClick={prevMonth} className="p-1 rounded hover:bg-gray-200">
-            <ChevronLeft size={20} />
-          </button>
-          <button onClick={nextMonth} className="p-1 rounded hover:bg-gray-200">
-            <ChevronRight size={20} />
-          </button>
-        </div>
+    <div className="p-4 rounded-lg shadow-md min-h-screen bg-white dark:bg-[#1a1a2e] relative">
+      <div className="absolute inset-0 z-0">
+        {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
       </div>
-      {view === 'month' ? renderMonthView() : renderWeekView()}
+      <div className="relative z-20">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+            {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </h2>
+          <div className="flex items-center space-x-4">
+            <select
+              value={view}
+              onChange={(e) => setView(e.target.value as 'month' | 'week')}
+              className="border border-gray-300 dark:border-[#3a3a5e] bg-white dark:bg-[#2a2a3e] rounded p-1 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="month">Month</option>
+              <option value="week">Week</option>
+            </select>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as 'all' | 'events' | 'deadlines')}
+              className="border border-gray-300 dark:border-[#3a3a5e] bg-white dark:bg-[#2a2a3e] rounded p-1 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="all">All Tasks</option>
+              <option value="events">Events Only</option>
+              <option value="deadlines">Deadlines Only</option>
+            </select>
+            <button
+              onClick={prevMonth}
+              className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#3a3a5e] transition-colors duration-200"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={nextMonth}
+              className="p-1 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#3a3a5e] transition-colors duration-200"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+        {view === 'month' ? renderMonthView() : renderWeekView()}
+      </div>
     </div>
   );
 };
