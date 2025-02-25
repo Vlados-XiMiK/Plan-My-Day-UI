@@ -1,179 +1,81 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, ChevronDown, Edit, Star, Trash, Plus, Calendar, Clock, User as UserIcon, Users } from 'lucide-react'
-import { format } from 'date-fns'
+import { Search, ChevronDown, ChevronUp, Edit, Star, Trash, Plus, Calendar, Clock, User as UserIcon, Users, AlertTriangle } from 'lucide-react'
 import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup'
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup'
-import { useNotification } from '@/contexts/notification-context'
-import { useTheme } from "next-themes"
+import { useTheme } from 'next-themes'
+import { useTaskLogic } from '@/lib/useTaskLogic'
 import type { Task, User, Group } from '@/types'
 
-const currentDate = format(new Date(), 'EEE, MMM d, yyyy')
+const initialTasks: Task[] = [
+  {
+    id: 1,
+    title: 'Complete project proposal',
+    description: 'Finish the draft and send it for review',
+    createdAt: '2024-06-08T10:00:00',
+    dueDate: '2025-02-25T23:00:00',
+    category: 'Work',
+    priority: 'high',
+    completed: false,
+    starred: false,
+    assignedTo: 'user123',
+    groupId: null,
+  },
+  {
+    id: 2,
+    title: 'Buy groceries',
+    description: 'Get items for the week',
+    createdAt: '2024-06-09T14:30:00',
+    dueDate: '2026-06-10T18:00:00',
+    category: 'Shopping',
+    priority: 'medium',
+    completed: true,
+    starred: true,
+    assignedTo: null,
+    groupId: 'group456',
+  },
+  {
+    id: 3,
+    title: 'Schedule dentist appointment',
+    description: 'Call the clinic for a check-up',
+    createdAt: '2024-06-10T09:15:00',
+    dueDate: '2025-02-25T15:00:00',
+    category: 'Personal',
+    priority: 'low',
+    completed: false,
+    starred: false,
+    assignedTo: null,
+    groupId: null,
+  },
+]
 
 export default function MainContent() {
   const { theme } = useTheme()
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 1,
-      title: 'Complete project proposal',
-      description: 'Finish the draft and send it for review',
-      createdAt: '2024-06-08T10:00:00',
-      dueDate: '2026-06-15T17:00:00',
-      category: 'Work',
-      priority: 'high',
-      completed: false,
-      starred: false,
-      assignedTo: 'user123',
-      groupId: null,
-    },
-    {
-      id: 2,
-      title: 'Buy groceries',
-      description: 'Get items for the week',
-      createdAt: '2024-06-09T14:30:00',
-      dueDate: '2026-06-10T18:00:00',
-      category: 'Shopping',
-      priority: 'medium',
-      completed: true,
-      starred: true,
-      assignedTo: null,
-      groupId: 'group456',
-    },
-    {
-      id: 3,
-      title: 'Schedule dentist appointment',
-      description: 'Call the clinic for a check-up',
-      createdAt: '2024-06-10T09:15:00',
-      dueDate: '2026-06-20T11:00:00',
-      category: 'Personal',
-      priority: 'low',
-      completed: false,
-      starred: false,
-      assignedTo: null,
-      groupId: null,
-    },
-  ])
-  
-  const [isCreationPopupOpen, setCreationPopupOpen] = useState(false)
-  const [isEditPopupOpen, setEditPopupOpen] = useState(false)
-  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
-  const [users, setUsers] = useState<User[]>([])
-  const [groups, setGroups] = useState<Group[]>([])
-  const { addNotification } = useNotification()
-
-  const toggleTaskCompletion = (id: number) => {
-    setTasks(tasks.map(task =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ))
-    const task = tasks.find(task => task.id === id)
-    if (task) {
-      addNotification(
-        'info', 
-        task.completed ? 'Task Reopened' : 'Task Completed', 
-        task.completed ? 'The task has been reopened and is now active again.' : 'You have successfully marked the task as completed.'
-      );
-    }
-  }
-
-  const toggleTaskStarred = (id: number) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, starred: !task.starred } : task
-    ))
-    const task = tasks.find(task => task.id === id)
-    if (task) {
-      addNotification(
-        'success', 
-        task.starred ? 'Removed from Favorites' : 'Added to Favorites', 
-        task.starred ? 'The task has been removed from your favorites list.' : 'The task has been added to your favorites list.'
-      );
-    }
-  }
-
-  const handleCreateTask = (task: Partial<Task>) => {
-    const now = new Date().toISOString()
-    setTasks(prev => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        title: task.title || 'New Task',
-        description: task.description || '',
-        createdAt: now,
-        dueDate: task.dueDate || now,
-        category: task.category || 'Uncategorized',
-        priority: task.priority || 'low',
-        completed: false,
-        starred: false,
-        assignedTo: task.assignedTo || null,
-        groupId: task.groupId || null,
-      },
-    ])
-    fetch('/api/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...task,
-        createdAt: now,
-        completed: false,
-        starred: false,
-      }),
-    }).catch(error => addNotification(
-      'error', 
-      'Task Creation Failed', 
-      'An error occurred while creating the task. Please try again.'
-    ));
-  }
-
-  const handleEditTask = (updatedTask: Task) => {
-    setTasks(prev =>
-      prev.map(task => (task.id === updatedTask.id ? updatedTask : task))
-    )
-    setEditPopupOpen(false)
-    addNotification('success', 'Task Updated', 'The task has been successfully updated.')
-    fetch(`/api/tasks/${updatedTask.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedTask),
-    }).catch(error => addNotification('error', 'Update Failed', 'An error occurred while updating the task. Please try again.'));
-  }
-
-  const openEditPopup = (task: Task) => {
-    setTaskToEdit(task)
-    setEditPopupOpen(true)
-  }
-
-  const handleDeleteTask = (id: number) => {
-    setTasks(tasks.filter(task => task.id !== id))
-    addNotification('success', 'Task Deleted', 'The task has been successfully removed.')
-    fetch(`/api/tasks/${id}`, {
-      method: 'DELETE',
-    }).catch(error => addNotification('error', 'Deletion Failed', 'An error occurred while deleting the task. Please try again.'));
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-500'
-      case 'medium': return 'bg-orange-500'
-      case 'low': return 'bg-green-500'
-      default: return 'bg-gray-500'
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return `${format(date, 'MMM d, yyyy')} at ${format(date, 'hh:mm a')}`
-  }
-
-  const getAssignedDisplay = (task: Task) => {
-    if (task.assignedTo) {
-      const user = users.find(u => u.id === task.assignedTo);
-      return user ? `Assigned to: ${user.name} ` : 'Assigned to: Unknown User ';
-    } else if (task.groupId) {
-      const group = groups.find(g => g.id === task.groupId);
-      return group ? `Assigned to group: ${group.name} ` : 'Assigned to: Unknown Group ';
-    }
-    return 'Not assigned';
-  };
+  const users: User[] = []
+  const groups: Group[] = []
+  const {
+    tasks,
+    isCreationPopupOpen,
+    setCreationPopupOpen,
+    isEditPopupOpen,
+    setEditPopupOpen,
+    taskToEdit,
+    searchQuery,
+    setSearchQuery,
+    toggleTaskCompletion,
+    toggleTaskStarred,
+    handleCreateTask,
+    handleEditTask,
+    openEditPopup,
+    handleDeleteTask,
+    getPriorityColor,
+    formatDate,
+    getTimeRemaining,
+    getAssignedDisplay,
+    filterTasks,
+  } = useTaskLogic(initialTasks, users, groups)
+  const [isFiltersCollapsed, setFiltersCollapsed] = useState(false)
 
   return (
     <div className="flex flex-col h-full overflow-hidden animate-fadeIn">
@@ -197,24 +99,28 @@ export default function MainContent() {
         />
       )}
 
-      <div className="mb-6 px-6 pt-6">
-        <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-4 py-2 shadow-md">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            My Day · {currentDate}
-          </h2>
-        </div>
-      </div>
       
+
       <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
-        <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg">
-          <h3 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">Filters and Search</h3>
-          <div className="mb-4 flex flex-wrap gap-4">
+      <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg transition-all duration-300">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Filters and Search</h3>
+            <button
+              onClick={() => setFiltersCollapsed(!isFiltersCollapsed)}
+              className="text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+            >
+              {isFiltersCollapsed ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
+            </button>
+          </div>
+          <div className={`flex flex-wrap gap-4 ${isFiltersCollapsed ? 'hidden' : 'block'}`}>
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <input 
-                  type="text" 
-                  className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100" 
-                  placeholder="Search tasks..." 
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
+                  placeholder="Search (e.g., 'high priority work this week')"
                 />
                 <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
               </div>
@@ -243,19 +149,23 @@ export default function MainContent() {
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
                 <select className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100">
-                  <option>Sort by Due Date</option>
-                  <option>Sort by Priority</option>
-                  <option>Sort Alphabetically</option>
+                  <option>Created Date</option>
+                  <option>Last Modified</option>
+                  <option>Due Date</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
               </div>
             </div>
           </div>
-          <button className="rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 duration-200">
-            Clear Filters
-          </button>
+          {!isFiltersCollapsed && (
+            <button
+              className="mt-4 rounded-md bg-transparent border border-purple-600 text-purple-600 dark:text-purple-400 px-4 py-2 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-700 transition-all duration-200"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
-        
+
         <div className="mb-6">
           <button
             onClick={() => setCreationPopupOpen(true)}
@@ -265,79 +175,100 @@ export default function MainContent() {
             Create Task
           </button>
         </div>
-        
+
         <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-6 shadow-lg">
           <ul className="space-y-4">
-            {tasks.map(task => (
-              <li key={task.id} className="overflow-hidden rounded-lg bg-white dark:bg-[#2a2a3e] shadow-md transition-all duration-200 hover:shadow-lg">
-                <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
-                      onChange={() => toggleTaskCompletion(task.id)}
-                      className="mr-4 h-5 w-5 rounded text-purple-600 focus:ring-purple-500 transition-all duration-200"
-                    />
-                    <h4 className={`text-lg font-semibold ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'} transition-all duration-200`}>{task.title}</h4>
+            {filterTasks().map(task => {
+              const { text: timeRemaining, isOverdue, isApproaching } = getTimeRemaining(task.dueDate)
+              return (
+                <li
+                  key={task.id}
+                  className={`overflow-hidden rounded-lg bg-white dark:bg-[#2a2a3e] shadow-md transition-all duration-200 hover:shadow-lg ${
+                    isOverdue && !task.completed ? 'border-2 border-red-500' :
+                    isApproaching && !task.completed ? 'border-2 border-yellow-500' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => toggleTaskCompletion(task.id)}
+                        className="mr-4 h-5 w-5 rounded text-purple-600 focus:ring-purple-500 transition-all duration-200"
+                      />
+                      <h4 className={`text-lg font-semibold ${task.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'} transition-all duration-200`}>{task.title}</h4>
+                    </div>
+                    <div className="task-actions flex space-x-2">
+                      <button
+                        onClick={() => openEditPopup(task)}
+                        className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+                        title="Edit task"
+                      >
+                        <Edit size={24} />
+                      </button>
+                      <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
+                      <button
+                        onClick={() => toggleTaskStarred(task.id)}
+                        className={`task-action-btn ${task.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'} hover:text-yellow-500 transition-colors duration-200`}
+                        title={task.starred ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        <Star size={24} fill={task.starred ? 'currentColor' : 'none'} />
+                      </button>
+                      <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
+                      <button
+                        onClick={() => handleDeleteTask(task.id)}
+                        className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
+                        title="Delete task"
+                      >
+                        <Trash size={24} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="task-actions flex space-x-2">
-                    <button 
-                      onClick={() => openEditPopup(task)} 
-                      className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
-                      title="Edit task"
-                    >
-                      <Edit size={24} />
-                    </button>
-                    <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
-                    <button 
-                      onClick={() => toggleTaskStarred(task.id)} 
-                      className={`task-action-btn ${task.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'} hover:text-yellow-500 transition-colors duration-200`}
-                      title={task.starred ? 'Remove from favorites' : 'Add to favorites'}
-                    >
-                      <Star size={24} fill={task.starred ? 'currentColor' : 'none'} />
-                    </button>
-                    <span className="action-separator text-gray-300 dark:text-gray-600">|</span>
-                    <button 
-                      onClick={() => handleDeleteTask(task.id)} 
-                      className="task-action-btn text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
-                      title="Delete task"
-                    >
-                      <Trash size={24} />
-                    </button>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <p className="mb-4 text-gray-600 dark:text-gray-400">{task.description}</p>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center">
-                      <Calendar size={16} className="mr-1" />
-                      <span>Created: {formatDate(task.createdAt)}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock size={16} className="mr-1" />
-                      <span>Due: {formatDate(task.dueDate)}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="mr-1 h-3 w-3 rounded-full bg-[#9d75b5]" />
-                      <span>{task.category}</span>
-                    </div>
-                    <div className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(task.priority)} transition-all duration-200`}>
-                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-                    </div>
-                    {task.assignedTo || task.groupId ? (
+                  <div className="p-4">
+                    <p className="mb-4 text-gray-600 dark:text-gray-400">{task.description}</p>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center">
-                        {task.assignedTo ? (
-                          <UserIcon size={16} className="mr-1 text-blue-500" />
-                        ) : (
-                          <Users size={16} className="mr-1 text-green-500" />
-                        )}
-                        <span>{getAssignedDisplay(task)}</span>
+                        <Calendar size={16} className="mr-1" />
+                        <span>Created: {formatDate(task.createdAt)}</span>
                       </div>
-                    ) : null}
+                      <div className="flex items-center">
+                        <Clock size={16} className="mr-1" />
+                        <span>Due: {formatDate(task.dueDate)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        {isOverdue && !task.completed ? (
+                          <AlertTriangle size={16} className="mr-1 text-red-500" />
+                        ) : isApproaching && !task.completed ? (
+                          <AlertTriangle size={16} className="mr-1 text-yellow-500" />
+                        ) : (
+                          <Clock size={16} className="mr-1" />
+                        )}
+                        <span className={isOverdue && !task.completed ? 'text-red-500' : isApproaching && !task.completed ? 'text-yellow-500' : ''}>
+                          {timeRemaining}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="mr-1 h-3 w-3 rounded-full bg-[#9d75b5]" />
+                        <span>{task.category}</span>
+                      </div>
+                      <div className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(task.priority)} transition-all duration-200`}>
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                      </div>
+                      {task.assignedTo || task.groupId ? (
+                        <div className="flex items-center">
+                          {task.assignedTo ? (
+                            <UserIcon size={16} className="mr-1 text-blue-500" />
+                          ) : (
+                            <Users size={16} className="mr-1 text-green-500" />
+                          )}
+                          <span>{getAssignedDisplay(task)}</span>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
           <div className="mt-4 flex justify-center">
             <button className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2">

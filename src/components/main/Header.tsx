@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { UserCircle, LogOut, Menu, ChevronDown, User2, Moon, Sun, Globe } from 'lucide-react';
+import { format } from 'date-fns'
 import { useLanguage } from '@/contexts/LanguageContext';
 import en from '@/translations/en.json';
 import uk from '@/translations/uk.json';
@@ -24,6 +25,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const { theme, setTheme } = useTheme();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const t = language === 'uk' ? uk : en;
+  const currentDate = format(new Date(), 'EEE, MMM d, yyyy')
 
   useEffect(() => {
     const updateTheme = () => {
@@ -76,6 +78,14 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       >
         <Menu className={`h-6 w-6 ${isDarkTheme ? 'text-gray-100' : 'text-gray-800'}`} />
       </button>
+
+      <div className="mb-6 px-6 pt-6">
+        <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-4 py-2 shadow-md">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            My Day · {currentDate}
+          </h2>
+        </div>
+      </div>
 
       <div className="relative" ref={dropdownRef}>
         <button
