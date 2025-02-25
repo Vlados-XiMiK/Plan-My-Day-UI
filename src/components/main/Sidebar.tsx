@@ -5,7 +5,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { BarChart3, List, CalendarDays, PlusCircle, Trash } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useCategories } from '@/lib/useCategories'; // Импортируем хук
+import { useCategories } from '@/lib/useCategories';
+import { useLanguage } from '@/contexts/LanguageContext'; // Додаємо контекст мови
+import en from '@/translations/en.json';
+import uk from '@/translations/uk.json';
 
 interface SidebarProps {
   isVisible: boolean;
@@ -16,9 +19,10 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme } = useTheme();
+  const { language } = useLanguage(); // Отримуємо мову з контексту
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const t = language === 'uk' ? uk : en; // Вибираємо файл перекладу
 
-  // We use a hook to manage categories
   const {
     categories,
     newCategory,
@@ -69,7 +73,11 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
               className="object-cover w-full h-full" 
             />
           </div>
-          {!isCollapsed && <h1 className={`font-bold ml-3 text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400 }`}>Plan My Day</h1>}
+          {!isCollapsed && (
+            <h1 className={`font-bold ml-3 text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400`}>
+              Plan My Day
+            </h1>
+          )}
         </div>
       </div>
 
@@ -81,7 +89,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
             ${pathname === '/dashboard/stats' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-amber-100'} text-${isDarkTheme ? 'white' : 'amber-800'}` : ''}`}
         >
           <BarChart3 className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
-          {!isCollapsed && <span className="font-medium">Stats</span>}
+          {!isCollapsed && <span className="font-medium">{t.sidebar.stats || 'Stats'}</span>}
         </button>
         <button
           onClick={() => router.push('/dashboard/tasks')}
@@ -90,7 +98,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
             ${pathname === '/dashboard/tasks' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-emerald-100'} text-${isDarkTheme ? 'white' : 'emerald-800'}` : ''}`}
         >
           <List className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
-          {!isCollapsed && <span className="font-medium">All Tasks</span>}
+          {!isCollapsed && <span className="font-medium">{t.sidebar.allTasks || 'All Tasks'}</span>}
         </button>
         <button
           onClick={() => router.push('/dashboard/calendar')}
@@ -99,14 +107,16 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
             ${pathname === '/dashboard/calendar' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-indigo-100'} text-${isDarkTheme ? 'white' : 'indigo-800'}` : ''}`}
         >
           <CalendarDays className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
-          {!isCollapsed && <span className="font-medium">Calendar</span>}
+          {!isCollapsed && <span className="font-medium">{t.sidebar.calendar || 'Calendar'}</span>}
         </button>
       </nav>
 
       {!isCollapsed && (
         <div className="flex-1 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className={`text-lg font-semibold ${isDarkTheme ? 'text-purple-200' : 'text-gray-800'}`}>My Categories</h2>
+            <h2 className={`text-lg font-semibold ${isDarkTheme ? 'text-purple-200' : 'text-gray-800'}`}>
+              {t.sidebar.myCategories || 'My Categories'}
+            </h2>
             <button
               onClick={() => setNewCategory(true)}
               className={`${isDarkTheme ? 'text-purple-300 hover:text-purple-200' : 'text-indigo-500 hover:text-indigo-400'} transition-colors duration-200`}

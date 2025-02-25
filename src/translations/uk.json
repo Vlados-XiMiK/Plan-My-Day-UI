@@ -6,7 +6,14 @@
     "profile": "Профіль",
     "signed": "Ви ввійшли як",
     "lightTheme": "Світла тема",
-    "darkTheme": "Темна тема"
+    "darkTheme": "Темна тема",
+    "myDay": "Мій день"
+  },
+  "sidebar": {
+    "stats": "Статистика",
+    "allTasks": "Усі Завдання",
+    "calendar": "Календар",
+    "myCategories": "Мої Категорії"
   },
   "hero": {
     "title": "Ефективно організуйте свій день",

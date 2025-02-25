@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { UserCircle, LogOut, Menu, ChevronDown, User2, Moon, Sun, Globe } from 'lucide-react';
-import { format } from 'date-fns'
+import { format } from 'date-fns';
+import { uk, enUS } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import en from '@/translations/en.json';
-import uk from '@/translations/uk.json';
+import ukTranslations from '@/translations/uk.json';
 import { useTheme } from 'next-themes';
 
 interface HeaderProps {
@@ -24,8 +25,24 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const t = language === 'uk' ? uk : en;
-  const currentDate = format(new Date(), 'EEE, MMM d, yyyy')
+  const t = language === 'uk' ? ukTranslations : en;
+  
+  const locale = language === 'uk' ? uk : enUS;
+  const now = new Date();
+  const dateFormat = language === 'uk' ? "EEEE, MMMM d, yyyy" : "EEEE, MMMM d, yyyy 'at' h:mm a";
+  let formattedDate = format(now, dateFormat, { locale });
+
+  // Для української мови капіталізуємо день і місяць
+  if (language === 'uk') {
+    formattedDate = formattedDate
+      .split(', ')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(', ');
+  }
+
+  const currentDateTime = language === 'uk' 
+    ? `${formattedDate} · ${format(now, 'HH:mm')}` 
+    : formattedDate;
 
   useEffect(() => {
     const updateTheme = () => {
@@ -82,7 +99,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       <div className="mb-6 px-6 pt-6">
         <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-4 py-2 shadow-md">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            My Day · {currentDate}
+            {t.header.myDay || 'My Day'} · {currentDateTime}
           </h2>
         </div>
       </div>

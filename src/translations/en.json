@@ -6,7 +6,14 @@
     "profile": "Profile",
     "signed": "Signed in as",
     "lightTheme": "Light Theme",
-    "darkTheme": "Dark Theme"
+    "darkTheme": "Dark Theme",
+    "myDay": "My Day"
+  },
+  "sidebar": {
+    "stats": "Stats",
+    "allTasks": "All Tasks",
+    "calendar": "Calendar",
+    "myCategories": "My Categories"
   },
   "hero": {
     "title": "Organize Your Day Effectively",
