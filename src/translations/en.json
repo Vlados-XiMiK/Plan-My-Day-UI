@@ -147,10 +147,6 @@
       }
     }
   },
-  "settings": {
-    "language": "Language",
-    "theme": "Theme"
-  },
   "stats": {
     "title": "Statistics",
     "subtitle": "Insights into Your Productivity",
@@ -167,5 +163,36 @@
       "lastWeek": "Last Week",
       "thisWeek": "This Week"
     }
+  },
+  "profile": {
+    "title": "Profile",
+    "myDay": "My Day",
+    "backToTasks": "Back to Tasks",
+    "avatarAlt": "Profile",
+    "editProfile": "Edit Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "emailLabel": "Email",
+    "workplaceLabel": "Place of Work",
+    "phoneLabel": "Phone number",
+    "ageLabel": "Age",
+    "taskCompletionRate": "Task Completion Rate",
+    "noTasksYet": "No tasks completed yet",
+    "activeTasks": "Active Tasks",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "recentActivity": "Recent Activity",
+    "lastLogin": "Last login",
+    "profileEdited": "Profile edited",
+    "lastTaskCompleted": "Last task completed"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark",
+    "language": "Language",
+    "notifications": "Task Reminders",
+    "close": "Close"
   }
 }

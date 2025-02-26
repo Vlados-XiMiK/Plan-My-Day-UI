@@ -147,10 +147,6 @@
       }
     }
   },
-  "settings": {
-    "language": "Мова",
-    "theme": "Тема"
-  },
   "stats": {
     "title": "Статистика",
     "subtitle": "Аналіз вашої продуктивності",
@@ -167,5 +163,36 @@
       "lastWeek": "Минулий тиждень",
       "thisWeek": "Цей тиждень"
     }
+  },
+  "profile": {
+    "title": "Профіль",
+    "myDay": "Мій день",
+    "backToTasks": "Повернутися до завдань",
+    "avatarAlt": "Профіль",
+    "editProfile": "Редагувати профіль",
+    "settings": "Налаштування",
+    "logout": "Вийти",
+    "emailLabel": "Електронна пошта",
+    "workplaceLabel": "Місце роботи",
+    "phoneLabel": "Номер телефону",
+    "ageLabel": "Вік",
+    "taskCompletionRate": "Рівень виконання завдань",
+    "noTasksYet": "Ще немає виконаних завдань",
+    "activeTasks": "Активні завдання",
+    "ongoing": "У процесі",
+    "completed": "Виконані",
+    "recentActivity": "Остання активність",
+    "lastLogin": "Останній вхід",
+    "profileEdited": "Профіль змінено",
+    "lastTaskCompleted": "Останнє виконане завдання"
+  },
+  "settings": {
+    "title": "Налаштування",
+    "theme": "Тема",
+    "lightTheme": "Світла",
+    "darkTheme": "Темна",
+    "language": "Мова",
+    "notifications": "Нагадування про завдання",
+    "close": "Закрити"
   }
 }
