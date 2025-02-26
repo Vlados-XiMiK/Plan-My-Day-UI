@@ -150,5 +150,22 @@
   "settings": {
     "language": "Мова",
     "theme": "Тема"
+  },
+  "stats": {
+    "title": "Статистика",
+    "subtitle": "Аналіз вашої продуктивності",
+    "tasksCompleted": "Завершені завдання",
+    "last7Days": "Останні 7 днів",
+    "productivityScore": "Оцінка продуктивності",
+    "productivityChange": "+5% порівняно з минулим тижнем",
+    "productivityMessage": "Чудова робота! Ви на шляху до 100%!",
+    "taskDistribution": {
+      "title": "Розподіл завдань"
+    },
+    "productivity": {
+      "label": "Продуктивність",
+      "lastWeek": "Минулий тиждень",
+      "thisWeek": "Цей тиждень"
+    }
   }
 }

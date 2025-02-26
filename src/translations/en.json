@@ -150,5 +150,22 @@
   "settings": {
     "language": "Language",
     "theme": "Theme"
+  },
+  "stats": {
+    "title": "Statistics",
+    "subtitle": "Insights into Your Productivity",
+    "tasksCompleted": "Tasks Completed",
+    "last7Days": "Last 7 days",
+    "productivityScore": "Productivity Score",
+    "productivityChange": "+5% from last week",
+    "productivityMessage": "Great job! You’re on your way to 100%!",
+    "taskDistribution": {
+      "title": "Task Distribution"
+    },
+    "productivity": {
+      "label": "Productivity",
+      "lastWeek": "Last Week",
+      "thisWeek": "This Week"
+    }
   }
 }
