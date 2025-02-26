@@ -193,5 +193,30 @@
     "language": "Language",
     "notifications": "Task Reminders",
     "close": "Close"
+  },
+  "tasks": {
+    "filtersAndSearch": "Filters and Search",
+    "searchPlaceholder": "Search (e.g., 'high priority work this week')",
+    "allStatus": "All Status",
+    "completed": "Completed",
+    "incomplete": "Incomplete",
+    "allPriority": "All Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "createdDate": "Created Date",
+    "lastModified": "Last Modified",
+    "dueDate": "Due Date",
+    "clearFilters": "Clear Filters",
+    "createTask": "Create Task",
+    "editTask": "Edit task",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "deleteTask": "Delete task",
+    "created": "Created",
+    "due": "Due",
+    "priority": "Priority",
+    "loadMore": "Load More",
+    "noTasks": "No tasks"
   }
 }

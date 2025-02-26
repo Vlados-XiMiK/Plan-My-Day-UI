@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion"; 
+import { motion, AnimatePresence, MotionProps } from "framer-motion"; 
 import { useTheme } from "next-themes";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Switch from "@/components/ui/Switch"; 
@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import en from "@/translations/en.json";
 import ukTranslations from "@/translations/uk.json";
+import { HTMLAttributes } from "react";
+
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface SettingsPopupProps {
   isOpen: boolean;
@@ -59,6 +62,7 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
+          {...({} as MotionDivProps)}
         >
           <motion.div
             className="bg-white dark:bg-[#1a1a2e] rounded-xl shadow-2xl w-full max-w-md p-6 border border-gray-200 dark:border-gray-700"
@@ -67,6 +71,7 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
             animate="visible"
             exit="exit"
             onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
+            {...({} as MotionDivProps)}
           >
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
               {t.settings.title || "Settings"}

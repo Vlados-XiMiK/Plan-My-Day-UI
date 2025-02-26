@@ -193,5 +193,30 @@
     "language": "Мова",
     "notifications": "Нагадування про завдання",
     "close": "Закрити"
-  }
+  },
+    "tasks": {
+      "filtersAndSearch": "Фільтри та пошук",
+      "searchPlaceholder": "Пошук (наприклад, 'високий пріоритет роботи цього тижня')",
+      "allStatus": "Усі статуси",
+      "completed": "Виконані",
+      "incomplete": "Невиконані",
+      "allPriority": "Усі пріоритети",
+      "high": "Високий",
+      "medium": "Середній",
+      "low": "Низький",
+      "createdDate": "Дата створення",
+      "lastModified": "Остання зміна",
+      "dueDate": "Термін виконання",
+      "clearFilters": "Очистити фільтри",
+      "createTask": "Створити завдання",
+      "editTask": "Редагувати завдання",
+      "addToFavorites": "Додати до обраного",
+      "removeFromFavorites": "Видалити з обраного",
+      "deleteTask": "Видалити завдання",
+      "created": "Створено",
+      "due": "Термін",
+      "priority": "Пріоритет",
+      "loadMore": "Завантажити більше",
+      "noTasks": "Немає завдань"
+    }
 }

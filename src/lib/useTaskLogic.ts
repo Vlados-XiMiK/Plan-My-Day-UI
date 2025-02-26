@@ -12,13 +12,13 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
   const [isEditPopupOpen, setEditPopupOpen] = useState(false)
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifiedTasks, setNotifiedTasks] = useState<number[]>([]) // Список задач, для которых уже отправлено уведомление
+  const [notifiedTasks, setNotifiedTasks] = useState<number[]>([])
 
   useEffect(() => {
     const checkDeadlines = () => {
       const now = new Date()
       tasks.forEach(task => {
-        if (task.completed) return; // Пропускаем завершённые задачи
+        if (task.completed) return;
   
         const minutesLeft = differenceInMinutes(new Date(task.dueDate), now)
         if (minutesLeft <= 1440 && minutesLeft > 0) {
@@ -48,7 +48,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
         task.completed ? 'Task Reopened' : 'Task Completed',
         task.completed ? 'The task has been reopened and is now active again.' : 'You have successfully marked the task as completed.'
       )
-      // Если задача завершена, можно убрать её из списка уведомлённых
+      // If the task is completed, you can remove it from the notification list
       if (!task.completed) {
         setNotifiedTasks(prev => prev.filter(taskId => taskId !== id))
       }
@@ -103,7 +103,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedTask),
     }).catch(error => addNotification('error', 'Update Failed', 'An error occurred while updating the task.'))
-    // Если дедлайн изменился, можно сбросить уведомление
+    // If the deadline has changed, you can reset the notification
     setNotifiedTasks(prev => prev.filter(id => id !== updatedTask.id))
   }
 
@@ -123,7 +123,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-500'
-      case 'medium': return 'bg-orange-500'
+      case 'medium': return 'bg-blue-500'
       case 'low': return 'bg-green-500'
       default: return 'bg-gray-500'
     }
