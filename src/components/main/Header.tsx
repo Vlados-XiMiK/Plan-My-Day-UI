@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { UserCircle, LogOut, Menu, ChevronDown, User2, Moon, Sun, Globe } from "lucide-react";
+import { UserCircle, LogOut, Menu, ChevronDown, User2, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { uk, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/translations/en.json";
 import ukTranslations from "@/translations/uk.json";
 import { useTheme } from "next-themes";
+import SettingsPopup from "@/components/main/pop-up/SettingsPopup";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -20,10 +21,11 @@ interface HeaderProps {
 export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onProfileClick }: HeaderProps) {
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { language, setLanguage } = useLanguage();
-  const { theme, setTheme } = useTheme();
+  const { language } = useLanguage();
+  const { theme } = useTheme();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const t = language === "uk" ? ukTranslations : en;
 
@@ -73,21 +75,11 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
     return () => document.addEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = isDarkTheme ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
-
-  const toggleLanguage = () => {
-    setLanguage(language === "en" ? "uk" : "en");
-  };
-
   return (
     <header
       className={`sticky top-0 z-40 flex h-16 items-center justify-between px-4 transition-colors duration-300
         ${isDarkTheme
-          ? "bg-gradient-to-b from-purple-950 to-gray-900 border-b border-purple-900"
+          ? "bg-gradient-to-b from-purple-950 to_gray-900 border-b border-purple-900"
           : "bg-gradient-to-b from-gray-50 to-beige-100 border-b border-gray-200"}`}
     >
       <button
@@ -144,22 +136,16 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
               {t.header.profile || "Profile"}
             </button>
             <button
-              onClick={toggleTheme}
+              onClick={() => {
+                setIsSettingsOpen(true);
+                setShowDropdown(false);
+              }}
               className={`flex items-center gap-2 w-full px-4 py-2 text-sm ${
                 isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-100"
               }`}
             >
-              {isDarkTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              {isDarkTheme ? t.header.lightTheme || "Light Theme" : t.header.darkTheme || "Dark Theme"}
-            </button>
-            <button
-              onClick={toggleLanguage}
-              className={`flex items-center gap-2 w-full px-4 py-2 text-sm ${
-                isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-100"
-              }`}
-            >
-              <Globe className="h-4 w-4" />
-              {language === "en" ? "English" : "Українська"}
+              <Settings className="h-4 w-4" />
+              {t.header.settings || "Settings"}
             </button>
             <button
               onClick={() => router.push("/login")}
@@ -173,6 +159,9 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
           </div>
         )}
       </div>
+
+      {/* Settings Popup */}
+      <SettingsPopup isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </header>
   );
 }
