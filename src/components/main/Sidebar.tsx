@@ -71,6 +71,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
               width={200} 
               height={200} 
               className="object-cover w-full h-full" 
+              onClick={() => router.push("/dashboard")}
             />
           </div>
           {!isCollapsed && (
