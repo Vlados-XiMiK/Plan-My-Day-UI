@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { BarChart3, List, CalendarDays, PlusCircle, Trash } from 'lucide-react';
+import { BarChart3, List, CalendarDays, PlusCircle, Trash, Folder } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useCategories } from '@/lib/useCategories';
 import { useLanguage } from '@/contexts/LanguageContext'; // Додаємо контекст мови
@@ -109,6 +109,15 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
         >
           <CalendarDays className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
           {!isCollapsed && <span className="font-medium">{t.sidebar.calendar || 'Calendar'}</span>}
+        </button>
+        <button
+          onClick={() => router.push('/dashboard/projects')}
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-blue-800/50 text-gray-100' : 'hover:bg-blue-200/50 text-gray-700'} transition-all duration-200
+            ${isCollapsed ? 'justify-center' : ''} 
+            ${pathname === '/dashboard/projects' ? `${isDarkTheme ? 'bg-blue-700' : 'bg-blue-100'} text-${isDarkTheme ? 'white' : 'blue-800'}` : ''}`}
+        >
+          <Folder className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
+          {!isCollapsed && <span className="font-medium">{t.sidebar.project || 'Projects'}</span>}
         </button>
       </nav>
 
