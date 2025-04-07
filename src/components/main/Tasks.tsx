@@ -12,7 +12,6 @@ import {
   Calendar,
   Clock,
   User as UserIcon,
-  Users,
   AlertTriangle,
 } from "lucide-react";
 import TaskCreationPopup from "@/components/main/pop-up/TaskCreationPopup";
@@ -34,9 +33,7 @@ const initialTasks: Task[] = [
     category: "Work",
     priority: "high",
     completed: false,
-    starred: false,
-    assignedTo: "user123",
-    groupId: null,
+    starred: false
   },
   {
     id: 2,
@@ -47,9 +44,7 @@ const initialTasks: Task[] = [
     category: "Shopping",
     priority: "medium",
     completed: true,
-    starred: true,
-    assignedTo: null,
-    groupId: "group456",
+    starred: true
   },
   {
     id: 3,
@@ -60,9 +55,7 @@ const initialTasks: Task[] = [
     category: "Personal",
     priority: "low",
     completed: false,
-    starred: false,
-    assignedTo: null,
-    groupId: null,
+    starred: false
   },
 ];
 
@@ -219,7 +212,7 @@ export default function MainContent() {
                           onChange={() => toggleTaskCompletion(task.id)}
                           className="mr-4 h-5 w-5 rounded text-purple-600 focus:ring-purple-500 transition-all duration-200"
                         />
-                        <h4 className={`text-lg font-semibold ${task.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-800 dark:text-gray-100"} transition-all duration-200`}>{task.title}</h4>
+                        <h4 className={`text-lg font-semibold max-w-[250px] truncate ${task.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-800 dark:text-gray-100"} transition-all duration-200`}>{task.title}</h4>
                       </div>
                       <div className="task-actions flex space-x-2">
                         <button
@@ -248,7 +241,9 @@ export default function MainContent() {
                       </div>
                     </div>
                     <div className="p-4">
-                      <p className="mb-4 text-gray-600 dark:text-gray-400">{task.description}</p>
+                    <p className="mb-4 text-gray-600 dark:text-gray-400 break-all max-w-full">
+  {task.description}
+</p>
                       <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center">
                           <Calendar size={16} className="mr-1" />
@@ -277,16 +272,6 @@ export default function MainContent() {
                         <div className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(task.priority)} transition-all duration-200`}>
                           {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} {t.tasks.priority || "Priority"}
                         </div>
-                        {task.assignedTo || task.groupId ? (
-                          <div className="flex items-center">
-                            {task.assignedTo ? (
-                              <UserIcon size={16} className="mr-1 text-blue-500" />
-                            ) : (
-                              <Users size={16} className="mr-1 text-green-500" />
-                            )}
-                            <span>{getAssignedDisplay(task)}</span>
-                          </div>
-                        ) : null}
                       </div>
                     </div>
                   </li>

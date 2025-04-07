@@ -75,12 +75,6 @@ export default function RegisterForm() {
   const { language } = useLanguage()
   const t = language === "uk" ? uk : en
 
-  const socialLogins = [
-    { name: "Telegram", icon: FaTelegram, color: "bg-[#0088cc] hover:bg-[#0077b5]" },
-    { name: "Gmail", icon: FaGoogle, color: "bg-red-600 hover:bg-red-700" },
-    { name: "Discord", icon: FaDiscord, color: "bg-indigo-600 hover:bg-indigo-700" },
-    { name: "GitHub", icon: FaGithub, color: "bg-gray-800 hover:bg-gray-900" },
-  ]
 
   const validateStep = (): boolean => {
     const newErrors: FormErrors = {}
@@ -419,23 +413,7 @@ export default function RegisterForm() {
                 <span className="w-full border-t border-gray-300 dark:border-gray-700" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-[#16213e] px-2 text-gray-500 dark:text-gray-400">
-                  {t.auth.register.orContinueWith}
-                </span>
               </div>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {socialLogins.map((login) => (
-                <Button
-                  key={login.name}
-                  variant="outline"
-                  type="button"
-                  className={`${login.color} text-white border-0 text-xs py-1`}
-                >
-                  <login.icon className="mr-2 h-3 w-3" />
-                  {login.name}
-                </Button>
-              ))}
             </div>
           </div>
           <div className="mt-4 text-center text-xs text-gray-600 dark:text-gray-400">

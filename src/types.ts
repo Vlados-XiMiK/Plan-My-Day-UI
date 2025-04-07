@@ -8,8 +8,6 @@ export interface Task {
   priority: 'high' | 'medium' | 'low';
   completed: boolean;
   starred: boolean;
-  assignedTo: string | null; // User or group ID
-  groupId: string | null;    // Group ID
 }
 
 export interface User {
@@ -21,8 +19,6 @@ export interface Group {
   id: string;
   name: string;
 }
-
-// src/types.ts
 
 export interface Feature {
   title: string;

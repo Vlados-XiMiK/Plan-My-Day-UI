@@ -173,7 +173,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className={`flex-grow rounded-full border ${
+                      className={`flex-grow rounded-lg border ${
                         errors.title ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       placeholder="Enter task title"
@@ -190,7 +190,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={2}
-                      className={`flex-grow rounded-full border ${
+                      className={`flex-grow rounded-lg border ${
                         errors.description ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       placeholder="Enter task description"
@@ -206,7 +206,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className={`flex-grow rounded-full border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
+                      className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                     >
                       {categories.map((cat) => (
                         <option key={cat} value={cat} className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
@@ -224,7 +224,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                     <select
                       value={priority}
                       onChange={(e) => setPriority(e.target.value)}
-                      className={`flex-grow rounded-full border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
+                      className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                     >
                       <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>Low</option>
                       <option value="medium" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>Medium</option>
@@ -242,7 +242,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                         type="date"
                         value={dueDate}
                         onChange={(e) => setDueDate(e.target.value)}
-                        className={`rounded-full border ${
+                        className={`rounded-lg border ${
                           errors.dueDate ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                         } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       />
@@ -252,7 +252,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                           type="time"
                           value={dueTime}
                           onChange={(e) => setDueTime(e.target.value)}
-                          className={`flex-grow rounded-full border ${
+                          className={`flex-grow rounded-lg border ${
                             errors.dueTime ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                           } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                         />
@@ -268,13 +268,13 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                   <button
                     type="button"
                     onClick={onClose}
-                    className={`px-4 py-2 ${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-full transition-colors duration-200`}
+                    className={`px-4 py-2 ${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors duration-200`}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className={`px-4 py-2 ${isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'} rounded-full transition-colors duration-200`}
+                    className={`px-4 py-2 ${isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'} rounded-lg transition-colors duration-200`}
                   >
                     Create Task
                   </button>
