@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { motion, useScroll, useTransform, useAnimate, MotionProps } from "framer-motion"
+import { motion, useScroll, useTransform, MotionProps } from "framer-motion"
 import Header from "@/components/landing/header"
 import { ChevronDown } from "lucide-react"
 import Footer from "@/components/shared/footer"
@@ -34,7 +34,6 @@ export default function FeaturesPage() {
   const featuresRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: mainRef })
   const { theme } = useTheme()
-  const [scope, animate] = useAnimate()
 
   const features = Object.entries(t.features)
     .filter(([key]) => key !== "title")

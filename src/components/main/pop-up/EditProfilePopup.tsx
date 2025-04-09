@@ -1,11 +1,11 @@
 'use client'
 
 import { motion, AnimatePresence, MotionProps } from 'framer-motion'
+import Image from "next/image";
 import { useState, useRef } from 'react'
 import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
 import { InputHTMLAttributes, HTMLAttributes, ButtonHTMLAttributes } from 'react'
-import { useTheme } from "next-themes"
 
 // type for motion.input
 type MotionInputProps = MotionProps & InputHTMLAttributes<HTMLInputElement>
@@ -37,7 +37,6 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
-  const { theme } = useTheme()
 
   const validateField = (name: string, value: string) => {
     let error = ''
@@ -214,7 +213,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   <div className="mt-1 flex items-center gap-4">
                     {image ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                        <img src={image} alt="Profile" className="w-full h-full object-cover" />
+                        <Image src={image} alt="Profile" className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => setImage(null)}

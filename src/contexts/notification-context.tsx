@@ -41,21 +41,6 @@ const MAX_NOTIFICATIONS = 5;
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
-  // Load pending notification from localStorage on mount
-  useEffect(() => {
-    try {
-      const storedNotification = localStorage.getItem('pendingNotification');
-      if (storedNotification) {
-        const { type, title, message, duration } = JSON.parse(storedNotification) as Omit<NotificationData, 'id'>;
-        addNotification(type, title, message, duration);
-        localStorage.removeItem('pendingNotification');
-      }
-    } catch (error) {
-      console.error('Error loading pendingNotification:', error);
-      addNotification('error', 'Error', 'Failed to load notification', 5000);
-    }
-  }, []);
-
   // Add a new notification with a limit
   const addNotification = useCallback(
     (type: NotificationType, title: string, message: string, duration?: number) => {
@@ -87,6 +72,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     },
     [addNotification]
   );
+
+  // Load pending notification from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedNotification = localStorage.getItem('pendingNotification');
+      if (storedNotification) {
+        const { type, title, message, duration } = JSON.parse(storedNotification) as Omit<NotificationData, 'id'>;
+        addNotification(type, title, message, duration);
+        localStorage.removeItem('pendingNotification');
+      }
+    } catch (error) {
+      console.error('Error loading pendingNotification:', error);
+      addNotification('error', 'Error', 'Failed to load notification', 5000);
+    }
+  }, [addNotification]); // Add addNotification as a dependency
 
   return (
     <NotificationContext.Provider value={{ addNotification, setPendingNotification }}>

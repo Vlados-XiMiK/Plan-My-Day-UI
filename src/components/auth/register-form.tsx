@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/shared/icons"
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react"
-import { FaTelegram, FaGoogle, FaDiscord, FaGithub } from "react-icons/fa"
 import { useLanguage } from "@/contexts/LanguageContext"
 import en from "@/translations/en.json"
 import uk from "@/translations/uk.json"
@@ -148,10 +147,6 @@ export default function RegisterForm() {
     }
   }
 
-  const sanitizeInput = (input: string): string => {
-    return input.replace(/[<>&'"]/g, "")
-  }
-
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!validateStep()) {
@@ -164,11 +159,6 @@ export default function RegisterForm() {
     }
 
     setIsLoading(true)
-
-    const sanitizedFormData = Object.entries(formData).reduce((acc, [key, value]) => {
-      acc[key as keyof FormData] = sanitizeInput(value)
-      return acc
-    }, {} as FormData)
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000))

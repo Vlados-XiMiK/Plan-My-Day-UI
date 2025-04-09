@@ -10,7 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext"
 export function ThemeLanguageToggle() {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
-  const { language, setLanguage } = useLanguage()
+  const { setLanguage } = useLanguage()
 
   useEffect(() => {
     setMounted(true)

@@ -61,7 +61,6 @@ export const Notification: React.FC<NotificationProps> = ({
   message,
   duration = 2500,
   onClose,
-  index,
 }) => {
   const [isVisible, setIsVisible] = useState(true)
   const [progress, setProgress] = useState(100)

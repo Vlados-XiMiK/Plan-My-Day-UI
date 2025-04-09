@@ -2,17 +2,6 @@
 
 import { useEffect, useRef } from "react"
 
-interface Particle {
-  x: number
-  y: number
-  size: number
-  speedX: number
-  speedY: number
-  color: string
-  update: () => void
-  draw: (ctx: CanvasRenderingContext2D) => void
-}
-
 export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 

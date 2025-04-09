@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/shared/icons"
-import { FaTelegram, FaGoogle, FaDiscord, FaGithub } from "react-icons/fa"
 import { Eye, EyeOff } from "lucide-react"
 import { useLanguage } from "@/contexts/LanguageContext"
 import en from "@/translations/en.json"
@@ -70,18 +69,13 @@ export default function LoginForm() {
     }
   }
 
-  const sanitizeInput = (input: string): string => {
-    return input.replace(/[<>&'"]/g, "")
-  }
-
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validateForm()) return;
   
     setIsLoading(true);
   
-    const sanitizedEmail = sanitizeInput(formData.email);
-    const sanitizedPassword = sanitizeInput(formData.password);
+    
   
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));

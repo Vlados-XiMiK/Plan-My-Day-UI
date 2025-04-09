@@ -7,7 +7,7 @@ import { useNotification } from '@/contexts/notification-context'
 import { HTMLAttributes } from 'react'
 import { useTheme } from 'next-themes' // Добавляем useTheme для управления темой
 
-import type { User, Group } from '@/types'
+import type { Task, User, Group } from '@/types'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -15,7 +15,7 @@ type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 interface TaskCreationPopupProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (task: any) => void
+  onSave: (task: Task) => void
   categories: string[]
   users: User[]
   groups: Group[]
@@ -100,11 +100,15 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
     }
 
     onSave({
+      id: 0,
       title,
       description,
-      category,
+      createdAt: new Date().toISOString(),
       dueDate: `${dueDate}T${dueTime}`,
-      priority,
+      category,
+      priority: priority as 'high' | 'medium' | 'low',
+      completed: false,
+      starred: false 
     })
 
     addNotification('success', 'Task created', 'Task created successfully!')

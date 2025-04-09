@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Search, ChevronDown, ChevronUp, Edit, Star, Trash, Plus, Calendar, Clock, AlertTriangle } from 'lucide-react'
 import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup'
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup'
-import { useTheme } from 'next-themes'
 import { useTaskLogic } from '@/lib/useTaskLogic'
 import type { Task, User, Group } from '@/types'
 
@@ -45,11 +44,9 @@ const initialTasks: Task[] = [
 ]
 
 export default function MainContent() {
-  const { theme } = useTheme()
   const users: User[] = []
   const groups: Group[] = []
   const {
-    tasks,
     isCreationPopupOpen,
     setCreationPopupOpen,
     isEditPopupOpen,
@@ -67,7 +64,7 @@ export default function MainContent() {
     formatDate,
     getTimeRemaining,
     filterTasks,
-  } = useTaskLogic(initialTasks, users, groups)
+  } = useTaskLogic(initialTasks)
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false)
 
   const TaskItem = ({ task }: { task: Task }) => {

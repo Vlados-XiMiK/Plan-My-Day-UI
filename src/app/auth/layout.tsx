@@ -18,7 +18,7 @@ export default function AuthLayout({
       <div className="absolute inset-0">{theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}</div>
       <div className="w-full max-w-lg p-6 bg-white dark:bg-[#16213e] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg relative z-10">
         <div className="flex justify-between items-center mb-6">
-          <Logo size={48} />
+          <Logo size={120} />
           <ThemeLanguageToggle />
         </div>
         {children}

@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { differenceInMinutes, isPast, format } from 'date-fns'
 import { useNotification } from '@/contexts/notification-context'
-import type { Task, User, Group } from '@/types'
+import type { Task } from '@/types'
 
-export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[]) => {
+export const useTaskLogic = (initialTasks: Task[]) => {
   const { addNotification } = useNotification()
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [isCreationPopupOpen, setCreationPopupOpen] = useState(false)
@@ -18,7 +18,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
     const checkDeadlines = () => {
       const now = new Date()
       tasks.forEach(task => {
-        if (task.completed) return;
+        if (task.completed || notifiedTasks.includes(task.id)) return
   
         const minutesLeft = differenceInMinutes(new Date(task.dueDate), now)
         if (minutesLeft <= 1440 && minutesLeft > 0) {
@@ -29,13 +29,14 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
             `Task Deadline Approaching`,
             `Task "${task.title}" is due in ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''} and ${minutesRemainder} minute${minutesRemainder !== 1 ? 's' : ''}`
           )
+          setNotifiedTasks(prev => [...prev, task.id]) // ← тут
         }
       })
     }
   
     const interval = setInterval(checkDeadlines, 60000)
     return () => clearInterval(interval)
-  }, [tasks, addNotification])
+  }, [tasks, addNotification, notifiedTasks])
 
   const toggleTaskCompletion = (id: number) => {
     setTasks(tasks.map(task =>
@@ -48,7 +49,6 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
         task.completed ? 'Task Reopened' : 'Task Completed',
         task.completed ? 'The task has been reopened and is now active again.' : 'You have successfully marked the task as completed.'
       )
-      // If the task is completed, you can remove it from the notification list
       if (!task.completed) {
         setNotifiedTasks(prev => prev.filter(taskId => taskId !== id))
       }
@@ -89,7 +89,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...task, createdAt: now, completed: false, starred: false }),
-    }).catch(error => addNotification('error', 'Task Creation Failed', 'An error occurred while creating the task.'))
+    }).catch(() => addNotification('error', 'Task Creation Failed', 'An error occurred while creating the task.'))
   }
 
   const handleEditTask = (updatedTask: Task) => {
@@ -100,8 +100,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedTask),
-    }).catch(error => addNotification('error', 'Update Failed', 'An error occurred while updating the task.'))
-    // If the deadline has changed, you can reset the notification
+    }).catch(() => addNotification('error', 'Update Failed', 'An error occurred while updating the task.'))
     setNotifiedTasks(prev => prev.filter(id => id !== updatedTask.id))
   }
 
@@ -114,7 +113,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
     setTasks(tasks.filter(task => task.id !== id))
     addNotification('success', 'Task Deleted', 'The task has been successfully removed.')
     fetch(`/api/tasks/${id}`, { method: 'DELETE' })
-      .catch(error => addNotification('error', 'Deletion Failed', 'An error occurred while deleting the task.'))
+      .catch(() => addNotification('error', 'Deletion Failed', 'An error occurred while deleting the task.'))
     setNotifiedTasks(prev => prev.filter(taskId => taskId !== id))
   }
 
@@ -147,7 +146,6 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
     }
     return { text: `Due in ${hours}h ${minutes}m`, isOverdue: false, isApproaching: true }
   }
-
 
   const filterTasks = () => {
     return tasks.filter(task => {

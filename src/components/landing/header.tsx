@@ -40,7 +40,7 @@ export default function Header() {
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Logo size={40} />
+          <Logo size={120} />
           <div className="hidden md:flex items-center space-x-4">
             <ThemeLanguageToggle />
             <Button

@@ -15,9 +15,13 @@ type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 interface TaskEditPopupProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (task: any) => void
+  onSave: (task: Task) => void
   categories: string[]
   initialData?: {
+    createdAt: string
+    starred: boolean
+    completed: boolean
+    id: number
     title: string
     description: string
     category: string
@@ -112,30 +116,38 @@ export default function TaskEditPopup({
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
+    e.preventDefault();
+  
+    // Валидация формы
     if (!validateForm()) {
-      const form = document.getElementById('task-form')
-      form?.classList.add('animate-shake')
+      const form = document.getElementById('task-form');
+      form?.classList.add('animate-shake');
       setTimeout(() => {
-        form?.classList.remove('animate-shake')
-      }, 500)
-      addNotification('error', 'Error validation', 'Please fix the errors in the form.')
-      return
+        form?.classList.remove('animate-shake');
+      }, 500);
+      addNotification('error', 'Error validation', 'Please fix the errors in the form.');
+      return;
     }
-
-    onSave({
-      title,
-      description,
-      category,
-      dueDate: `${dueDate}T${dueTime}`,
-      priority,
-    })
-
-    setErrors({})
-    onClose()
-    addNotification('success', 'Task updated', 'Task updated successfully!')
-  }
+  
+    // Использование initialData для сохранения изменений
+    if (initialData) {
+      onSave({
+        id: initialData.id, // ID задачи
+        title,
+        description,
+        category,
+        dueDate: `${dueDate}T${dueTime}`, // Форматируем дату и время
+        priority: priority as 'high' | 'medium' | 'low',
+        completed: initialData.completed, // Сохранение текущего состояния задачи
+        starred: initialData.starred,     // Сохранение состояния звездочки
+        createdAt: initialData.createdAt, // Оставляем дату создания без изменений
+      });
+  
+      setErrors({});
+      onClose();
+      addNotification('success', 'Task updated', 'Task updated successfully!');
+    }
+  };
 
   return (
     <AnimatePresence>

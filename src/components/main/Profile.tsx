@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import {
   User2,
   Mail,
@@ -16,8 +17,6 @@ import {
 import { PieChart } from "@/components/ui/pie-chart";
 import EditProfilePopup from "@/components/main/pop-up/EditProfilePopup";
 import SettingsPopup from "@/components/main/pop-up/SettingsPopup"; // Додаємо імпорт попапу налаштувань
-import { format } from "date-fns";
-import { enUS, uk } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext"; // Додано для локалізації
 import en from "@/translations/en.json"; // Додано для локалізації
 import ukTranslations from "@/translations/uk.json"; // Додано для локалізації
@@ -90,7 +89,7 @@ export default function Profile({
           <div className="flex flex-col sm:flex-row items-center gap-6">
             {/* Avatar Section */}
             <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-purple-100 dark:ring-purple-900">
-              <img
+              <Image
                 src={user?.avatarUrl ?? "/profile-image.jpg?height=128&width=128"}
                 alt={t.profile.avatarAlt || "Profile"}
                 className="w-full h-full object-cover"
@@ -112,13 +111,15 @@ export default function Profile({
                     {t.profile.editProfile || "Edit Profile"}
                   </button>
                   <EditProfilePopup isOpen={isEditing} onClose={() => setIsEditing(false)} />
+                  {isDesktop && (
                   <button
-                    onClick={() => setIsSettingsOpen(true)} // Змінено на відкриття попапу
+                    onClick={() => setIsSettingsOpen(true)}
                     className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-[#3a3a5e] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#4a4a7e] transition-all duration-200 hover:scale-105"
                   >
-                    <Settings className="w-4 h-4 mr-2" />
+                  <Settings className="w-4 h-4 mr-2" />
                     {t.profile.settings || "Settings"}
                   </button>
+                  )}
                   <button
                     onClick={() => router.push("/auth/login")}
                     className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/70 transition-all duration-200 hover:scale-105"
