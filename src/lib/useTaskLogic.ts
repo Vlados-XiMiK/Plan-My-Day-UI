@@ -83,8 +83,6 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
         priority: task.priority || 'low',
         completed: false,
         starred: false,
-        assignedTo: task.assignedTo || null,
-        groupId: task.groupId || null,
       },
     ])
     fetch('/api/tasks', {
@@ -150,16 +148,6 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
     return { text: `Due in ${hours}h ${minutes}m`, isOverdue: false, isApproaching: true }
   }
 
-  const getAssignedDisplay = (task: Task) => {
-    if (task.assignedTo) {
-      const user = users.find(u => u.id === task.assignedTo)
-      return user ? `Assigned to: ${user.name}` : 'Assigned to: Unknown User'
-    } else if (task.groupId) {
-      const group = groups.find(g => g.id === task.groupId)
-      return group ? `Assigned to group: ${group.name}` : 'Assigned to: Unknown Group'
-    }
-    return 'Not assigned'
-  }
 
   const filterTasks = () => {
     return tasks.filter(task => {
@@ -170,8 +158,7 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
         task.category.toLowerCase().includes(query) ||
         task.priority.toLowerCase().includes(query) ||
         formatDate(task.createdAt).toLowerCase().includes(query) ||
-        formatDate(task.dueDate).toLowerCase().includes(query) ||
-        getAssignedDisplay(task).toLowerCase().includes(query)
+        formatDate(task.dueDate).toLowerCase().includes(query)
       )
     })
   }
@@ -194,7 +181,6 @@ export const useTaskLogic = (initialTasks: Task[], users: User[], groups: Group[
     getPriorityColor,
     formatDate,
     getTimeRemaining,
-    getAssignedDisplay,
     filterTasks,
   }
 }

@@ -37,7 +37,7 @@ export function AnimatedBackground() {
       speedY: number
       color: string
 
-      constructor() {
+      constructor(canvas: HTMLCanvasElement) {
         this.x = Math.random() * canvas.width
         this.y = Math.random() * canvas.height
         this.size = Math.random() * 5 + 1
@@ -46,7 +46,7 @@ export function AnimatedBackground() {
         this.color = "rgba(255, 255, 255, 0.8)"
       }
 
-      update() {
+      update(canvas: HTMLCanvasElement) {
         this.x += this.speedX
         this.y += this.speedY
 
@@ -71,7 +71,7 @@ export function AnimatedBackground() {
     const createParticles = () => {
       particles.length = 0
       for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle())
+        particles.push(new Particle(canvas))
       }
     }
 
@@ -81,7 +81,7 @@ export function AnimatedBackground() {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update()
+        particles[i].update(canvas)
         particles[i].draw(ctx)
 
         for (let j = i + 1; j < particles.length; j++) {
@@ -153,7 +153,7 @@ export function LightAnimatedBackground() {
       speedY: number
       color: string
 
-      constructor() {
+      constructor(canvas: HTMLCanvasElement) {
         this.x = Math.random() * canvas.width
         this.y = Math.random() * canvas.height
         this.size = Math.random() * 3 + 1
@@ -164,7 +164,7 @@ export function LightAnimatedBackground() {
         }, 255, ${Math.random() * 0.3 + 0.2})`
       }
 
-      update() {
+      update(canvas: HTMLCanvasElement) {
         this.x += this.speedX
         this.y += this.speedY
 
@@ -186,7 +186,7 @@ export function LightAnimatedBackground() {
     const createParticles = () => {
       particles.length = 0
       for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle())
+        particles.push(new Particle(canvas))
       }
     }
 
@@ -196,7 +196,7 @@ export function LightAnimatedBackground() {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update()
+        particles[i].update(canvas)
         particles[i].draw(ctx)
 
         for (let j = i + 1; j < particles.length; j++) {

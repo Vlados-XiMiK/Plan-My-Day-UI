@@ -83,7 +83,6 @@ export default function MainContent() {
     getPriorityColor,
     formatDate,
     getTimeRemaining,
-    getAssignedDisplay,
     filterTasks,
   } = useTaskLogic(initialTasks, users, groups);
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
