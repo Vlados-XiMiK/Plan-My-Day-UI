@@ -12,7 +12,7 @@ export default function LandingPage() {
   const { theme } = useTheme()
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#1a1a2e] text-gray-900 dark:text-white relative overflow-hidden">
+    <div className="min-h-screen dark:bg-[#1a1a2e] text-gray-900 dark:text-white relative overflow-auto">
       <div className="absolute inset-0 z-0">
         {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
         <div className="absolute inset-0 bg-black opacity-0 dark:opacity-60 z-10"></div>
