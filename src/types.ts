@@ -21,6 +21,8 @@ export interface Group {
 }
 
 export interface Feature {
+  key: string;
+  image?: string;
   title: string;
   subtitle?: string;
   description: string;

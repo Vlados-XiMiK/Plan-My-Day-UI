@@ -1,78 +1,78 @@
 "use client"
-
-import { useRef } from "react"
-import { motion, useScroll, useTransform, MotionProps } from "framer-motion"
+import { useRef, useState, useCallback, HTMLAttributes } from "react"
+import { motion, useScroll, useTransform, AnimatePresence, MotionProps } from "framer-motion"
+import Image from "next/image"
 import Header from "@/components/landing/header"
-import { ChevronDown } from "lucide-react"
 import Footer from "@/components/shared/footer"
 import { useLanguage } from "@/contexts/LanguageContext"
-import { ParallaxScroll } from "@/components/ui/parallax-scroll"
 import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
 import { useTheme } from "next-themes"
-import { HTMLAttributes, ButtonHTMLAttributes } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import en from "@/translations/en.json"
 import uk from "@/translations/uk.json"
-import type { Feature, Translation } from "@/types"
+import type { Feature } from "@/types"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
-// type for motion.h1
-type MotionH1Props = MotionProps & HTMLAttributes<HTMLHeadingElement>
-
-// type for motion.p
-type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
-
-// type for motion.button
-type MotionButtonProps = MotionProps & ButtonHTMLAttributes<HTMLButtonElement>
-
 export default function FeaturesPage() {
-  
   const { language } = useLanguage()
-  const t: Translation = language === "uk" ? uk : en
-  const mainRef = useRef<HTMLElement>(null!)
-  const featuresRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: mainRef })
+  const t = language === "uk" ? uk : en
   const { theme } = useTheme()
+  
+  const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({})
+
+  // Refs for parallax effect
+  const containerRef = useRef<HTMLElement>(null!);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  })
+
+  // Parallax transformations
+  const headerY = useTransform(scrollYProgress, [0, 0.5], [0, -100])
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.8])
 
   const features = Object.entries(t.features)
-    .filter(([key]) => key !== "title")
-    .map(([key, feature]) => ({
-      ...feature as Feature,
-      color:
-        key === "smartCalendar"
-          ? "#ef4444"
-          : key === "taskManagement"
-            ? "#8b5cf6"
-            : key === "aiAssistant"
-              ? "#06b6d4"
-              : key === "teamCollaboration"
-                ? "#10b981"
-                : key === "quickActions"
-                  ? "#f59e0b"
-                  : "#ec4899",
+      .filter(([key]) => key !== "title")
+      .map(([key, feature]) => ({
+        ...feature as Feature,
+        key,
+        color:
+          key === "smartCalendar"
+            ? "#ef4444"
+            : key === "taskManagement"
+              ? "#8b5cf6"
+              : key === "categoryManagement"
+                ? "#06b6d4"
+                : key === "teamCollaboration"
+                  ? "#10b981"
+                  : key === "smartNotifications"
+                    ? "#f59e0b"
+                    : key === "statistics"
+                        ? "#f59e0b"
+                        : "#ec4899",
+      }))
+
+  // Create individual transform values for each card
+  const card0Y = useTransform(scrollYProgress, [0, 1], [0, -40])
+  const card1Y = useTransform(scrollYProgress, [0, 1], [0, 0])
+  const card2Y = useTransform(scrollYProgress, [0, 1], [0, 40])
+  const card3Y = useTransform(scrollYProgress, [0, 1], [0, -40])
+  const card4Y = useTransform(scrollYProgress, [0, 1], [0, 0])
+  const card5Y = useTransform(scrollYProgress, [0, 1], [0, 40])
+
+  // Create an array of transform values
+  const cardYTransforms = [card0Y, card1Y, card2Y, card3Y, card4Y, card5Y]
+
+  // Toggle expanded state for a feature
+  const toggleFeatureExpanded = useCallback((key: string) => {
+    setExpandedFeatures((prev) => ({
+      ...prev,
+      [key]: !prev[key],
     }))
-
-  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8])
-  const y = useTransform(scrollYProgress, [0, 0.2], [0, -50])
-
-  const handleScrollToFeatures = () => {
-    if (featuresRef.current) {
-      const yOffset = -100 // Adjust this value to fine-tune the scroll position
-      const y = featuresRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset
-      window.scrollTo({ top: y, behavior: "smooth" })
-    }
-  }
-
-  const bounceAnimation = {
-    y: [0, -10, 0],
-    transition: {
-      duration: 1,
-      repeat: Number.POSITIVE_INFINITY,
-      repeatType: "reverse" as const,
-    },
-  }
+  }, [])
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -82,51 +82,109 @@ export default function FeaturesPage() {
       </div>
       <div className="relative z-20">
         <Header />
-        <main ref={mainRef}>
-          <motion.div
-            className="relative min-h-screen py-24 flex items-center justify-center"
-            style={{ opacity, scale, y }}
-            {...({} as MotionDivProps)}
-          >
-            <div className="container mx-auto px-6 md:px-8 text-center">
-              <motion.h1
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8 }}
-                className="text-4xl md:text-6xl lg:text-7xl font-bold mb-12 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400"
-                {...({} as MotionH1Props)}
-              >
-                {t.features.title}
-              </motion.h1>
-              <motion.p
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-16"
-                {...({} as MotionPProps)}
-              >
-                {t.featuresPage.subtitle}
-              </motion.p>
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                <motion.button
-                  onClick={handleScrollToFeatures}
-                  className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-                  animate={bounceAnimation}
-                  {...({} as MotionButtonProps)}
-                >
-                  <ChevronDown size={48} />
-                  <span className="sr-only">Scroll to features</span>
-                </motion.button>
-              </motion.div>
-            </div>
-          </motion.div>
+        <main ref={containerRef} className="relative">
+          <motion.div className="container mx-auto px-4 pt-36 pb-20 text-center" style={{ y: headerY, opacity }}
+          {...({} as MotionDivProps)}>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 leading-tight">
+              {t.features.title}
+            </h1>
 
-          <div ref={featuresRef}>
-            <ParallaxScroll features={features} />
+            <p className="text-lg md:text-xl max-w-3xl mx-auto text-gray-600 dark:text-gray-300 leading-relaxed mb-16">
+              {t.featuresPage.subtitle}
+            </p>
+          </motion.div>
+          
+          <div className="container mx-auto px-4 pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {features.map((feature, index) => {
+                const cardY = cardYTransforms[index % cardYTransforms.length]
+                const isExpanded = expandedFeatures[feature.key]
+
+                return (
+                  <motion.div
+                    key={feature.key}
+                    className="feature-card"
+                    style={{ y: cardY }}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    {...({} as MotionDivProps)}
+                  >
+                    <div className="h-full rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 bg-white dark:bg-gray-800/90 backdrop-blur-sm border border-gray-100 dark:border-gray-700">
+                      <div
+                        className="h-2 w-full"
+                        style={{
+                          background: `linear-gradient(to right, ${feature.color}, ${feature.color}aa)`,
+                        }}
+                      />
+
+                      {/* Image Section */}
+                      <div className="relative w-full h-48 overflow-hidden">
+                        <Image
+                          src={feature.image || "/placeholder.svg"}
+                          alt={feature.title}
+                          fill
+                          className="object-cover transition-transform duration-500 hover:scale-110"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                        <div
+                          className="absolute inset-0 opacity-30 transition-opacity duration-300 hover:opacity-0"
+                          style={{
+                            background: `linear-gradient(to bottom, ${feature.color}80, transparent)`,
+                          }}
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                          <h3 className="text-xl font-bold text-white drop-shadow-md">{feature.title}</h3>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{feature.description}</p>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                          onClick={() => toggleFeatureExpanded(feature.key)}
+                        >
+                          {isExpanded ? (
+                            <>
+                              {language === "uk" ? "Приховати деталі" : "Hide details"}{" "}
+                              <ChevronUp className="ml-2 h-4 w-4" />
+                            </>
+                          ) : (
+                            <>
+                              {language === "uk" ? "Показати деталі" : "Show details"}{" "}
+                              <ChevronDown className="ml-2 h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
+
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden"
+                              {...({} as MotionDivProps)}
+                            >
+                              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                  {feature.details}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
           </div>
         </main>
         <Footer />
@@ -134,4 +192,3 @@ export default function FeaturesPage() {
     </div>
   )
 }
-
