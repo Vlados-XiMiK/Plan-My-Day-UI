@@ -8,6 +8,7 @@ export interface Task {
   priority: 'high' | 'medium' | 'low';
   completed: boolean;
   starred: boolean;
+  date?: string; // Формат: YYYY-MM-DD (для Calendar)
 }
 
 export interface User {
