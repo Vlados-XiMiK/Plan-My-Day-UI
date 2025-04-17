@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { BarChart3, List, CalendarDays, PlusCircle, Trash, Folder } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useCategories } from '@/lib/useCategories';
-import { useLanguage } from '@/contexts/LanguageContext'; // Додаємо контекст мови
+import { useLanguage } from '@/contexts/LanguageContext';
 import en from '@/translations/en.json';
 import uk from '@/translations/uk.json';
 
@@ -19,12 +19,13 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme } = useTheme();
-  const { language } = useLanguage(); // Отримуємо мову з контексту
+  const { language } = useLanguage();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const t = language === 'uk' ? uk : en; // Вибираємо файл перекладу
+  const t = language === 'uk' ? uk : en;
 
   const {
     categories,
+    isLoading,
     newCategory,
     setNewCategory,
     newCategoryName,
@@ -71,7 +72,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
               width={200} 
               height={200} 
               className="object-cover w-full h-full" 
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push('/dashboard')}
             />
           </div>
           {!isCollapsed && (
@@ -135,64 +136,74 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
             </button>
           </div>
 
-          <div className="max-h-64 overflow-y-auto">
-            <ul className="space-y-2">
-              {categories.map((category, index) => (
-                <li
-                  key={index}
-                  className={`flex items-center justify-between rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-white/50 hover:bg-gray-100'} transition-all duration-200`}
-                >
-                  <div className="flex items-center flex-1">
-                    <div className={`h-4 w-4 rounded-full ${isDarkTheme ? 'bg-gradient-to-br from-purple-400 to-pink-500' : 'bg-gradient-to-br from-indigo-400 to-blue-500'}`}></div>
-                    {editingIndex === index ? (
-                      <input
-                        type="text"
-                        value={tempCategory}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (/^[a-zA-Z\s]*$/.test(value)) setTempCategory(value);
-                        }}
-                        onKeyDown={(e) => e.key === 'Enter' && saveEditing(index)}
-                        onBlur={() => saveEditing(index)}
-                        className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-100 text-gray-800 placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-300'}`}
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        onDoubleClick={() => startEditing(index)}
-                        className={`ml-2 cursor-pointer ${isDarkTheme ? 'text-gray-100' : 'text-gray-700'} font-medium`}
-                      >
-                        {category}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => deleteCategory(index)}
-                    className={`${isDarkTheme ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-400'} transition-colors duration-200`}
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{'Loading...'}</p>
+            </div>
+          ) : (
+            <div className="max-h-64 overflow-y-auto">
+              <ul className="space-y-2">
+                {categories.map((category, index) => (
+                  <li
+                    key={category.name}
+                    className={`flex items-center justify-between rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-white/50 hover:bg-gray-100'} transition-all duration-200`}
                   >
-                    <Trash className="h-5 w-5" />
-                  </button>
-                </li>
-              ))}
-              {newCategory && (
-                <li className={`flex items-center rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-white/50 hover:bg-gray-100'} transition-all duration-200`}>
-                  <div className={`h-4 w-4 rounded-full ${isDarkTheme ? 'bg-gradient-to-br from-purple-400 to-pink-500' : 'bg-gradient-to-br from-indigo-400 to-blue-500'}`}></div>
-                  <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^[a-zA-Z\s]*$/.test(value)) setNewCategoryName(value);
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && addCategory()}
-                    onBlur={addCategory}
-                    className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-100 text-gray-800 placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-300'}`}
-                    autoFocus
-                  />
-                </li>
-              )}
-            </ul>
-          </div>
+                    <div className="flex items-center flex-1">
+                      <div
+                        className="h-4 w-4 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      ></div>
+                      {editingIndex === index ? (
+                        <input
+                          type="text"
+                          value={tempCategory}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[a-zA-Z\s]*$/.test(value)) setTempCategory(value);
+                          }}
+                          onKeyDown={(e) => e.key === 'Enter' && saveEditing(index)}
+                          onBlur={() => saveEditing(index)}
+                          className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-100 text-gray-800 placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-300'}`}
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={() => startEditing(index)}
+                          className={`ml-2 cursor-pointer ${isDarkTheme ? 'text-gray-100' : 'text-gray-700'} font-medium`}
+                        >
+                          {category.name}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => deleteCategory(index)}
+                      className={`${isDarkTheme ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-400'} transition-colors duration-200`}
+                    >
+                      <Trash className="h-5 w-5" />
+                    </button>
+                  </li>
+                ))}
+                {newCategory && (
+                  <li className={`flex items-center rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-white/50 hover:bg-gray-100'} transition-all duration-200`}>
+                    <div className="h-4 w-4 rounded-full bg-gray-500"></div>
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^[a-zA-Z\s]*$/.test(value)) setNewCategoryName(value);
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && addCategory()}
+                      onBlur={addCategory}
+                      className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-100 text-gray-800 placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-300'}`}
+                      autoFocus
+                    />
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </aside>

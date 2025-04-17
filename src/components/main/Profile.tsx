@@ -47,7 +47,7 @@ export default function Profile({
     phone: "N/A",
     workplace: "N/A",
     age: 0,
-    avatarUrl: "/profile-image.jpg?height=128&width=128",
+    avatarUrl: "/profile-image.jpg",
   },
   stats = { completedTasks: 0, ongoingTasks: 0, totalTasks: 0 },
 }: ProfileProps) {
@@ -89,12 +89,13 @@ export default function Profile({
           <div className="flex flex-col sm:flex-row items-center gap-6">
             {/* Avatar Section */}
             <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-purple-100 dark:ring-purple-900">
-              <Image
-                src={user?.avatarUrl ?? "/profile-image.jpg?height=128&width=128"}
-                alt={t.profile.avatarAlt || "Profile"}
-                className="w-full h-full object-cover"
-              />
-            </div>
+  <Image
+    src={user?.avatarUrl ?? "/profile-image.jpg"}
+    alt={t.profile.avatarAlt || "Profile"}
+    fill
+    style={{ objectFit: "cover" }}
+  />
+</div>
 
             {/* User Info Section */}
             <div className="flex-1 space-y-4 text-center sm:text-left">
