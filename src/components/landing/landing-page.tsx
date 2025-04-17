@@ -3,7 +3,6 @@
 import { motion } from "framer-motion"
 import Header from "./header"
 import Hero from "./hero"
-import Features from "./features"
 import Footer from "@/components/shared/footer"
 import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
 import { useTheme } from "next-themes"
@@ -21,7 +20,6 @@ export default function LandingPage() {
         <Header />
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
           <Hero />
-          <Features />
         </motion.div>
         <Footer />
       </div>
