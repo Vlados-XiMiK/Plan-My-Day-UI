@@ -134,7 +134,7 @@ export default function Calendar() {
       setDirection(null)
     }, 500)
     return () => clearTimeout(timer)
-  }, [animationKey])
+  }, [animationKey, setDirection])
 
   return (
     <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300 flex flex-col h-full overflow-hidden">

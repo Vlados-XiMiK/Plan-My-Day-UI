@@ -155,6 +155,8 @@
     "productivityScore": "Оцінка продуктивності",
     "productivityChange": "+5% порівняно з минулим тижнем",
     "productivityMessage": "Чудова робота! Ви на шляху до 100%!",
+    "productivityDecline": "Продовжуйте! Наступного тижня ви зможете покращити!",
+    "noTasks": "Немає доступних завдань",
     "taskDistribution": {
       "title": "Розподіл завдань"
     },

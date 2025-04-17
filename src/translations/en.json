@@ -155,6 +155,8 @@
     "productivityScore": "Productivity Score",
     "productivityChange": "+5% from last week",
     "productivityMessage": "Great job! You’re on your way to 100%!",
+    "productivityDecline": "Keep going! You can improve next week!",
+    "noTasks": "No tasks available",
     "taskDistribution": {
       "title": "Task Distribution"
     },

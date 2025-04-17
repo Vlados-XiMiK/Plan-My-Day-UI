@@ -6,7 +6,7 @@ import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup';
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup';
 import { useTaskLogic } from '@/lib/useTaskLogic';
 import { Task, User, Group } from '@/types';
-import { fetchTasks, fetchCategories, Category } from '@/data/tasks';
+import { fetchTasks, fetchCategories} from '@/data/tasks';
 
 export default function MainContent() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -180,7 +180,6 @@ export default function MainContent() {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]">
         <div className="w-12 h-12 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading tasks...</p>
       </div>
     );
   }
