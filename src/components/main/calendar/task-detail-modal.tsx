@@ -11,8 +11,8 @@ import { Checkbox } from "@/components/ui/calendar/checkbox"
 import type { Task } from "@/types"
 import { HTMLAttributes } from 'react'
 
+// type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
-
 
 type TaskDetailModalProps = {
   task: Task | null

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Calendar, Clock, FolderIcon, CheckCircle2, Circle, CheckCircle, Star } from "lucide-react"
 import { TooltipContent } from "@/components/ui/calendar/tooltip"
 import { getPriorityColorClass } from "@/lib/calendar-utils"
@@ -17,6 +17,11 @@ type TaskTooltipProps = {
 export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipProps) {
   // Use local state to provide immediate visual feedback
   const [isCompleted, setIsCompleted] = useState(task.completed)
+
+  // Update local state when task prop changes
+  useEffect(() => {
+    setIsCompleted(task.completed)
+  }, [task.completed])
 
   const handleToggleCompletion = (e: React.MouseEvent) => {
     e.stopPropagation()
