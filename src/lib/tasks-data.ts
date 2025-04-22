@@ -1,9 +1,5 @@
-import { Task } from '@/types';
+import { Task, Category } from '@/types';
 
-export interface Category {
-  name: string;
-  color: string;
-}
 
 const tasks: Task[] = [
   {
@@ -11,8 +7,7 @@ const tasks: Task[] = [
     title: 'Завершить проектное предложение',
     description: 'Завершить черновик и отправить на проверку.',
     createdAt: '2024-06-08T10:00:00',
-    dueDate: '2025-02-25T23:00:00',
-    date: '2025-02-25', // Added for calendar
+    dueDate: '2025-04-25T23:00:00',
     category: 'Работа',
     priority: 'high',
     completed: false,
@@ -23,8 +18,7 @@ const tasks: Task[] = [
     title: 'Купить продукты',
     description: 'Купить продукты на неделю.',
     createdAt: '2024-06-09T14:30:00',
-    dueDate: '2026-06-10T18:00:00',
-    date: '2026-06-10',
+    dueDate: '2025-04-10T18:00:00',
     category: 'Покупки',
     priority: 'medium',
     completed: true,
@@ -35,8 +29,7 @@ const tasks: Task[] = [
     title: 'Записаться к стоматологу',
     description: 'Позвонить в клинику для записи на осмотр.',
     createdAt: '2024-06-10T09:15:00',
-    dueDate: '2025-02-25T15:00:00',
-    date: '2025-02-25',
+    dueDate: '2025-04-20T15:00:00',
     category: 'Личное',
     priority: 'low',
     completed: false,
@@ -54,7 +47,14 @@ const categories: Category[] = [
 // Simulate an API request for tasks
 export async function fetchTasks(): Promise<Task[]> {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(tasks), 500); // Delay to simulate network request
+    setTimeout(() => {
+      // Преобразуем задачи, добавляя поле date на основе dueDate
+      const transformedTasks = tasks.map((task) => ({
+        ...task,
+        date: task.dueDate.split('T')[0], // Извлекаем дату (YYYY-MM-DD) из dueDate
+      }));
+      resolve(transformedTasks);
+    }, 500);
   });
 }
 

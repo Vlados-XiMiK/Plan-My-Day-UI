@@ -1,30 +1,24 @@
 "use client"
 
-import { useState, useEffect, HTMLAttributes } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/calendar/dialog"
 import { Badge } from "@/components/ui/calendar/badge"
 import { motion, MotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Clock, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react"
-import { getTaskStatus, formatTime } from "@/lib/calendar-data"
+import { getTaskStatus } from "@/types"
 import { Checkbox } from "@/components/ui/calendar/checkbox"
-import type { Task } from "@/lib/calendar-data"
+import type { Task } from "@/types"
+import { HTMLAttributes } from 'react'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
-type Categories = {
-  [key: string]: {
-    color: string
-    icon: string
-  }
-}
 
 type TaskDetailModalProps = {
   task: Task | null
   isOpen: boolean
   onClose: () => void
   toggleTaskCompletion: (taskId: number) => void
-  categories: Categories
 }
 
 export default function TaskDetailModal({
@@ -33,15 +27,17 @@ export default function TaskDetailModal({
   onClose,
   toggleTaskCompletion,
 }: TaskDetailModalProps) {
-  // Локальное состояние для хранения копии задачи
-  const [localTask, setLocalTask] = useState<Task | null>(task)
+  // Add local state to track checkbox status for immediate UI feedback
+  const [isCompleted, setIsCompleted] = useState(false)
 
-  // Синхронизируем локальное состояние с пропсом task, когда он меняется
+  // Update local state when task changes
   useEffect(() => {
-    setLocalTask(task)
+    if (task) {
+      setIsCompleted(task.completed)
+    }
   }, [task])
 
-  if (!localTask) return null
+  if (!task) return null
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -53,13 +49,15 @@ export default function TaskDetailModal({
     }).format(date)
   }
 
-  const taskStatus = getTaskStatus(localTask)
+  const taskStatus = getTaskStatus(task)
 
   const handleCheckboxChange = () => {
-    toggleTaskCompletion(localTask.id)
-    // Обновляем локальное состояние, чтобы чекбокс сразу отобразил изменение
-    setLocalTask((prev) => (prev ? { ...prev, completed: !prev.completed } : prev))
+    setIsCompleted(!isCompleted)
+    toggleTaskCompletion(task.id)
   }
+
+  // Extract time from dueDate
+  const time = task.dueDate ? task.dueDate.split("T")[1]?.substring(0, 5) : undefined
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -67,9 +65,9 @@ export default function TaskDetailModal({
         <div
           className={cn(
             "p-4",
-            localTask.priority === "high"
+            task.priority === "high"
               ? "bg-red-50 dark:bg-red-900/20"
-              : localTask.priority === "medium"
+              : task.priority === "medium"
                 ? "bg-amber-50 dark:bg-amber-900/20"
                 : "bg-blue-50 dark:bg-blue-900/20",
             taskStatus === "overdue" && "border-l-4 border-red-500 dark:border-red-700",
@@ -78,47 +76,40 @@ export default function TaskDetailModal({
         >
           <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <DialogTitle
-              className={cn(
-                "text-xl font-bold flex items-center gap-2",
-                localTask.completed && "line-through opacity-70",
-              )}
+              className={cn("text-xl font-bold flex items-center gap-2", isCompleted && "line-through opacity-70")}
             >
               <div className="cursor-pointer">
-                <Checkbox
-                  checked={localTask.completed}
-                  onCheckedChange={handleCheckboxChange}
-                  className="h-6 w-6 rounded-md"
-                />
+                <Checkbox checked={isCompleted} onCheckedChange={handleCheckboxChange} className="h-6 w-6 rounded-md" />
               </div>
               <span
                 className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                 style={{
                   backgroundColor:
-                    localTask.priority === "high"
+                    task.priority === "high"
                       ? "rgb(220, 38, 38)"
-                      : localTask.priority === "medium"
+                      : task.priority === "medium"
                         ? "rgb(217, 119, 6)"
                         : "rgb(37, 99, 235)",
                 }}
               ></span>
-              {localTask.title}
+              {task.title}
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <Badge
               className={cn(
                 "rounded-lg",
-                localTask.priority === "high"
+                task.priority === "high"
                   ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                  : localTask.priority === "medium"
+                  : task.priority === "medium"
                     ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
                     : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
               )}
             >
-              {localTask.priority} priority
+              {task.priority} priority
             </Badge>
             <Badge variant="outline" className="rounded-lg">
-              {localTask.category}
+              {task.category}
             </Badge>
             {taskStatus === "overdue" && (
               <Badge variant="destructive" className="rounded-lg flex items-center gap-1">
@@ -135,15 +126,20 @@ export default function TaskDetailModal({
                 </Badge>
               </motion.div>
             )}
-            {localTask.completed && (
+            {isCompleted && (
               <Badge className="rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" /> Completed
               </Badge>
             )}
+            {task.starred && (
+              <Badge className="rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1">
+                ⭐ Starred
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(localTask.date)}</p>
-            {localTask.time && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(task.dueDate.split("T")[0])}</p>
+            {time && (
               <div
                 className={cn(
                   "flex items-center text-sm",
@@ -155,7 +151,7 @@ export default function TaskDetailModal({
                 )}
               >
                 <Clock className="h-3 w-3 mr-1" />
-                {formatTime(localTask.time)}
+                {time}
               </div>
             )}
           </div>
@@ -166,11 +162,17 @@ export default function TaskDetailModal({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn("text-gray-700 dark:text-gray-300", localTask.completed && "opacity-70")}
+            className={cn("text-gray-700 dark:text-gray-300", isCompleted && "opacity-70")}
             {...({} as MotionDivProps)}
           >
-            {localTask.description || "No description provided."}
+            {task.description || "No description provided."}
           </motion.div>
+
+          {task.createdAt && (
+            <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+              Created: {new Date(task.createdAt).toLocaleString()}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

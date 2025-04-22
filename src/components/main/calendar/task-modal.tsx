@@ -10,12 +10,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/calendar/radio-group
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/calendar/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/calendar/select"
 import { Textarea } from "@/components/ui/calendar/textarea"
-import type { Task } from "@/lib/calendar-data"
+import type { Task } from "@/types"
 
 type TaskModalProps = {
   isOpen: boolean
   onClose: () => void
-  onAddTask: (task: Omit<Task, "id">) => void
+  onAddTask: (task: Omit<Task, "id" | "createdAt" | "starred">) => void
   selectedDate: string | null
   categories: string[]
 }
@@ -23,24 +23,46 @@ type TaskModalProps = {
 export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, categories }: TaskModalProps) {
   const [title, setTitle] = useState("")
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium")
-  const [category, setCategory] = useState(categories[0] || "work")
+  const [category, setCategory] = useState(categories[0] || "Работа")
   const [description, setDescription] = useState("")
   const [time, setTime] = useState("09:00")
 
+  // Add validation for past dates and times
+  // Add state for validation error
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  // Update the handleSubmit function to check if the date and time are in the past
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
     if (title.trim() && selectedDate) {
+      // Create the dueDate by combining the date and time
+      const dueDate = `${selectedDate}T${time}:00`
+
+      // Check if the selected date and time are in the past
+      const selectedDateTime = new Date(dueDate)
+      const currentDateTime = new Date()
+
+      if (selectedDateTime < currentDateTime) {
+        setValidationError("Cannot create tasks in the past. Please select a future date and time.")
+        return
+      }
+
+      // Clear any previous validation errors
+      setValidationError(null)
+
       onAddTask({
         title: title.trim(),
-        date: selectedDate,
-        time,
-        priority,
+        description: description.trim() || "",
+        dueDate,
         category,
-        description: description.trim() || undefined,
+        priority,
+        completed: false,
+        date: selectedDate, // Add the date field for compatibility
       })
       setTitle("")
       setPriority("medium")
-      setCategory(categories[0] || "work")
+      setCategory(categories[0] || "Работа")
       setDescription("")
       setTime("09:00")
     }
@@ -111,10 +133,10 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent className="rounded-lg">
+              <SelectContent className="rounded-lg max-h-[200px] overflow-y-auto">
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    {cat}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -148,6 +170,8 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
               </div>
             </RadioGroup>
           </div>
+
+          {validationError && <div className="text-sm text-red-500 font-medium">{validationError}</div>}
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose} className="rounded-lg">

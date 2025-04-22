@@ -6,7 +6,7 @@ import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup';
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup';
 import { useTaskLogic } from '@/lib/useTaskLogic';
 import { Task, User, Group } from '@/types';
-import { fetchTasks, fetchCategories} from '@/data/tasks';
+import { fetchTasks, fetchCategories} from '@/lib/tasks-data';
 
 export default function MainContent() {
   const [tasks, setTasks] = useState<Task[]>([]);

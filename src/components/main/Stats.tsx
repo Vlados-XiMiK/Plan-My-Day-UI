@@ -21,8 +21,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNotification } from '@/contexts/notification-context';
 import en from '@/translations/en.json';
 import uk from '@/translations/uk.json';
-import { fetchTasks, fetchCategories, Category } from '@/data/tasks';
-import { Task } from '@/types';
+import { fetchTasks, fetchCategories } from '@/lib/tasks-data';
+import { Task, Category } from '@/types';
 
 // Register Chart.js components
 ChartJS.register(BarElement, BarController, PieController, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);

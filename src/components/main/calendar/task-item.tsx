@@ -1,15 +1,17 @@
 "use client"
 
 import type React from "react"
-import { HTMLAttributes } from "react"
+
 import { motion, MotionProps } from "framer-motion"
-import { AlertCircle, AlertTriangle, CheckCircle2, Clock } from "lucide-react"
+import { AlertCircle, AlertTriangle, CheckCircle2, Clock, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getTaskStatus } from "@/lib/calendar-data"
+import { getTaskStatus } from "@/types"
 import { getPriorityColorClass } from "@/lib/calendar-utils"
-import type { Task } from "@/lib/calendar-data"
+import type { Task } from "@/types"
 import { Tooltip, TooltipProvider, TooltipTrigger } from "@/components/ui/calendar/tooltip"
 import { Checkbox } from "@/components/ui/calendar/checkbox"
+import TaskTooltip from "./task-tooltip"
+import { HTMLAttributes } from 'react'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -28,7 +30,6 @@ const pulseVariants = {
 
 type TaskItemProps = {
   task: Task
-  categoryStyle: { color: string }
   openTaskDetail: (task: Task) => void
   toggleTaskCompletion: (taskId: number) => void
   view: "month" | "list"
@@ -37,7 +38,6 @@ type TaskItemProps = {
 
 export default function TaskItem({
   task,
-  categoryStyle,
   openTaskDetail,
   toggleTaskCompletion,
   view,
@@ -49,6 +49,9 @@ export default function TaskItem({
     e.stopPropagation()
     toggleTaskCompletion(task.id)
   }
+
+  // Extract time from dueDate
+  const time = task.dueDate ? task.dueDate.split("T")[1]?.substring(0, 5) : undefined
 
   // Update the month view task item to ensure text fits better and improve tooltip behavior
   if (view === "month") {
@@ -64,7 +67,6 @@ export default function TaskItem({
               transition={{ duration: 0.3 }}
               className={cn(
                 "px-2 py-1 text-xs rounded-lg flex items-center cursor-pointer transform transition-transform hover:scale-[1.02] active:scale-[0.98]",
-                categoryStyle.color,
                 getPriorityColorClass(task.priority, true),
                 status === "overdue" && "border-l-4 border-red-500 dark:border-red-700",
                 status === "approaching" && "border-l-4 border-amber-500 dark:border-amber-700",
@@ -83,6 +85,7 @@ export default function TaskItem({
               </div>
               <div className="flex items-center truncate flex-1">
                 <span className="truncate">{task.title}</span>
+                {task.starred && <Star className="h-3 w-3 ml-1 text-yellow-500 fill-yellow-500" />}
               </div>
               {status === "overdue" && (
                 <AlertCircle className="h-3 w-3 ml-1 flex-shrink-0 text-red-600 dark:text-red-400" />
@@ -92,7 +95,7 @@ export default function TaskItem({
               )}
             </motion.div>
           </TooltipTrigger>
-          
+          <TaskTooltip task={task} toggleTaskCompletion={toggleTaskCompletion} />
         </Tooltip>
       </TooltipProvider>
     )
@@ -144,6 +147,7 @@ export default function TaskItem({
           >
             {task.title}
           </h3>
+          {task.starred && <Star className="h-4 w-4 ml-1 text-yellow-500 fill-yellow-500" />}
           {status === "overdue" && (
             <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-lg bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
               Overdue
@@ -173,10 +177,10 @@ export default function TaskItem({
               weekday: "short",
               month: "short",
               day: "numeric",
-            }).format(new Date(task.date))}
+            }).format(new Date(task.dueDate.split("T")[0]))}
             {isTaskToday && " (Today)"}
           </p>
-          {task.time && (
+          {time && (
             <div
               className={cn(
                 "flex items-center text-sm ml-2",
@@ -188,7 +192,7 @@ export default function TaskItem({
               )}
             >
               <Clock className="h-3 w-3 mr-1" />
-              {task.time}
+              {time}
             </div>
           )}
         </div>

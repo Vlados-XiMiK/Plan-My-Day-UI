@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useNotification } from '@/contexts/notification-context';
-import { fetchCategories, Category } from '@/data/tasks';
+import { fetchCategories } from '@/lib/tasks-data';
+import { Category } from '@/types'
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
