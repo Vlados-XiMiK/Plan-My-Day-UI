@@ -13,9 +13,10 @@ import uk from '@/translations/uk.json';
 interface SidebarProps {
   isVisible: boolean;
   isCollapsed: boolean;
+  setIsCollapsed: (value: boolean) => void;
 }
 
-export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
+export default function Sidebar({ isVisible, isCollapsed, setIsCollapsed }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme } = useTheme();
@@ -54,16 +55,16 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 flex h-full flex-col transition-all duration-300 ease-in-out
+      className={`fixed inset-y-0 left-0 z-30 flex h-full flex-col transition-all duration-300 ease-out
         ${isVisible ? 'translate-x-0' : '-translate-x-full'} 
         ${isCollapsed ? 'w-20' : 'w-72'}
         md:relative md:translate-x-0
         ${isDarkTheme 
           ? 'bg-gradient-to-b from-purple-950 to-gray-900 text-gray-100' 
-          : 'bg-gradient-to-b from-gray-50 to-beige-100 text-gray-800'
-        } border-r ${isDarkTheme ? 'border-purple-900' : 'border-gray-200'}`}
+          : 'bg-gradient-to-b from-gray-100 to-gray-200 sm:bg-gradient-to-b sm:from-gray-50 sm:to-beige-100 text-gray-900 sm:text-gray-800' // Higher contrast on small screens, original gradient on medium and larger
+        } border-r ${isDarkTheme ? 'border-purple-900' : 'border-gray-300 sm:border-gray-200'}`} // Adjusted border for small screens
     >
-      <div className={`flex h-16 shrink-0 items-center justify-center backdrop-blur-sm border-b px-4`}>
+      <div className={`flex h-16 shrink-0 items-center justify-center backdrop-blur-sm border-b px-4 ${isDarkTheme ? 'border-purple-900' : 'border-gray-300 sm:border-gray-200'}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start w-full'}`}>
           <div className="h-16 w-16 overflow-hidden">
             <Image 
@@ -86,36 +87,36 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
       <nav className="flex-1 space-y-2 overflow-y-auto p-4">
         <button
           onClick={() => router.push('/dashboard/stats')}
-          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-purple-800/50 text-gray-100' : 'hover:bg-gray-200/50 text-gray-700'} transition-all duration-200
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-purple-800/50 text-gray-100' : 'hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-800 sm:text-gray-700'} transition-all duration-200 // Adjusted for small screens
             ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/stats' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-amber-100'} text-${isDarkTheme ? 'white' : 'amber-800'}` : ''}`}
+            ${pathname === '/dashboard/stats' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-amber-200 sm:bg-amber-100'} text-${isDarkTheme ? 'white' : 'amber-900 sm:amber-800'}` : ''}`}
         >
           <BarChart3 className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
           {!isCollapsed && <span className="font-medium">{t.sidebar.stats || 'Stats'}</span>}
         </button>
         <button
           onClick={() => router.push('/dashboard/tasks')}
-          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-purple-800/50 text-gray-100' : 'hover:bg-gray-200/50 text-gray-700'} transition-all duration-200
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-purple-800/50 text-gray-100' : 'hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-800 sm:text-gray-700'} transition-all duration-200
             ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/tasks' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-emerald-100'} text-${isDarkTheme ? 'white' : 'emerald-800'}` : ''}`}
+            ${pathname === '/dashboard/tasks' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-emerald-200 sm:bg-emerald-100'} text-${isDarkTheme ? 'white' : 'emerald-900 sm:emerald-800'}` : ''}`}
         >
           <List className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
           {!isCollapsed && <span className="font-medium">{t.sidebar.allTasks || 'All Tasks'}</span>}
         </button>
         <button
           onClick={() => router.push('/dashboard/calendar')}
-          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-purple-800/50 text-gray-100' : 'hover:bg-gray-200/50 text-gray-700'} transition-all duration-200
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-purple-800/50 text-gray-100' : 'hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-800 sm:text-gray-700'} transition-all duration-200
             ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/calendar' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-indigo-100'} text-${isDarkTheme ? 'white' : 'indigo-800'}` : ''}`}
+            ${pathname === '/dashboard/calendar' ? `${isDarkTheme ? 'bg-purple-700' : 'bg-indigo-200 sm:bg-indigo-100'} text-${isDarkTheme ? 'white' : 'indigo-900 sm:indigo-800'}` : ''}`}
         >
           <CalendarDays className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
           {!isCollapsed && <span className="font-medium">{t.sidebar.calendar || 'Calendar'}</span>}
         </button>
         <button
           onClick={() => router.push('/dashboard/projects')}
-          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-blue-800/50 text-gray-100' : 'hover:bg-blue-200/50 text-gray-700'} transition-all duration-200
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? 'hover:bg-blue-800/50 text-gray-100' : 'hover:bg-blue-300/50 sm:hover:bg-blue-200/50 text-gray-800 sm:text-gray-700'} transition-all duration-200
             ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/projects' ? `${isDarkTheme ? 'bg-blue-700' : 'bg-blue-100'} text-${isDarkTheme ? 'white' : 'blue-800'}` : ''}`}
+            ${pathname === '/dashboard/projects' ? `${isDarkTheme ? 'bg-blue-700' : 'bg-blue-200 sm:bg-blue-100'} text-${isDarkTheme ? 'white' : 'blue-900 sm:blue-800'}` : ''}`}
         >
           <Folder className={`${isCollapsed ? 'h-7 w-7' : 'mr-3 h-7 w-7'}`} />
           {!isCollapsed && <span className="font-medium">{t.sidebar.project || 'Projects'}</span>}
@@ -125,12 +126,12 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
       {!isCollapsed && (
         <div className="flex-1 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className={`text-lg font-semibold ${isDarkTheme ? 'text-purple-200' : 'text-gray-800'}`}>
+            <h2 className={`text-lg font-semibold ${isDarkTheme ? 'text-purple-200' : 'text-gray-900 sm:text-gray-800'}`}>
               {t.sidebar.myCategories || 'My Categories'}
             </h2>
             <button
               onClick={() => setNewCategory(true)}
-              className={`${isDarkTheme ? 'text-purple-300 hover:text-purple-200' : 'text-indigo-500 hover:text-indigo-400'} transition-colors duration-200`}
+              className={`${isDarkTheme ? 'text-purple-300 hover:text-purple-200' : 'text-indigo-600 sm:text-indigo-500 hover:text-indigo-500 sm:hover:text-indigo-400'} transition-colors duration-200`}
             >
               <PlusCircle className="h-6 w-6" />
             </button>
@@ -146,7 +147,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
                 {categories.map((category, index) => (
                   <li
                     key={category.name}
-                    className={`flex items-center justify-between rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-white/50 hover:bg-gray-100'} transition-all duration-200`}
+                    className={`flex items-center justify-between rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-gray-50 sm:bg-white/50 hover:bg-gray-200 sm:hover:bg-gray-100'} transition-all duration-200`}
                   >
                     <div className="flex items-center flex-1">
                       <div
@@ -163,13 +164,13 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
                           }}
                           onKeyDown={(e) => e.key === 'Enter' && saveEditing(index)}
                           onBlur={() => saveEditing(index)}
-                          className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-100 text-gray-800 placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-300'}`}
+                          className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-200 sm:bg-gray-100 text-gray-900 sm:text-gray-800 placeholder-gray-500 sm:placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-400 sm:focus:ring-indigo-300'}`}
                           autoFocus
                         />
                       ) : (
                         <span
                           onDoubleClick={() => startEditing(index)}
-                          className={`ml-2 cursor-pointer ${isDarkTheme ? 'text-gray-100' : 'text-gray-700'} font-medium`}
+                          className={`ml-2 cursor-pointer ${isDarkTheme ? 'text-gray-100' : 'text-gray-900 sm:text-gray-700'} font-medium`}
                         >
                           {category.name}
                         </span>
@@ -177,14 +178,14 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
                     </div>
                     <button
                       onClick={() => deleteCategory(index)}
-                      className={`${isDarkTheme ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-400'} transition-colors duration-200`}
+                      className={`${isDarkTheme ? 'text-red-400 hover:text-red-300' : 'text-red-600 sm:text-red-500 hover:text-red-500 sm:hover:text-red-400'} transition-colors duration-200`}
                     >
                       <Trash className="h-5 w-5" />
                     </button>
                   </li>
                 ))}
                 {newCategory && (
-                  <li className={`flex items-center rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-white/50 hover:bg-gray-100'} transition-all duration-200`}>
+                  <li className={`flex items-center rounded-lg p-3 ${isDarkTheme ? 'bg-purple-900/30 hover:bg-purple-800/50' : 'bg-gray-50 sm:bg-white/50 hover:bg-gray-200 sm:hover:bg-gray-100'} transition-all duration-200`}>
                     <div className="h-4 w-4 rounded-full bg-gray-500"></div>
                     <input
                       type="text"
@@ -195,7 +196,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
                       }}
                       onKeyDown={(e) => e.key === 'Enter' && addCategory()}
                       onBlur={addCategory}
-                      className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-100 text-gray-800 placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-300'}`}
+                      className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? 'bg-purple-900/50 text-white placeholder-purple-300' : 'bg-gray-200 sm:bg-gray-100 text-gray-900 sm:text-gray-800 placeholder-gray-500 sm:placeholder-gray-400'} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? 'focus:ring-purple-400' : 'focus:ring-indigo-400 sm:focus:ring-indigo-300'}`}
                       autoFocus
                     />
                   </li>

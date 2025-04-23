@@ -84,20 +84,22 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       className={`sticky top-0 z-40 flex h-16 items-center justify-between px-4 transition-colors duration-300
         ${isDarkTheme
           ? "bg-gradient-to-b from-purple-950 to-gray-900 border-b border-purple-900"
-          : "bg-gradient-to-b from-gray-50 to-beige-100 border-b border-gray-200"}`}
+          : "bg-gradient-to-b from-gray-100 to-gray-200 sm:bg-gradient-to-b sm:from-gray-50 sm:to-beige-100 border-b border-gray-300 sm:border-gray-200"}`} // Higher contrast on small screens, original gradient on medium and larger
     >
       <button
         onClick={isDesktop ? toggleCollapse : toggleSidebar}
-        className={`p-2 rounded-full ${isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-200/50"}`}
+        className={`p-2 rounded-full ${isDarkTheme ? "hover:bg-purple-800/50 text-gray-100" : "hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-900 sm:text-gray-800"}`} // Adjusted for small screens
         aria-label={isDesktop ? (isCollapsed ? "Expand sidebar" : "Collapse sidebar") : "Toggle sidebar"}
       >
-        <Menu className={`h-6 w-6 ${isDarkTheme ? "text-gray-100" : "text-gray-800"}`} />
+        <Menu className="h-6 w-6" />
       </button>
 
       <div className="flex-1 flex justify-center mx-2">
-        <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-3 py-1 shadow-md max-w-full overflow-hidden">
+        <div className={`inline-block rounded-full px-3 py-1 shadow-md max-w-full overflow-hidden
+          ${isDarkTheme ? "bg-[#2a2a3e]" : "bg-white sm:bg-white/80"}`}>
           <h2
-            className={`font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap overflow-hidden text-ellipsis
+            className={`font-semibold whitespace-nowrap overflow-hidden text-ellipsis
+              ${isDarkTheme ? "text-gray-100" : "text-gray-900 sm:text-gray-800"}
               ${isDesktop ? "text-lg" : "text-sm"}`}
           >
             {t.header.myDay || "My Day"} · {currentDateTime}
@@ -108,22 +110,20 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-full ${
-            isDarkTheme ? "bg-purple-900/50 hover:bg-purple-800/50 text-gray-100" : "bg-white/50 hover:bg-gray-100 text-gray-800"
-          }`}
+          className={`flex items-center gap-2 px-3 py-2 rounded-full
+            ${isDarkTheme ? "bg-purple-900/50 hover:bg-purple-800/50 text-gray-100" : "bg-gray-50 sm:bg-white/50 hover:bg-gray-200 sm:hover:bg-gray-100 text-gray-900 sm:text-gray-800"}`} // Adjusted for small screens
         >
           <Avatar name={userName} size="small" />
           <span className="font-medium hidden sm:inline">{userName}</span>
           <ChevronDown
-            className={`h-4 w-4 ${isDarkTheme ? "text-gray-300" : "text-gray-600"} ${showDropdown ? "rotate-180" : ""}`}
+            className={`h-4 w-4 ${isDarkTheme ? "text-gray-300" : "text-gray-700 sm:text-gray-600"} ${showDropdown ? "rotate-180" : ""}`}
           />
         </button>
 
         {showDropdown && (
           <div
-            className={`absolute right-0 mt-2 w-48 rounded-md py-1 shadow-lg ${
-              isDarkTheme ? "bg-purple-900/90 text-gray-100" : "bg-white text-gray-800"
-            } border ${isDarkTheme ? "border-purple-800" : "border-gray-200"}`}
+            className={`absolute right-0 mt-2 w-48 rounded-md py-1 shadow-lg
+              ${isDarkTheme ? "bg-purple-900/90 text-gray-100 border border-purple-800" : "bg-gray-50 sm:bg-white text-gray-900 sm:text-gray-800 border border-gray-300 sm:border-gray-200"}`} // Adjusted for small screens
           >
             <button
               onClick={() => {
@@ -131,9 +131,8 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
                 setShowDropdown(false);
                 onProfileClick?.();
               }}
-              className={`flex items-center gap-2 w-full px-4 py-2 text-sm ${
-                isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-100"
-              }`}
+              className={`flex items-center gap-2 w-full px-4 py-2 text-sm
+                ${isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-200 sm:hover:bg-gray-100"}`} // Adjusted hover for small screens
             >
               <User2 className="h-4 w-4" />
               {t.header.profile || "Profile"}
@@ -143,18 +142,16 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
                 setIsSettingsOpen(true);
                 setShowDropdown(false);
               }}
-              className={`flex items-center gap-2 w-full px-4 py-2 text-sm ${
-                isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-100"
-              }`}
+              className={`flex items-center gap-2 w-full px-4 py-2 text-sm
+                ${isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-200 sm:hover:bg-gray-100"}`}
             >
               <Settings className="h-4 w-4" />
               {t.header.settings || "Settings"}
             </button>
             <button
               onClick={() => router.push("/login")}
-              className={`flex items-center gap-2 w-full px-4 py-2 text-sm ${
-                isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-100"
-              }`}
+              className={`flex items-center gap-2 w-full px-4 py-2 text-sm
+                ${isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-200 sm:hover:bg-gray-100"}`}
             >
               <LogOut className="h-4 w-4" />
               {t.header.signOut || "Sign out"}
