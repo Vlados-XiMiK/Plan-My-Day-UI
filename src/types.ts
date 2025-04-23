@@ -44,7 +44,7 @@ export interface Task {
 
 export interface Category {
   name: string;
-  color: string;
+  color?: string;
 }
 
 // END TASKS AND CATEGORY

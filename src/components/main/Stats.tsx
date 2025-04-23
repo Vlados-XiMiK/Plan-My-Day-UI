@@ -93,27 +93,37 @@ export default function StatsView() {
     lastWeekTasks.length > 0 ? (lastWeekCompleted / lastWeekTasks.length) * 100 : 0;
   const productivityChange = thisWeekProductivity - lastWeekProductivity;
 
-  const taskDistribution = categories
-    .map((category) => ({
-      name: category.name,
-      count: tasks.filter((task) => task.category === category.name).length,
-      color: category.color,
-    }))
-    .filter((item) => item.count > 0);
-
-  // Chart data
-  const taskDistributionData = {
-    labels: taskDistribution.map((item) => item.name),
-    datasets: [
-      {
-        data: taskDistribution.map((item) => item.count),
-        backgroundColor: taskDistribution.map((item) => item.color),
-        borderColor: taskDistribution.map((item) => item.color),
-        borderWidth: 1,
-        hoverOffset: 20,
-      },
-    ],
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
   };
+
+// Calculate statistics
+const taskDistribution = categories
+  .map((category) => ({
+    name: category.name,
+    count: tasks.filter((task) => task.category === category.name).length,
+    color: category.color, // Note: This color is no longer used for the chart
+  }))
+  .filter((item) => item.count > 0);
+
+  // Chart data for task distribution with random colors
+const taskDistributionData = {
+  labels: taskDistribution.map((item) => item.name),
+  datasets: [
+    {
+      data: taskDistribution.map((item) => item.count),
+      backgroundColor: taskDistribution.map(() => getRandomColor()),
+      borderColor: taskDistribution.map(() => getRandomColor()),
+      borderWidth: 1,
+      hoverOffset: 20,
+    },
+  ],
+};
 
   const productivityData = {
     labels: [t.stats.productivity.lastWeek || 'Last Week', t.stats.productivity.thisWeek || 'This Week'],
@@ -229,7 +239,7 @@ export default function StatsView() {
   // Error UI
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]">
+      <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]overflow-y-auto">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <p className="text-red-500 text-lg mb-4">{error}</p>
         <button

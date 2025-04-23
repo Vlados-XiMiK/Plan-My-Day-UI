@@ -48,7 +48,7 @@ export function useCategories() {
     }
     const newCategoryObj: Category = {
       name: trimmedName,
-      color: '#757575', // Default color (gray); can be customized later
+      color: '#9d75b5', // Default color (gray); can be customized later
     };
     setCategories([...categories, newCategoryObj]);
     addNotification('success', 'Category Added', `Category "${trimmedName}" added.`);

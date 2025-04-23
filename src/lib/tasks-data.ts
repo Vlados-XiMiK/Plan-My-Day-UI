@@ -39,9 +39,9 @@ const tasks: Task[] = [
 
 const categories: Category[] = [
   { name: 'Работа', color: '#9d75b5' },
-  { name: 'Покупки', color: '#4CAF50' },
-  { name: 'Личное', color: '#2196F3' },
-  { name: 'Прикол', color: '#757575' },
+  { name: 'Покупки', color: '#9d75b5' },
+  { name: 'Личное', color: '#9d75b5' },
+  { name: 'Прикол', color: '#9d75b5' },
 ];
 
 // Simulate an API request for tasks
@@ -61,6 +61,13 @@ export async function fetchTasks(): Promise<Task[]> {
 // Simulate API request for categories
 export async function fetchCategories(): Promise<Category[]> {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(categories), 500);
+    setTimeout(() => {
+      const defaultColor = '#9d75b5';
+      const normalized = categories.map((cat) => ({
+        ...cat,
+        color: cat.color || defaultColor,
+      }));
+      resolve(normalized);
+    }, 500);
   });
 }
