@@ -2,9 +2,10 @@
 
 import { motion, AnimatePresence, MotionProps } from 'framer-motion'
 import Image from "next/image";
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
+import { useUser } from '@/contexts/UserContext'
 import { InputHTMLAttributes, HTMLAttributes, ButtonHTMLAttributes } from 'react'
 
 // type for motion.input
@@ -25,6 +26,7 @@ interface EditProfilePopupProps {
 }
 
 export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupProps) {
+  const { user, updateUser } = useUser()
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -37,6 +39,33 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const [image, setImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
+
+  // Initialize the form with user data when opening the popup
+  useEffect(() => {
+    if (isOpen && user) {
+      setFormData({
+        username: user.name || '',
+        email: user.email || '',
+        age: user.age?.toString() || '',
+        placeOfWork: user.workplace || '',
+        phoneNumber: user.phone || ''
+      })
+      setImage(user.avatar || null) // If the user has an avatar
+    }
+  }, [isOpen, user])
+
+  // Check if changes have been made
+  const hasChanges = () => {
+    if (!user) return false;
+    return (
+      formData.username !== (user.name || '') ||
+      formData.email !== (user.email || '') ||
+      formData.age !== (user.age?.toString() || '') ||
+      formData.placeOfWork !== (user.workplace || '') ||
+      formData.phoneNumber !== (user.phone || '') ||
+      image !== (user.avatar || null)
+    )
+  }
 
   const validateField = (name: string, value: string) => {
     let error = ''
@@ -94,7 +123,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     setErrors((prev) => ({ ...prev, [name]: error }))
 
     if (error && !notificationShown) {
-      addNotification('error', 'Server error', error)
+      addNotification('error', 'Validation error', error)
       setNotificationShown(true)
     } else if (!error) {
       setNotificationShown(false)
@@ -115,14 +144,27 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) {
-      addNotification('error', 'Error validation', 'Please fix validation errors.')
+      addNotification('error', 'Validation error', 'Please fix validation errors.')
+      return
+    }
+
+    // Check if there were any changes
+    if (!hasChanges()) {
+      addNotification('info', 'No Changes', 'No changes were made.')
       return
     }
 
     try {
-      addNotification('info', 'Updating Profile', 'Updating profile...')
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      addNotification('success', 'Profile Update', 'Profile updated successfully!')
+      // Update user data via context
+      await updateUser({
+        name: formData.username,
+        email: formData.email,
+        age: formData.age ? parseInt(formData.age) : undefined,
+        workplace: formData.placeOfWork,
+        phone: formData.phoneNumber,
+        avatar: image || undefined
+      })
+      addNotification('success', 'Profile Updated', 'Profile updated successfully!')
       onClose()
     } catch {
       addNotification('error', 'Server error', 'Failed to update profile. Please try again.')
@@ -213,7 +255,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   <div className="mt-1 flex items-center gap-4">
                     {image ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                        <Image src={image} alt="Profile" className="w-full h-full object-cover" />
+                        <Image src={image} alt="Profile" fill className="object-cover" />
                         <button
                           type="button"
                           onClick={() => setImage(null)}

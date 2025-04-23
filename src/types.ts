@@ -58,7 +58,7 @@ export interface User {
   phone: string;
   workplace: string;
   age: number;
-  avatarUrl?: string;
+  avatar?: string;
 }
 
 export interface ProfileStats {
@@ -72,6 +72,7 @@ export interface UserContextType {
   stats: ProfileStats;
   setUser: (user: User | null) => void;
   setStats: (stats: ProfileStats) => void;
+  updateUser: (data: Partial<User>) => Promise<void>;
 }
 
 export interface AvatarProps {

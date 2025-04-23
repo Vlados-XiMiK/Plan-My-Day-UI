@@ -1,18 +1,41 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-
-import { User, ProfileStats, UserContextType } from "@/types"
-
+import { User, ProfileStats, UserContextType } from "@/types";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState<ProfileStats>({ completedTasks: 0, ongoingTasks: 0, totalTasks: 0 });
+  const [stats, setStats] = useState<ProfileStats>({
+    completedTasks: 0,
+    ongoingTasks: 0,
+    totalTasks: 0,
+  });
+
+  // Function to update user data
+  const updateUser = async (data: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...data } : prev));
+    // Later you can add an API call here to save the data.
+    /*
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update user');
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      throw error;
+    }
+    */
+  };
 
   useEffect(() => {
-    // Устанавливаем статические данные пользователя
+    // Setting up static user data
     const staticUser: User = {
       name: "Alex Smith",
       email: "alex.smith@example.com",
@@ -22,7 +45,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
     setUser(staticUser);
 
-    // Устанавливаем статические данные для статистики задач
+    // Setting up static data for task statistics
     const staticStats: ProfileStats = {
       completedTasks: 15,
       ongoingTasks: 5,
@@ -30,7 +53,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
     setStats(staticStats);
 
-    // Позже здесь можно будет добавить fetch к базе данных
+    // Later you can add fetch to the database here
     /*
     const fetchUserAndStats = async () => {
       try {
@@ -53,7 +76,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, stats, setUser, setStats }}>
+    <UserContext.Provider value={{ user, stats, setUser, setStats, updateUser }}>
       {children}
     </UserContext.Provider>
   );
