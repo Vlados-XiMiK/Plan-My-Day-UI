@@ -1,30 +1,4 @@
-export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  createdAt: string;
-  dueDate: string;
-  category: string;
-  priority: 'high' | 'medium' | 'low';
-  completed: boolean;
-  starred: boolean;
-  date?: string
-}
-
-export interface Category {
-  name: string;
-  color: string;
-}
-
-export interface User {
-  id: string;
-  name: string;
-}
-
-export interface Group {
-  id: string;
-  name: string;
-}
+// WELCOME PAGE AND TRANSLATE
 
 export interface Feature {
   key: string;
@@ -50,6 +24,79 @@ export interface Translation {
   features: Features;
   featuresPage: FeaturesPage;
 }
+
+// END WELCOME PAGE AND TRANSLATE
+
+// TASKS AND CATEGORY
+
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  createdAt: string;
+  dueDate: string;
+  category: string;
+  priority: 'high' | 'medium' | 'low';
+  completed: boolean;
+  starred: boolean;
+  date?: string
+}
+
+export interface Category {
+  name: string;
+  color: string;
+}
+
+// END TASKS AND CATEGORY
+
+
+// PROFILE
+
+export interface User {
+  name: string;
+  email: string;
+  phone: string;
+  workplace: string;
+  age: number;
+  avatarUrl?: string;
+}
+
+export interface ProfileStats {
+  completedTasks: number;
+  ongoingTasks: number;
+  totalTasks: number;
+}
+
+export interface UserContextType {
+  user: User | null;
+  stats: ProfileStats;
+  setUser: (user: User | null) => void;
+  setStats: (stats: ProfileStats) => void;
+}
+
+export interface AvatarProps {
+  name: string;
+  surname?: string;
+  size?: "small" | "large";
+}
+
+// END PROFILE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Helper functions for the calendar
 export function getTaskStatus(task: Task) {

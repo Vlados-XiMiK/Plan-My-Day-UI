@@ -5,7 +5,7 @@ import { Search, ChevronDown, ChevronUp, Edit, Star, Trash, Plus, Calendar, Cloc
 import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup';
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup';
 import { useTaskLogic } from '@/lib/useTaskLogic';
-import { Task, User, Group } from '@/types';
+import { Task } from '@/types';
 import { fetchTasks, fetchCategories} from '@/lib/tasks-data';
 
 export default function MainContent() {
@@ -13,8 +13,6 @@ export default function MainContent() {
   const [categories, setCategories] = useState<string[]>([]);
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // New loading state
-  const users: User[] = [];
-  const groups: Group[] = [];
 
   // Load tasks and categories on mount
   useEffect(() => {
@@ -191,8 +189,6 @@ export default function MainContent() {
         onClose={() => setCreationPopupOpen(false)}
         onSave={handleCreateTask}
         categories={categories}
-        users={users}
-        groups={groups}
       />
       {taskToEdit && (
         <TaskEditPopup
@@ -201,8 +197,6 @@ export default function MainContent() {
           onSave={handleEditTask}
           task={taskToEdit}
           categories={categories}
-          users={users}
-          groups={groups}
         />
       )}
 

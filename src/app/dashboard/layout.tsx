@@ -5,6 +5,7 @@ import Sidebar from '@/components/main/Sidebar'
 import Header from '@/components/main/Header'
 import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
 import { useTheme } from "next-themes"
+import { UserProvider } from "@/contexts/UserContext"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme()
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const toggleSidebarCollapse = () => setIsSidebarCollapsed(!isSidebarCollapsed)
 
   return (
+    <UserProvider>
     <div className="flex h-screen overflow-hidden bg-white dark:bg-[#1a1a2e] relative">
       <div className="absolute inset-0 z-0">
         {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
@@ -55,5 +57,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
       </div>
     </div>
+    </UserProvider>
   )
 }

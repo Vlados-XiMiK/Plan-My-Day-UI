@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import {
   User2,
   Mail,
@@ -16,48 +15,23 @@ import {
 } from "lucide-react";
 import { PieChart } from "@/components/ui/pie-chart";
 import EditProfilePopup from "@/components/main/pop-up/EditProfilePopup";
-import SettingsPopup from "@/components/main/pop-up/SettingsPopup"; // Додаємо імпорт попапу налаштувань
-import { useLanguage } from "@/contexts/LanguageContext"; // Додано для локалізації
-import en from "@/translations/en.json"; // Додано для локалізації
-import ukTranslations from "@/translations/uk.json"; // Додано для локалізації
+import SettingsPopup from "@/components/main/pop-up/SettingsPopup";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useUser } from "@/contexts/UserContext";
+import en from "@/translations/en.json";
+import ukTranslations from "@/translations/uk.json";
+import Avatar from "@/components/ui/Avatar";
+import Loader from "@/components/ui/preloader";
 
-interface ProfileStats {
-  completedTasks: number;
-  ongoingTasks: number;
-  totalTasks: number;
-}
-
-interface ProfileProps {
-  user?: {
-    name: string;
-    email: string;
-    phone: string;
-    workplace: string;
-    age: number;
-    avatarUrl: string;
-  };
-  stats?: ProfileStats;
-  onBackToTasks?: () => void;
-}
-
-export default function Profile({
-  user = {
-    name: "Guest User",
-    email: "guest@example.com",
-    phone: "N/A",
-    workplace: "N/A",
-    age: 0,
-    avatarUrl: "/profile-image.jpg",
-  },
-  stats = { completedTasks: 0, ongoingTasks: 0, totalTasks: 0 },
-}: ProfileProps) {
+export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // Додаємо стан для попапу налаштувань
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const { user, stats } = useUser();
   const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0;
   const router = useRouter();
-  const { language } = useLanguage(); // Отримуємо мову для локалізації
-  const t = language === "uk" ? ukTranslations : en; // Вибираємо переклади
+  const { language } = useLanguage();
+  const t = language === "uk" ? ukTranslations : en;
 
   useEffect(() => {
     const updateIsDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -66,12 +40,15 @@ export default function Profile({
     return () => window.removeEventListener("resize", updateIsDesktop);
   }, []);
 
+  // Проверяем, есть ли данные пользователя, если нет — показываем "Loading..."
+  if (!user) {
+    return <Loader />;
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 animate-fadeIn relative min-h-screen">
       <div className="relative z-20">
-
         <div className="bg-white dark:bg-[#2a2a3e] rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl animate-scaleIn">
-          {/* Profile Header */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               {t.profile.title || "Profile"}
@@ -85,23 +62,13 @@ export default function Profile({
             </button>
           </div>
 
-          {/* Main Profile Card */}
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* Avatar Section */}
-            <div className="relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-purple-100 dark:ring-purple-900">
-  <Image
-    src={user?.avatarUrl ?? "/profile-image.jpg"}
-    alt={t.profile.avatarAlt || "Profile"}
-    fill
-    style={{ objectFit: "cover" }}
-  />
-</div>
+            <Avatar name={user.name.split(" ")[0]} surname={user.name.split(" ")[1]} />
 
-            {/* User Info Section */}
             <div className="flex-1 space-y-4 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-0">
-                  {user?.name ?? "Guest User"}
+                  {user.name}
                 </h2>
                 <div className="space-y-2 sm:space-y-0 sm:space-x-4">
                   <button
@@ -113,13 +80,13 @@ export default function Profile({
                   </button>
                   <EditProfilePopup isOpen={isEditing} onClose={() => setIsEditing(false)} />
                   {isDesktop && (
-                  <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-[#3a3a5e] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#4a4a7e] transition-all duration-200 hover:scale-105"
-                  >
-                  <Settings className="w-4 h-4 mr-2" />
-                    {t.profile.settings || "Settings"}
-                  </button>
+                    <button
+                      onClick={() => setIsSettingsOpen(true)}
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 bg-gray-100 dark:bg-[#3a3a5e] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#4a4a7e] transition-all duration-200 hover:scale-105"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      {t.profile.settings || "Settings"}
+                    </button>
                   )}
                   <button
                     onClick={() => router.push("/auth/login")}
@@ -134,29 +101,27 @@ export default function Profile({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                   <Mail className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                  <span>{t.profile.emailLabel || "Email"}: {user?.email ?? "N/A"}</span>
+                  <span>{t.profile.emailLabel || "Email"}: {user.email}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                   <Phone className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                  <span>{t.profile.phoneLabel || "Phone number"}: {user?.phone ?? "N/A"}</span>
+                  <span>{t.profile.phoneLabel || "Phone number"}: {user.phone}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                   <Building2 className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                  <span>{t.profile.workplaceLabel || "Place of work"}: {user?.workplace ?? "N/A"}</span>
+                  <span>{t.profile.workplaceLabel || "Place of work"}: {user.workplace}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                   <User2 className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-                  <span>{t.profile.ageLabel || "Age"}: {user?.age ?? "N/A"}</span>
+                  <span>{t.profile.ageLabel || "Age"}: {user.age}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Settings Popup */}
         <SettingsPopup isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-        {/* Statistics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           <div className="bg-white dark:bg-[#2a2a3e] rounded-xl shadow-lg p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
             <div className="text-center">

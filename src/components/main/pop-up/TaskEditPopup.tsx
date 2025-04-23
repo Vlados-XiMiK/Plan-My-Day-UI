@@ -7,7 +7,7 @@ import { useNotification } from '@/contexts/notification-context'
 import { HTMLAttributes } from 'react'
 import { useTheme } from 'next-themes' // Добавляем useTheme для управления темой
 
-import type { User, Group, Task } from '@/types'
+import type { Task } from '@/types'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -30,8 +30,6 @@ interface TaskEditPopupProps {
     priority: string
   }
   task: Task
-  users: User[]
-  groups: Group[]
 }
 
 export default function TaskEditPopup({

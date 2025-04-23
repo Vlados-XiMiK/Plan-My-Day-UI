@@ -7,7 +7,7 @@ import { useNotification } from '@/contexts/notification-context'
 import { HTMLAttributes } from 'react'
 import { useTheme } from 'next-themes' // Добавляем useTheme для управления темой
 
-import type { Task, User, Group } from '@/types'
+import type { Task,} from '@/types'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -17,8 +17,6 @@ interface TaskCreationPopupProps {
   onClose: () => void
   onSave: (task: Task) => void
   categories: string[]
-  users: User[]
-  groups: Group[]
 }
 
 export default function TaskCreationPopup({ isOpen, onClose, onSave, categories }: TaskCreationPopupProps) {

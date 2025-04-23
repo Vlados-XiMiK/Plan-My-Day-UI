@@ -2,14 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { UserCircle, LogOut, Menu, ChevronDown, User2, Settings } from "lucide-react";
+import { LogOut, Menu, ChevronDown, User2, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { uk, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useUser } from "@/contexts/UserContext";
 import en from "@/translations/en.json";
 import ukTranslations from "@/translations/uk.json";
 import { useTheme } from "next-themes";
 import SettingsPopup from "@/components/main/pop-up/SettingsPopup";
+import Avatar from "@/components/ui/Avatar";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -26,13 +28,13 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
   const { theme } = useTheme();
+  const { user } = useUser();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const t = language === "uk" ? ukTranslations : en;
 
   const locale = language === "uk" ? uk : enUS;
   const now = new Date();
 
-  // Adaptive date format
   const dateFormatDesktop = language === "uk" ? "EEEE, MMMM d, yyyy" : "EEEE, MMMM d, yyyy 'at' h:mm a";
   const dateFormatMobile = language === "uk" ? "d MMMM yyyy" : "MMM d, yyyy";
   let formattedDate = format(now, isDesktop ? dateFormatDesktop : dateFormatMobile, { locale });
@@ -72,14 +74,16 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const userName = user?.name || "Unknown User"; // Используем данные из контекста
 
   return (
     <header
       className={`sticky top-0 z-40 flex h-16 items-center justify-between px-4 transition-colors duration-300
         ${isDarkTheme
-          ? "bg-gradient-to-b from-purple-950 to_gray-900 border-b border-purple-900"
+          ? "bg-gradient-to-b from-purple-950 to-gray-900 border-b border-purple-900"
           : "bg-gradient-to-b from-gray-50 to-beige-100 border-b border-gray-200"}`}
     >
       <button
@@ -90,7 +94,6 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
         <Menu className={`h-6 w-6 ${isDarkTheme ? "text-gray-100" : "text-gray-800"}`} />
       </button>
 
-      {/* Adaptive block with date */}
       <div className="flex-1 flex justify-center mx-2">
         <div className="inline-block bg-white dark:bg-[#2a2a3e] rounded-full px-3 py-1 shadow-md max-w-full overflow-hidden">
           <h2
@@ -109,8 +112,8 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
             isDarkTheme ? "bg-purple-900/50 hover:bg-purple-800/50 text-gray-100" : "bg-white/50 hover:bg-gray-100 text-gray-800"
           }`}
         >
-          <UserCircle className={`h-6 w-6 ${isDarkTheme ? "text-purple-400" : "text-indigo-500"}`} />
-          <span className="font-medium hidden sm:inline">JohnDoe</span>
+          <Avatar name={userName} size="small" />
+          <span className="font-medium hidden sm:inline">{userName}</span>
           <ChevronDown
             className={`h-4 w-4 ${isDarkTheme ? "text-gray-300" : "text-gray-600"} ${showDropdown ? "rotate-180" : ""}`}
           />
@@ -160,7 +163,6 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
         )}
       </div>
 
-      {/* Settings Popup */}
       <SettingsPopup isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </header>
   );
