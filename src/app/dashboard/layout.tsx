@@ -56,7 +56,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Sidebar 
             isVisible={isSidebarVisible} 
             isCollapsed={isSidebarCollapsed} 
-            setIsCollapsed={setIsSidebarCollapsed}
           />
           
           <div className="flex flex-1 flex-col">

@@ -13,10 +13,9 @@ import uk from '@/translations/uk.json';
 interface SidebarProps {
   isVisible: boolean;
   isCollapsed: boolean;
-  setIsCollapsed: (value: boolean) => void;
 }
 
-export default function Sidebar({ isVisible, isCollapsed, setIsCollapsed }: SidebarProps) {
+export default function Sidebar({ isVisible, isCollapsed}: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme } = useTheme();
