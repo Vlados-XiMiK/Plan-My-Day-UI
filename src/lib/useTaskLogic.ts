@@ -11,21 +11,15 @@ interface TimeRemaining {
   isApproaching: boolean;
 }
 
-export const useTaskLogic = (initialTasks: Task[]) => {
+export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) => {
   const { addNotification } = useNotification();
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [isCreationPopupOpen, setCreationPopupOpen] = useState(false);
   const [isEditPopupOpen, setEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [notifiedTasks, setNotifiedTasks] = useState<number[]>([]);
 
-  // Sync tasks state with initialTasks prop
-  useEffect(() => {
-    setTasks(initialTasks);
-  }, [initialTasks]);
-
-  // Check task deadlines and send notifications
+  // Notifications about deadlines
   useEffect(() => {
     const checkDeadlines = () => {
       const now = new Date();
@@ -51,8 +45,8 @@ export const useTaskLogic = (initialTasks: Task[]) => {
   }, [tasks, addNotification, notifiedTasks]);
 
   const toggleTaskCompletion = (id: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
+    setTasks(
+      tasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
       )
     );
@@ -70,8 +64,8 @@ export const useTaskLogic = (initialTasks: Task[]) => {
   };
 
   const toggleTaskStarred = (id: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
+    setTasks(
+      tasks.map((task) =>
         task.id === id ? { ...task, starred: !task.starred } : task
       )
     );
@@ -97,51 +91,33 @@ export const useTaskLogic = (initialTasks: Task[]) => {
       priority: task.priority || 'low',
       completed: false,
       starred: false,
-      date: task.date || new Date(now).toISOString().split('T')[0], // Ensure date is set for calendar compatibility
+      date: task.date || new Date(now).toISOString().split('T')[0],
     };
-    setTasks((prev) => [...prev, newTask]);
+    setTasks([...tasks, newTask]);
     setCreationPopupOpen(false);
     addNotification('success', 'Task Created', 'The task has been successfully created.');
-
-    // Placeholder API call - replace with real endpoint when available
-    fetch('/api/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTask),
-    }).catch(() =>
-      addNotification('error', 'Task Creation Failed', 'An error occurred while creating the task.')
-    );
   };
 
   const handleEditTask = (updatedTask: Task) => {
-    setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
-    setEditPopupOpen(false);
-    addNotification('success', 'Task Updated', 'The task has been successfully updated.');
-
-    // Placeholder API call - replace with real endpoint when available
-    fetch(`/api/tasks/${updatedTask.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedTask),
-    }).catch(() =>
-      addNotification('error', 'Update Failed', 'An error occurred while updating the task.')
+    // console.log('Editing task:', updatedTask); 
+    setTasks(
+      tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
+    setEditPopupOpen(false);
+    setTaskToEdit(null);
+    addNotification('success', 'Task Updated', 'The task has been successfully updated.');
     setNotifiedTasks((prev) => prev.filter((id) => id !== updatedTask.id));
   };
 
   const openEditPopup = (task: Task) => {
+    // console.log('Opening edit popup for task:', task);
     setTaskToEdit(task);
     setEditPopupOpen(true);
   };
 
   const handleDeleteTask = (id: number) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    setTasks(tasks.filter((task) => task.id !== id));
     addNotification('success', 'Task Deleted', 'The task has been successfully removed.');
-
-    // Placeholder API call - replace with real endpoint when available
-    fetch(`/api/tasks/${id}`, { method: 'DELETE' }).catch(() =>
-      addNotification('error', 'Deletion Failed', 'An error occurred while deleting the task.')
-    );
     setNotifiedTasks((prev) => prev.filter((taskId) => taskId !== id));
   };
 
@@ -150,7 +126,7 @@ export const useTaskLogic = (initialTasks: Task[]) => {
       case 'high':
         return 'bg-red-500';
       case 'medium':
-        return 'bg-blue-500';
+        return 'bg-orange-500';
       case 'low':
         return 'bg-green-500';
       default:

@@ -1,35 +1,22 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucide-react'
-import { motion, AnimatePresence, MotionProps } from 'framer-motion'
-import { useNotification } from '@/contexts/notification-context'
-import { HTMLAttributes } from 'react'
-import { useTheme } from 'next-themes' // Добавляем useTheme для управления темой
+import { useState, useEffect } from 'react';
+import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucide-react';
+import { motion, AnimatePresence, MotionProps } from 'framer-motion';
+import { useNotification } from '@/contexts/notification-context';
+import { HTMLAttributes } from 'react';
+import { useTheme } from 'next-themes';
 
-import type { Task } from '@/types'
+import type { Task } from '@/types';
 
-// type for motion.div
-type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
 interface TaskEditPopupProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (task: Task) => void
-  categories: string[]
-  initialData?: {
-    createdAt: string
-    starred: boolean
-    completed: boolean
-    id: number
-    title: string
-    description: string
-    category: string
-    dueDate: string
-    dueTime: string
-    priority: string
-  }
-  task: Task
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (task: Task) => void;
+  categories: string[];
+  task: Task;
 }
 
 export default function TaskEditPopup({
@@ -37,86 +24,96 @@ export default function TaskEditPopup({
   onClose,
   onSave,
   categories,
-  initialData,
+  task,
 }: TaskEditPopupProps) {
-  const [title, setTitle] = useState(initialData?.title || '')
-  const [description, setDescription] = useState(initialData?.description || '')
-  const [category, setCategory] = useState(initialData?.category || categories[0])
-  const [dueDate, setDueDate] = useState(initialData?.dueDate || '')
-  const [dueTime, setDueTime] = useState(initialData?.dueTime || '23:59')
-  const [priority, setPriority] = useState(initialData?.priority || 'medium')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const { addNotification } = useNotification()
-  const { theme } = useTheme() // Используем useTheme для определения текущей темы
+  // console.log('TaskEditPopup received task:', task);
+  const [title, setTitle] = useState(task.title || '');
+  const [description, setDescription] = useState(task.description || '');
+  const [category, setCategory] = useState(task.category || categories[0] || '');
+  const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('23:59');
+  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>(task.priority || 'medium');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { addNotification } = useNotification();
+  const { theme } = useTheme();
+  const [isDarkTheme, setIsDarkTheme] = useState(theme === 'dark');
 
-  // Состояние для управления темой, синхронизированное с useTheme
-  const [isDarkTheme, setIsDarkTheme] = useState(false)
-
-  // Определение темы при монтировании из useTheme и localStorage
+  // Synchronize the form state with the task props
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || theme
-    setIsDarkTheme(savedTheme === 'dark')
+    // console.log('Syncing form with task:', task);
+    setTitle(task.title || '');
+    setDescription(task.description || '');
+    setCategory(task.category || '');
+    setPriority((task.priority) as 'high' | 'medium' | 'low');
+    if (task.dueDate) {
+      const [date, time] = task.dueDate.split('T');
+      setDueDate(date || '');
+      setDueTime(time?.substring(0, 5) || '23:59'); // Cut to HH:mm
+    }
+  }, [task, categories]);
 
-    // Обновляем тему при изменении через localStorage
+  // Synchronize theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || theme;
+    setIsDarkTheme(savedTheme === 'dark');
+
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'theme') {
-        setIsDarkTheme(e.newValue === 'dark')
+        setIsDarkTheme(e.newValue === 'dark');
       }
-    }
+    };
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [theme])
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [theme]);
 
+  // Lock scrolling when pop-up opens
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title)
-      setDescription(initialData.description)
-      setCategory(initialData.category)
-      setDueDate(initialData.dueDate)
-      setDueTime(initialData.dueTime)
-      setPriority(initialData.priority)
-    }
-  }, [initialData])
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    const currentDate = new Date()
-    const selectedDate = new Date(`${dueDate}T${dueTime}`)
+    const newErrors: Record<string, string> = {};
+    const currentDate = new Date();
+    const selectedDate = new Date(`${dueDate}T${dueTime}`);
 
     if (!title.trim()) {
-      newErrors.title = 'Title is required'
+      newErrors.title = 'Title is required';
     }
     if (!description.trim()) {
-      newErrors.description = 'Description is required'
+      newErrors.description = 'Description is required';
     }
     if (!dueDate || !dueTime) {
-      newErrors.dueDate = 'Due date is required'
-      newErrors.dueTime = 'Due time is required'
+      newErrors.dueDate = 'Due date is required';
+      newErrors.dueTime = 'Due time is required';
     } else if (selectedDate < currentDate) {
-      newErrors.dueDate = 'Date and time cannot be in the past'
-      newErrors.dueTime = 'Date and time cannot be in the past'
+      newErrors.dueDate = 'Date and time cannot be in the past';
+      newErrors.dueTime = 'Date and time cannot be in the past';
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePriorityChange = (value: string) => {
+    // Check that the value matches the allowed values
+    if (value === 'high' || value === 'medium' || value === 'low') {
+      setPriority(value);
+    } else {
+      // console.warn(`Invalid priority value: ${value}`);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
-    // Валидация формы
+
     if (!validateForm()) {
       const form = document.getElementById('task-form');
       form?.classList.add('animate-shake');
@@ -126,25 +123,19 @@ export default function TaskEditPopup({
       addNotification('error', 'Error validation', 'Please fix the errors in the form.');
       return;
     }
-  
-    // Использование initialData для сохранения изменений
-    if (initialData) {
-      onSave({
-        id: initialData.id, // ID задачи
-        title,
-        description,
-        category,
-        dueDate: `${dueDate}T${dueTime}`, // Форматируем дату и время
-        priority: priority as 'high' | 'medium' | 'low',
-        completed: initialData.completed, // Сохранение текущего состояния задачи
-        starred: initialData.starred,     // Сохранение состояния звездочки
-        createdAt: initialData.createdAt, // Оставляем дату создания без изменений
-      });
-  
-      setErrors({});
-      onClose();
-      addNotification('success', 'Task updated', 'Task updated successfully!');
-    }
+
+    onSave({
+      ...task,
+      title,
+      description,
+      category,
+      dueDate: `${dueDate}T${dueTime}`,
+      priority,
+    });
+
+    setErrors({});
+    onClose();
+    addNotification('success', 'Task updated', 'Task updated successfully!');
   };
 
   return (
@@ -251,7 +242,7 @@ export default function TaskEditPopup({
                     <BarChart className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <select
                       value={priority}
-                      onChange={(e) => setPriority(e.target.value)}
+                      onChange={(e) => handlePriorityChange(e.target.value)}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                     >
                       <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>Low</option>
@@ -313,5 +304,5 @@ export default function TaskEditPopup({
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

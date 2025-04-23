@@ -6,18 +6,17 @@ import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup';
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup';
 import { useTaskLogic } from '@/lib/useTaskLogic';
 import { Task } from '@/types';
-import { fetchTasks, fetchCategories} from '@/lib/tasks-data';
+import { fetchTasks, fetchCategories } from '@/lib/tasks-data';
 
 export default function MainContent() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // New loading state
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load tasks and categories on mount
   useEffect(() => {
     async function loadData() {
-      setIsLoading(true); // Start loading
+      setIsLoading(true);
       try {
         const [loadedTasks, loadedCategories] = await Promise.all([fetchTasks(), fetchCategories()]);
         setTasks(loadedTasks);
@@ -25,7 +24,7 @@ export default function MainContent() {
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
-        setIsLoading(false); // End loading
+        setIsLoading(false);
       }
     }
     loadData();
@@ -49,14 +48,15 @@ export default function MainContent() {
     formatDate,
     getTimeRemaining,
     filterTasks,
-  } = useTaskLogic(tasks);
+  } = useTaskLogic(tasks, setTasks);
 
   const TaskItem = ({ task }: { task: Task }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const descriptionLengthLimit = 100; // Character limit for expand button
+    const descriptionLengthLimit = 100;
 
     return (
       <li
+        key={task.id} // Unique key for each task
         className={`overflow-hidden rounded-lg bg-white dark:bg-[#2a2a3e] shadow-md transition-all duration-200 hover:shadow-lg ${
           getTimeRemaining(task.dueDate).isOverdue && !task.completed
             ? 'border-2 border-red-500'
@@ -83,7 +83,10 @@ export default function MainContent() {
           </div>
           <div className="task-actions flex space-x-2">
             <button
-              onClick={() => openEditPopup(task)}
+              onClick={() => {
+                // console.log('Edit button clicked for task:', task);
+                openEditPopup(task);
+              }}
               className="text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
               title="Edit task"
             >
@@ -173,7 +176,6 @@ export default function MainContent() {
     );
   };
 
-  // Loading spinner UI
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]">
@@ -293,7 +295,7 @@ export default function MainContent() {
         <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg">
           <ul className="space-y-4">
             {filterTasks().map((task) => (
-              <TaskItem key={`${task.id}-${task.createdAt}`} task={task} />
+              <TaskItem key={task.id} task={task} />
             ))}
           </ul>
           <div className="mt-4 flex justify-center">
