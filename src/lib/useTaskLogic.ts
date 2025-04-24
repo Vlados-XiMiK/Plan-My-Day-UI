@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { useNotification } from '@/contexts/notification-context';
 import type { Task } from '@/types';
@@ -15,31 +15,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
   const [isEditPopupOpen, setEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifiedTasks, setNotifiedTasks] = useState<number[]>([]);
 
-  useEffect(() => {
-    const checkDeadlines = () => {
-      const now = new Date();
-      tasks.forEach((task) => {
-        if (task.completed || notifiedTasks.includes(task.id)) return;
-
-        const minutesLeft = differenceInMinutes(new Date(task.dueDate), now);
-        if (minutesLeft <= 1440 && minutesLeft > 0) {
-          const hoursLeft = Math.floor(minutesLeft / 60);
-          const minutesRemainder = minutesLeft % 60;
-          addNotification(
-            'warning',
-            `Task Deadline Approaching`,
-            `Task "${task.title}" is due in ${hoursLeft} hour${hoursLeft !== 1 ? 's' : ''} and ${minutesRemainder} minute${minutesRemainder !== 1 ? 's' : ''}`
-          );
-          setNotifiedTasks((prev) => [...prev, task.id]);
-        }
-      });
-    };
-
-    const interval = setInterval(checkDeadlines, 60000);
-    return () => clearInterval(interval);
-  }, [tasks, addNotification, notifiedTasks]);
 
   const toggleTaskCompletion = (id: number) => {
     setTasks(
@@ -54,9 +30,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
         task.completed ? 'Task Reopened' : 'Task Completed',
         task.completed ? 'The task has been reopened and is now active again.' : 'You have successfully marked the task as completed.'
       );
-      if (!task.completed) {
-        setNotifiedTasks((prev) => prev.filter((taskId) => taskId !== id));
-      }
     }
   };
 
@@ -82,7 +55,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
         'Task Snoozed',
         `Task "${task.title}" has been snoozed for 2 hours.`
       );
-      setNotifiedTasks((prev) => prev.filter((taskId) => taskId !== id)); // Сбрасываем уведомление
     }
   };
 
@@ -128,7 +100,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     setEditPopupOpen(false);
     setTaskToEdit(null);
     addNotification('success', 'Task Updated', 'The task has been successfully updated.');
-    setNotifiedTasks((prev) => prev.filter((id) => id !== updatedTask.id));
   };
 
   const openEditPopup = (task: Task) => {
@@ -139,7 +110,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
   const handleDeleteTask = (id: number) => {
     setTasks(tasks.filter((task) => task.id !== id));
     addNotification('success', 'Task Deleted', 'The task has been successfully removed.');
-    setNotifiedTasks((prev) => prev.filter((taskId) => taskId !== id));
   };
 
   const getPriorityColor = (priority: string) => {

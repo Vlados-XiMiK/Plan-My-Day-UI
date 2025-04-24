@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/calendar/radio-group
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/calendar/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/calendar/select"
 import { Textarea } from "@/components/ui/calendar/textarea"
+import { useNotification } from "@/contexts/notification-context"
 import type { Task } from "@/types"
 
 type TaskModalProps = {
@@ -26,31 +26,29 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
   const [category, setCategory] = useState(categories[0] || "Работа")
   const [description, setDescription] = useState("")
   const [time, setTime] = useState("09:00")
-
-  // Add validation for past dates and times
-  // Add state for validation error
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  // Update the handleSubmit function to check if the date and time are in the past
+  // Use the hook for notifications
+  const { addNotification } = useNotification()
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (title.trim() && selectedDate) {
-      // Create the dueDate by combining the date and time
       const dueDate = `${selectedDate}T${time}:00`
-
-      // Check if the selected date and time are in the past
       const selectedDateTime = new Date(dueDate)
       const currentDateTime = new Date()
 
+      // Check for past date
       if (selectedDateTime < currentDateTime) {
         setValidationError("Cannot create tasks in the past. Please select a future date and time.")
         return
       }
 
-      // Clear any previous validation errors
+      // Clear validation errors
       setValidationError(null)
 
+      // Create a task
       onAddTask({
         title: title.trim(),
         description: description.trim() || "",
@@ -58,13 +56,28 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
         category,
         priority,
         completed: false,
-        date: selectedDate, // Add the date field for compatibility
+        date: selectedDate,
       })
+
+      // Add a notification about successful task creation
+      addNotification(
+        "success",
+        "Task Created",
+        `Task "${title.trim()}" has been successfully created.`
+      )
+
+      // Reset the form
       setTitle("")
       setPriority("medium")
       setCategory(categories[0] || "Работа")
       setDescription("")
       setTime("09:00")
+      onClose()
+    } else {
+      // If the title is empty, show the notification
+      if (!title.trim()) {
+        setValidationError("Task title is required.")
+      }
     }
   }
 

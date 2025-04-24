@@ -7,7 +7,7 @@ const tasks: Task[] = [
     title: 'Завершить проектное предложение',
     description: 'Завершить черновик и отправить на проверку.',
     createdAt: '2024-06-08T10:00:00',
-    dueDate: '2025-04-25T23:00:00',
+    dueDate: '2025-04-24T15:00:00',
     category: 'Работа',
     priority: 'high',
     completed: false,

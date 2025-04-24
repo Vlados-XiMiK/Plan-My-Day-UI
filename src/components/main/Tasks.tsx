@@ -15,7 +15,7 @@ export default function Tasks() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
 
-  // Загрузка задач и категорий
+  // Loading tasks and categories
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -46,7 +46,7 @@ export default function Tasks() {
     handleEditTask,
     openEditPopup,
     handleDeleteTask,
-    snoozeTask, // Добавляем новую функцию
+    snoozeTask,
     getPriorityColor,
     formatDate,
     getTimeRemaining,
@@ -314,7 +314,7 @@ export default function Tasks() {
       <FloatingDeadlineReminder
         tasks={tasks}
         onComplete={toggleTaskCompletion}
-        onSnooze={snoozeTask} // Используем snoozeTask из useTaskLogic
+        onSnooze={snoozeTask}
       />
     </>
   );
