@@ -4,16 +4,18 @@ import { useState, useEffect } from 'react';
 import { Search, ChevronDown, ChevronUp, Edit, Star, Trash, Plus, Calendar, Clock, AlertTriangle } from 'lucide-react';
 import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup';
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup';
+import FloatingDeadlineReminder from '@/components/ui/deadline-notification/floating-deadline-reminder';
 import { useTaskLogic } from '@/lib/useTaskLogic';
-import { Task } from '@/types';
 import { fetchTasks, fetchCategories } from '@/lib/tasks-data';
+import { Task } from '@/types';
 
-export default function MainContent() {
+export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
 
+  // Загрузка задач и категорий
   useEffect(() => {
     async function loadData() {
       setIsLoading(true);
@@ -44,6 +46,7 @@ export default function MainContent() {
     handleEditTask,
     openEditPopup,
     handleDeleteTask,
+    snoozeTask, // Добавляем новую функцию
     getPriorityColor,
     formatDate,
     getTimeRemaining,
@@ -56,7 +59,7 @@ export default function MainContent() {
 
     return (
       <li
-        key={task.id} // Unique key for each task
+        key={task.id}
         className={`overflow-hidden rounded-lg bg-white dark:bg-[#2a2a3e] shadow-md transition-all duration-200 hover:shadow-lg ${
           getTimeRemaining(task.dueDate).isOverdue && !task.completed
             ? 'border-2 border-red-500'
@@ -83,10 +86,7 @@ export default function MainContent() {
           </div>
           <div className="task-actions flex space-x-2">
             <button
-              onClick={() => {
-                // console.log('Edit button clicked for task:', task);
-                openEditPopup(task);
-              }}
+              onClick={() => openEditPopup(task)}
               className="text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
               title="Edit task"
             >
@@ -179,134 +179,143 @@ export default function MainContent() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]">
-        <div className="w-12 h-12 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-t-purple-600 border-gray- Devlet
+        border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden animate-fadeIn">
-      <TaskCreationPopup
-        isOpen={isCreationPopupOpen}
-        onClose={() => setCreationPopupOpen(false)}
-        onSave={handleCreateTask}
-        categories={categories}
-      />
-      {taskToEdit && (
-        <TaskEditPopup
-          isOpen={isEditPopupOpen}
-          onClose={() => setEditPopupOpen(false)}
-          onSave={handleEditTask}
-          task={taskToEdit}
+    <>
+      <div className="flex flex-col h-full overflow-hidden animate-fadeIn">
+        <TaskCreationPopup
+          isOpen={isCreationPopupOpen}
+          onClose={() => setCreationPopupOpen(false)}
+          onSave={handleCreateTask}
           categories={categories}
         />
-      )}
+        {taskToEdit && (
+          <TaskEditPopup
+            isOpen={isEditPopupOpen}
+            onClose={() => setEditPopupOpen(false)}
+            onSave={handleEditTask}
+            task={taskToEdit}
+            categories={categories}
+          />
+        )}
 
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-6">
-        <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg transition-all duration-300">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">Filters and Search</h3>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-6">
+          <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg transition-all duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">Filters and Search</h3>
+              <button
+                onClick={() => setFiltersCollapsed(!isFiltersCollapsed)}
+                className="text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+              >
+                {isFiltersCollapsed ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
+              </button>
+            </div>
+            <div className={`flex flex-wrap gap-4 ${isFiltersCollapsed ? 'hidden' : 'block'}`}>
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
+                    placeholder="Search (e.g., 'high priority work this week')"
+                  />
+                  <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
+                </div>
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <select
+                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
+                  >
+                    <option>All Status</option>
+                    <option>Completed</option>
+                    <option>Incomplete</option>
+                  </select>
+                  <ChevronDown
+                    className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
+                    size={20}
+                  />
+                </div>
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <select
+                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
+                  >
+                    <option>All Priority</option>
+                    <option>High</option>
+                    <option>Medium</option>
+                    <option>Low</option>
+                  </select>
+                  <ChevronDown
+                    className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
+                    size={20}
+                  />
+                </div>
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <select
+                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
+                  >
+                    <option>Created Date</option>
+                    <option>Last Modified</option>
+                    <option>Due Date</option>
+                  </select>
+                  <ChevronDown
+                    className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
+                    size={20}
+                  />
+                </div>
+              </div>
+            </div>
+            {!isFiltersCollapsed && (
+              <button
+                className="mt-4 rounded-md bg-transparent border border-purple-600 text-purple-600 dark:text-purple-400 px-4 py-2 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-700 transition-all duration-200"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+
+          <div className="mb-6">
             <button
-              onClick={() => setFiltersCollapsed(!isFiltersCollapsed)}
-              className="text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200"
+              onClick={() => setCreationPopupOpen(true)}
+              className="flex items-center rounded-md bg-purple-600 px-4 py-2 text-white shadow-md transition-colors hover:bg-purple-700 duration-200"
             >
-              {isFiltersCollapsed ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
+              <Plus className="mr-2" size={20} />
+              Create Task
             </button>
           </div>
-          <div className={`flex flex-wrap gap-4 ${isFiltersCollapsed ? 'hidden' : 'block'}`}>
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
-                  placeholder="Search (e.g., 'high priority work this week')"
-                />
-                <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
-              </div>
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <select
-                  className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
-                >
-                  <option>All Status</option>
-                  <option>Completed</option>
-                  <option>Incomplete</option>
-                </select>
-                <ChevronDown
-                  className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
-                  size={20}
-                />
-              </div>
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <select
-                  className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
-                >
-                  <option>All Priority</option>
-                  <option>High</option>
-                  <option>Medium</option>
-                  <option>Low</option>
-                </select>
-                <ChevronDown
-                  className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
-                  size={20}
-                />
-              </div>
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <select
-                  className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
-                >
-                  <option>Created Date</option>
-                  <option>Last Modified</option>
-                  <option>Due Date</option>
-                </select>
-                <ChevronDown
-                  className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
-                  size={20}
-                />
-              </div>
-            </div>
-          </div>
-          {!isFiltersCollapsed && (
-            <button
-              className="mt-4 rounded-md bg-transparent border border-purple-600 text-purple-600 dark:text-purple-400 px-4 py-2 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-700 transition-all duration-200"
-            >
-              Clear Filters
-            </button>
-          )}
-        </div>
 
-        <div className="mb-6">
-          <button
-            onClick={() => setCreationPopupOpen(true)}
-            className="flex items-center rounded-md bg-purple-600 px-4 py-2 text-white shadow-md transition-colors hover:bg-purple-700 duration-200"
-          >
-            <Plus className="mr-2" size={20} />
-            Create Task
-          </button>
-        </div>
-
-        <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg">
-          <ul className="space-y-4">
-            {filterTasks().map((task) => (
-              <TaskItem key={task.id} task={task} />
-            ))}
-          </ul>
-          <div className="mt-4 flex justify-center">
-            <button
-              className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
-            >
-              Load More
-            </button>
+          <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg">
+            <ul className="space-y-4">
+              {filterTasks.map((task) => (
+                <TaskItem key={task.id} task={task} />
+              ))}
+            </ul>
+            <div className="mt-4 flex justify-center">
+              <button
+                className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+              >
+                Load More
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <FloatingDeadlineReminder
+        tasks={tasks}
+        onComplete={toggleTaskCompletion}
+        onSnooze={snoozeTask} // Используем snoozeTask из useTaskLogic
+      />
+    </>
   );
 }

@@ -1,7 +1,5 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { differenceInMinutes, isPast, format } from 'date-fns';
+import { useState, useEffect, useMemo } from 'react';
+import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { useNotification } from '@/contexts/notification-context';
 import type { Task } from '@/types';
 
@@ -19,7 +17,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
   const [searchQuery, setSearchQuery] = useState('');
   const [notifiedTasks, setNotifiedTasks] = useState<number[]>([]);
 
-  // Notifications about deadlines
   useEffect(() => {
     const checkDeadlines = () => {
       const now = new Date();
@@ -63,6 +60,32 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     }
   };
 
+  const snoozeTask = (id: number) => {
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === id) {
+          const now = new Date();
+          const currentDueDate = new Date(task.dueDate);
+          // Если задача просрочена, устанавливаем новый срок как текущее время + 2 часа
+          const newDueDate = isPast(currentDueDate)
+            ? addHours(now, 2)
+            : addHours(currentDueDate, 2); // Иначе добавляем 2 часа к текущему dueDate
+          return { ...task, dueDate: newDueDate.toISOString() };
+        }
+        return task;
+      })
+    );
+    const task = tasks.find((task) => task.id === id);
+    if (task) {
+      addNotification(
+        'info',
+        'Task Snoozed',
+        `Task "${task.title}" has been snoozed for 2 hours.`
+      );
+      setNotifiedTasks((prev) => prev.filter((taskId) => taskId !== id)); // Сбрасываем уведомление
+    }
+  };
+
   const toggleTaskStarred = (id: number) => {
     setTasks(
       tasks.map((task) =>
@@ -99,7 +122,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
   };
 
   const handleEditTask = (updatedTask: Task) => {
-    // console.log('Editing task:', updatedTask); 
     setTasks(
       tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
@@ -110,7 +132,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
   };
 
   const openEditPopup = (task: Task) => {
-    // console.log('Opening edit popup for task:', task);
     setTaskToEdit(task);
     setEditPopupOpen(true);
   };
@@ -163,7 +184,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     };
   };
 
-  const filterTasks = () => {
+  const filterTasks = useMemo(() => {
     return tasks.filter((task) => {
       const query = searchQuery.toLowerCase();
       return (
@@ -175,7 +196,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
         formatDate(task.dueDate).toLowerCase().includes(query)
       );
     });
-  };
+  }, [tasks, searchQuery]);
 
   return {
     tasks,
@@ -187,6 +208,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     searchQuery,
     setSearchQuery,
     toggleTaskCompletion,
+    snoozeTask,
     toggleTaskStarred,
     handleCreateTask,
     handleEditTask,
