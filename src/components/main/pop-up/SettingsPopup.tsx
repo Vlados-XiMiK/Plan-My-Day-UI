@@ -23,25 +23,38 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
   const { language, setLanguage } = useLanguage();
   const t = language === "uk" ? ukTranslations : en;
   const [deadlineRemindersEnabled, setDeadlineRemindersEnabled] = useState(true);
+  const [shouldStayOpen, setShouldStayOpen] = useState(isOpen);
 
-  // Загружаем сохраненное состояние напоминаний из localStorage при монтировании
+
   useEffect(() => {
     try {
       const savedSetting = localStorage.getItem("deadlineRemindersEnabled");
       setDeadlineRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true);
+        // Check if the popup should stay open after reboot
+      const savedPopupState = localStorage.getItem("settingsPopupOpen");
+      if (savedPopupState === "true") {
+        setShouldStayOpen(true);
+        // Clear the state after use so that the popup does not open on next login
+        localStorage.removeItem("settingsPopupOpen");
+      }
     } catch (error) {
       console.error("Error parsing localStorage:", error);
       setDeadlineRemindersEnabled(true);
     }
   }, []);
 
-  // Сохраняем состояние и перезагружаем страницу
+  // Save the state and reload the page
   const handleDeadlineRemindersToggle = () => {
     const newValue = !deadlineRemindersEnabled;
     setDeadlineRemindersEnabled(newValue);
     localStorage.setItem("deadlineRemindersEnabled", JSON.stringify(newValue));
-    // Перезагрузка страницы
+    localStorage.setItem("settingsPopupOpen", "true");
     window.location.reload();
+  };
+
+  const handleClose = () => {
+    setShouldStayOpen(false);
+    onClose();
   };
 
   const handleThemeChange = (newTheme: "light" | "dark") => {
@@ -62,13 +75,13 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {(isOpen || shouldStayOpen) && (
         <motion.div
           className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={handleClose}
           {...({} as MotionDivProps)}
         >
           <motion.div
@@ -158,7 +171,7 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
 
             <div className="mt-6 flex justify-end">
               <Button
-                onClick={onClose}
+                onClick={handleClose}
                 className="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-all duration-200"
               >
                 {t.settings.close || "Close"}
