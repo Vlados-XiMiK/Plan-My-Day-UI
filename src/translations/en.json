@@ -194,7 +194,7 @@
     "lightTheme": "Light",
     "darkTheme": "Dark",
     "language": "Language",
-    "notifications": "Task Reminders",
+    "deadlineReminders": "Task Reminders",
     "close": "Close"
   },
   "tasks": {

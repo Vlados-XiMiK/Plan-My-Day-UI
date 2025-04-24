@@ -12,7 +12,6 @@ import type { Task } from "@/types"
 import { calculateTimeRemaining } from "@/lib/tasks-data"
 import { isPast } from 'date-fns'
 
-// type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface FloatingDeadlineReminderProps {
@@ -24,6 +23,13 @@ interface FloatingDeadlineReminderProps {
 export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }: FloatingDeadlineReminderProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isPulsing, setIsPulsing] = useState(false)
+  const [remindersEnabled, setRemindersEnabled] = useState(true)
+
+  // Загружаем настройку напоминаний из localStorage
+  useEffect(() => {
+    const savedSetting = localStorage.getItem("deadlineRemindersEnabled");
+    setRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true);
+  }, []);
 
   // Filter tasks that are approaching deadline (less than 48 hours) or overdue
   const urgentTasks = tasks
@@ -48,6 +54,11 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
       return () => clearInterval(interval)
     }
   }, [urgentTasks.length])
+
+  // Если напоминания выключены, не рендерим компонент
+  if (!remindersEnabled) {
+    return null;
+  }
 
   // Format remaining time text
   const formatRemainingTime = (task: Task) => {
@@ -80,7 +91,6 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
     }
     return "bg-green-500" // Next day (less than 12 hours): Green
   }
-
 
   return (
     <>

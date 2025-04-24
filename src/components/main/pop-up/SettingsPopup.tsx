@@ -1,4 +1,3 @@
-// components/main/pop-up/SettingsPopup.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,19 +21,27 @@ interface SettingsPopupProps {
 export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
   const { theme, setTheme } = useTheme();
   const { language, setLanguage } = useLanguage();
-  const [notifications, setNotifications] = useState(true); // status for notifications
   const t = language === "uk" ? ukTranslations : en;
+  const [deadlineRemindersEnabled, setDeadlineRemindersEnabled] = useState(true);
 
-  // Зload status notifications
+  // Загружаем сохраненное состояние напоминаний из localStorage при монтировании
   useEffect(() => {
-    const savedNotifications = localStorage.getItem("notifications") === "true";
-    setNotifications(savedNotifications);
+    try {
+      const savedSetting = localStorage.getItem("deadlineRemindersEnabled");
+      setDeadlineRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true);
+    } catch (error) {
+      console.error("Error parsing localStorage:", error);
+      setDeadlineRemindersEnabled(true);
+    }
   }, []);
 
-  // Saving status notifications
-  const handleNotificationsChange = (checked: boolean) => {
-    setNotifications(checked);
-    localStorage.setItem("notifications", checked.toString());
+  // Сохраняем состояние и перезагружаем страницу
+  const handleDeadlineRemindersToggle = () => {
+    const newValue = !deadlineRemindersEnabled;
+    setDeadlineRemindersEnabled(newValue);
+    localStorage.setItem("deadlineRemindersEnabled", JSON.stringify(newValue));
+    // Перезагрузка страницы
+    window.location.reload();
   };
 
   const handleThemeChange = (newTheme: "light" | "dark") => {
@@ -136,15 +143,15 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
                 </div>
               </div>
 
-              {/* Notification */}
+              {/* Deadline Reminders Toggle */}
               <div className="flex items-center justify-between">
                 <Label className="text-gray-800 dark:text-gray-200 font-medium">
-                  {t.settings.notifications || "Task Reminders"}
+                  {t.settings.deadlineReminders || "Deadline Reminders"}
                 </Label>
                 <Switch
-                  checked={notifications}
-                  onCheckedChange={handleNotificationsChange}
-                  className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-600"
+                  checked={deadlineRemindersEnabled}
+                  onCheckedChange={handleDeadlineRemindersToggle}
+                  className="data-[state=checked]:bg-purple-600"
                 />
               </div>
             </div>
