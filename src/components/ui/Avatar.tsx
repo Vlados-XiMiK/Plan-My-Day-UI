@@ -6,14 +6,17 @@ import { AvatarProps } from "@/types"
 export default function Avatar({ name, surname, size = "large" }: AvatarProps) {
 
   const getInitials = () => {
+    if (!name) return "?"
+    
     const nameParts = name?.split(" ") || [];
+
     const nameInitial = nameParts[0]?.[0] || "";
     const surnameInitial = (surname || nameParts[1])?.[0] || "";
     return `${nameInitial}${surnameInitial}`.toUpperCase() || "?";
   };
 
   const sizes = {
-    small: { width: "w-8", height: "h-8", text: "text-xl" },
+    small: { width: "w-8", height: "h-8", text: "text-sm" },
     large: { width: "w-32", height: "h-32", text: "text-4xl" },
   };
 

@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Calendar, Clock, FolderIcon, CheckCircle2, Circle, CheckCircle, Star } from "lucide-react"
-import { TooltipContent } from "@/components/ui/calendar/tooltip"
+import { TooltipContent } from "@/components/ui/tooltip"
 import { getPriorityColorClass } from "@/lib/calendar-utils"
 import { cn } from "@/lib/utils"
 import type { Task } from "@/types"

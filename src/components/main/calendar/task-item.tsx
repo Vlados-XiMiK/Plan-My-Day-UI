@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils"
 import { getTaskStatus } from "@/types"
 import { getPriorityColorClass } from "@/lib/calendar-utils"
 import type { Task } from "@/types"
-import { Tooltip, TooltipProvider, TooltipTrigger } from "@/components/ui/calendar/tooltip"
-import { Checkbox } from "@/components/ui/calendar/checkbox"
+import { Tooltip, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Checkbox } from "@/components/ui/checkbox"
 import TaskTooltip from "./task-tooltip"
 import { useMobile } from "@/hooks/use-mobile" // Import useMobile hook
 import { HTMLAttributes } from 'react'
@@ -135,7 +135,7 @@ export default function TaskItem({
       variants={pulseVariants}
       transition={{ duration: 0.3 }}
       className={cn(
-        "flex items-center p-3 rounded-xl border transition-colors cursor-pointer transform transition-transform hover:scale-[1.01] active:scale-[0.99]",
+        "flex items-center p-3 rounded-xl border cursor-pointer transform transition-transform hover:scale-[1.01] active:scale-[0.99]",
         isTaskToday
           ? "border-indigo-300 bg-indigo-50/50 dark:border-indigo-800 dark:bg-indigo-900/20 shadow-[0_0_10px_rgba(99,102,241,0.3)]"
           : "border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900",

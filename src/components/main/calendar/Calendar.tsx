@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Tabs, TabsContent } from "@/components/ui/calendar/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { useMobile } from "@/hooks/use-mobile"
 import TaskDetailModal from "./task-detail-modal"
 import TaskModal from "./task-modal"

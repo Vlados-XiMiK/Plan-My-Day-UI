@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/calendar/dialog"
-import { Badge } from "@/components/ui/calendar/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 import { motion, MotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Clock, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react"
 import { getTaskStatus } from "@/types"
-import { Checkbox } from "@/components/ui/calendar/checkbox"
+import { Checkbox } from "@/components/ui/checkbox"
 import type { Task } from "@/types"
 import { HTMLAttributes } from 'react'
 
