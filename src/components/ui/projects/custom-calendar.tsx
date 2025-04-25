@@ -74,18 +74,6 @@ export default function CustomCalendar({ selectedDate, onDateSelect, className }
   }
 
   // Navigate to current month and select today
-  const goToCurrentMonth = (e: React.MouseEvent) => {
-    e.preventDefault() // Prevent any form submission
-    e.stopPropagation() // Stop event propagation
-
-    const today = new Date()
-    if (today.getMonth() !== currentMonth.getMonth() || today.getFullYear() !== currentMonth.getFullYear()) {
-      setAnimationDirection(today.getTime() < currentMonth.getTime() ? "left" : "right")
-      setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1))
-    }
-    // Select today's date
-    onDateSelect(today)
-  }
 
   // Check if a date is today
   const isToday = (date: Date) => {

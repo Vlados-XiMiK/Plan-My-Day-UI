@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { DayPicker, DayPickerProps, Modifiers } from "react-day-picker";
+import { DayPicker, DayPickerProps } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -46,9 +46,6 @@ function Calendar({
 
   const handleDayClick = (
     date: Date | undefined,
-    triggerDate: Date,
-    modifiers: Modifiers,
-    e: React.MouseEvent<Element>
   ) => {
     onSelect?.(date);
   };
