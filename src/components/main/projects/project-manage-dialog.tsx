@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,7 +22,7 @@ import { Trash2, UserPlus } from "lucide-react"
 import { format } from "date-fns"
 import { motion, MotionProps } from "framer-motion"
 import CustomAvatar from "@/components/ui/Avatar"
-
+import { useNotification } from "@/contexts/notification-context"
 import { HTMLAttributes } from 'react'
 
 // type for motion.div
@@ -60,6 +59,7 @@ export default function ProjectManageDialog({
   const [hasRoleChanges, setHasRoleChanges] = useState(false)
   const [newMemberEmail, setNewMemberEmail] = useState("")
   const [activeTab, setActiveTab] = useState<string>("details")
+  const { addNotification } = useNotification()
 
   const handleUpdateMemberRole = (userId: string, role: string) => {
     setPendingRoleChanges((prev) => {
@@ -67,27 +67,37 @@ export default function ProjectManageDialog({
       setHasRoleChanges(true)
       return newChanges
     })
+    const member = members.find((m) => m.id === userId)
+    if (member) {
+      addNotification("info", "Role Change Pending", `Role for ${member.name} set to ${roleLabels[role as keyof typeof roleLabels]}`, 3000)
+    }
   }
 
   const saveRoleChanges = () => {
-    const updatedMembers = members.map((member) => {
-      if (pendingRoleChanges[member.id]) {
-        return {
-          ...member,
-          role: pendingRoleChanges[member.id] as "full_access" | "read_only" | "complete_only",
+    try {
+      const updatedMembers = members.map((member) => {
+        if (pendingRoleChanges[member.id]) {
+          return {
+            ...member,
+            role: pendingRoleChanges[member.id] as "full_access" | "read_only" | "complete_only",
+          }
         }
-      }
-      return member
-    })
+        return member
+      })
 
-    setMembers(updatedMembers)
-    setPendingRoleChanges({})
-    setHasRoleChanges(false)
+      setMembers(updatedMembers)
+      setPendingRoleChanges({})
+      setHasRoleChanges(false)
+      addNotification("success", "Roles Updated", "Team member roles have been updated", 3000)
+    } catch {
+      addNotification("error", "Update Failed", "Failed to update member roles. Please try again.", 5000)
+    }
   }
 
   const cancelRoleChanges = () => {
     setPendingRoleChanges({})
     setHasRoleChanges(false)
+    addNotification("info", "Changes Cancelled", "Pending role changes have been cancelled", 3000)
   }
 
   const handleUpdateProject = (e: React.FormEvent) => {
@@ -95,46 +105,82 @@ export default function ProjectManageDialog({
 
     // Only allow updates if user has permission
     if (!canEdit && !isCreator) {
+      addNotification("error", "Permission Denied", "You do not have permission to update this project", 5000)
       onOpenChange(false)
       return
     }
 
-    // Apply any pending role changes before saving
-    if (hasRoleChanges) {
-      saveRoleChanges()
+    // Validate title
+    if (!title.trim()) {
+      addNotification("error", "Invalid Input", "Project title is required", 5000)
+      return
     }
 
-    onUpdateProject({
-      ...project,
-      title,
-      description,
-      members,
-    })
+    try {
+      // Apply any pending role changes before saving
+      if (hasRoleChanges) {
+        saveRoleChanges()
+      }
 
-    onOpenChange(false)
+      onUpdateProject({
+        ...project,
+        title,
+        description,
+        members,
+      })
+
+      addNotification("success", "Project Updated", `Project "${title}" has been updated`, 3000)
+      onOpenChange(false)
+    } catch {
+      addNotification("error", "Update Failed", "Failed to update project. Please try again.", 5000)
+    }
   }
 
   const handleAddMember = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMemberEmail.trim() || (!canEdit && !isCreator)) return
-
-    // In a real app, you would send an invitation and add the user after they accept
-    // This is just a mock implementation
-    const newMember: User = {
-      id: `user-${Date.now()}`,
-      name: newMemberEmail.split("@")[0], // Just for demo
-      email: newMemberEmail,
-      avatar: "", // No avatar for new members
-      role: "read_only", // Default to read_only
+    if (!newMemberEmail.trim() || (!canEdit && !isCreator)) {
+      if (!newMemberEmail.trim()) {
+        addNotification("error", "Invalid Input", "Email address is required", 5000)
+      } else {
+        addNotification("error", "Permission Denied", "You do not have permission to add members", 5000)
+      }
+      return
     }
 
-    setMembers([...members, newMember])
-    setNewMemberEmail("")
+    try {
+      // In a real app, you would send an invitation and add the user after they accept
+      // This is just a mock implementation
+      const newMember: User = {
+        id: `user-${Date.now()}`,
+        name: newMemberEmail.split("@")[0], // Just for demo
+        email: newMemberEmail,
+        avatar: "", // No avatar for new members
+        role: "read_only", // Default to read_only
+      }
+
+      setMembers([...members, newMember])
+      setNewMemberEmail("")
+      addNotification("success", "Member Added", `${newMember.name} has been added to the project`, 3000)
+    } catch {
+      addNotification("error", "Addition Failed", "Failed to add member. Please try again.", 5000)
+    }
   }
 
   const handleRemoveMember = (userId: string) => {
-    if (!canEdit && !isCreator) return
-    setMembers(members.filter((member) => member.id !== userId))
+    if (!canEdit && !isCreator) {
+      addNotification("error", "Permission Denied", "You do not have permission to remove members", 5000)
+      return
+    }
+
+    try {
+      const member = members.find((m) => m.id === userId)
+      setMembers(members.filter((member) => member.id !== userId))
+      if (member) {
+        addNotification("success", "Member Removed", `${member.name} has been removed from the project`, 3000)
+      }
+    } catch {
+      addNotification("error", "Removal Failed", "Failed to remove member. Please try again.", 5000)
+    }
   }
 
   const createdDate = new Date(project.createdAt)

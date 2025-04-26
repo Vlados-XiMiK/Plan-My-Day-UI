@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import { motion, MotionProps } from "framer-motion"
 import { availableUsers, currentUser } from "@/lib/project-data"
 import { HTMLAttributes } from 'react'
+import { useNotification } from '@/contexts/notification-context'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -38,6 +38,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
   const [showUserSearch, setShowUserSearch] = useState(false)
+  const { addNotification } = useNotification()
 
   const filteredUsers = availableUsers.filter(
     (user) =>
@@ -50,33 +51,48 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title.trim()) return
+    if (!title.trim()) {
+      addNotification('error', 'Invalid Input', 'Project title is required', 5000)
+      return
+    }
 
-    onCreateProject({
-      title,
-      description,
-      createdBy: currentUser,
-      members: [currentUser, ...selectedUsers],
-      tasks: [],
-      createdAt: new Date().toISOString(),
-    });
+    try {
+      onCreateProject({
+        title,
+        description,
+        createdBy: currentUser,
+        members: [currentUser, ...selectedUsers],
+        tasks: [],
+        createdAt: new Date().toISOString(),
+      })
 
-    // Reset form
-    setTitle("")
-    setDescription("")
-    setSelectedUsers([])
-    setSearchTerm("")
-    setShowUserSearch(false)
+      addNotification('success', 'Project Created', `Successfully created project: ${title}`, 5000)
+
+      // Reset form
+      setTitle("")
+      setDescription("")
+      setSelectedUsers([])
+      setSearchTerm("")
+      setShowUserSearch(false)
+      onOpenChange(false)
+    } catch {
+      addNotification('error', 'Creation Failed', 'Failed to create project. Please try again.', 5000)
+    }
   }
 
   const addUser = (user: User) => {
     // Ensure added users have read_only role by default
     setSelectedUsers([...selectedUsers, { ...user, role: "read_only" }])
     setSearchTerm("")
+    addNotification('success', 'Member Added', `${user.name} added to the project`, 3000)
   }
 
   const removeUser = (userId: string) => {
+    const removedUser = selectedUsers.find((user) => user.id === userId)
     setSelectedUsers(selectedUsers.filter((user) => user.id !== userId))
+    if (removedUser) {
+      addNotification('info', 'Member Removed', `${removedUser.name} removed from the project`, 3000)
+    }
   }
 
   return (

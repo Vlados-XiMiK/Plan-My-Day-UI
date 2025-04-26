@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,7 +21,7 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { motion, MotionProps, AnimatePresence } from "framer-motion"
 import CustomCalendar from "@/components/ui/projects/custom-calendar"
-
+import { useNotification } from "@/contexts/notification-context"
 import { HTMLAttributes } from 'react'
 
 // type for motion.div
@@ -44,12 +43,13 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
   const [dueTime, setDueTime] = useState<string>("23:59") // Default time is 23:59
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const { addNotification } = useNotification()
 
   const calendarRef = useRef<HTMLDivElement>(null)
   const calendarButtonRef = useRef<HTMLButtonElement>(null)
 
   const isEditing = !!task
-  const isDateSelectionEnabled = title.trim() && description.trim()
+  const isDateSelectionEnabled = title.trim() && description.trim() && priority
 
   // Check if selected date-time is valid (not in the past)
   const isValidDateTime = () => {
@@ -116,8 +116,28 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title.trim()) return
-    if (!isValidDateTime()) return
+    // Validation for required fields
+    if (!title.trim()) {
+      addNotification('error', 'Invalid Input', 'Task title is required', 5000)
+      return
+    }
+    if (!description.trim()) {
+      addNotification('error', 'Invalid Input', 'Task description is required', 5000)
+      return
+    }
+    if (!priority) {
+      addNotification('error', 'Invalid Input', 'Task priority is required', 5000)
+      return
+    }
+    if (!dueDate) {
+      addNotification('error', 'Invalid Input', 'Task due date is required', 5000)
+      return
+    }
+
+    if (!isValidDateTime()) {
+      addNotification('error', 'Invalid Date', 'Due date cannot be in the past', 5000)
+      return
+    }
 
     // Combine date and time if a date is selected
     let finalDueDate: string | undefined = undefined
@@ -139,17 +159,26 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
       category: category || undefined,
     }
 
-    if (isEditing && onEditTask) {
-      onEditTask({
-        id: task.id,
-        ...taskData,
-        completion: task.completion, // Preserve completion info if it exists
-      })
-    } else if (onAddTask) {
-      onAddTask(taskData)
+    try {
+      if (isEditing && onEditTask) {
+        onEditTask({
+          id: task.id,
+          ...taskData,
+          completion: task.completion, // Preserve completion info if it exists
+        })
+        addNotification('success', 'Task Updated', `Task "${title}" has been updated`, 3000)
+      } else if (onAddTask) {
+        onAddTask(taskData)
+      }
+      onOpenChange(false)
+    } catch {
+      addNotification(
+        'error',
+        isEditing ? 'Update Failed' : 'Creation Failed',
+        `Failed to ${isEditing ? 'update' : 'create'} task. Please try again.`,
+        5000
+      )
     }
-
-    onOpenChange(false)
   }
 
   // Helper function to set default time when a date is selected
@@ -186,6 +215,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
     e.stopPropagation()
     setDueDate(undefined)
     setDueTime("23:59")
+    addNotification('info', 'Date Cleared', 'Task due date has been removed', 3000)
   }
 
   return (
@@ -206,7 +236,9 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
               transition={{ duration: 0.3 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="title">Task title</Label>
+              <Label htmlFor="title">
+                Task title <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="title"
                 value={title}
@@ -223,13 +255,16 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
               transition={{ duration: 0.3, delay: 0.1 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">
+                Description <span className="text-red-500">*</span>
+              </Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe your task"
                 rows={3}
+                required
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
               />
             </motion.div>
@@ -242,8 +277,10 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
               {...({} as MotionDivProps)}
             >
               <div className="grid gap-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select value={priority} onValueChange={setPriority}>
+                <Label htmlFor="priority">
+                  Priority <span className="text-red-500">*</span>
+                </Label>
+                <Select value={priority} onValueChange={setPriority} required>
                   <SelectTrigger
                     id="priority"
                     className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
@@ -285,7 +322,9 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
               transition={{ duration: 0.3, delay: 0.3 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="dueDate">Due date</Label>
+              <Label htmlFor="dueDate">
+                Due date <span className="text-red-500">*</span>
+              </Label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-grow">
                   <Button
@@ -302,18 +341,14 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {dueDate ? format(dueDate, "MMMM d, yyyy") : "Select a date"}
-
                     {dueDate && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                      <span
                         onClick={clearDate}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
                       >
                         <X className="h-4 w-4" />
                         <span className="sr-only">Clear date</span>
-                      </Button>
+                      </span>
                     )}
                   </Button>
 
@@ -332,7 +367,6 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                           selectedDate={dueDate}
                           onDateSelect={handleDateSelect}
                           className="w-full sm:w-[280px]"
-                          
                         />
                       </motion.div>
                     )}
@@ -347,6 +381,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                     onChange={(e) => setDueTime(e.target.value)}
                     className="pl-10 w-full sm:w-[120px] transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
                     disabled={!dueDate}
+                    required
                   />
                 </div>
               </div>

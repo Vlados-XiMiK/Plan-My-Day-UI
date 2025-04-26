@@ -17,12 +17,13 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogFooter,
   AlertDialogTitle,
 } from "@/components/ui/projects/alert-dialog";
 import { currentUser } from "@/lib/project-data";
 import { HTMLAttributes } from "react";
+import { useNotification } from "@/contexts/notification-context";
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
@@ -48,6 +49,7 @@ export default function ProjectCard({
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { addNotification } = useNotification();
 
   // Use provided user or default to the current user from data
   const mockCurrentUser: User = userProp || currentUser;
@@ -57,70 +59,88 @@ export default function ProjectCard({
   };
 
   const handleTaskToggle = (taskId: string) => {
-    const updatedTasks = project.tasks.map((task) => {
-      if (task.id === taskId) {
-        // If task is being marked as completed, add completion info
-        if (!task.completed) {
-          return {
-            ...task,
-            completed: true,
-            completion: {
-              completedBy: mockCurrentUser.id,
-              completedAt: new Date().toISOString(),
-            },
-          };
+    try {
+      const updatedTasks = project.tasks.map((task) => {
+        if (task.id === taskId) {
+          // If task is being marked as completed, add completion info
+          if (!task.completed) {
+            return {
+              ...task,
+              completed: true,
+              completion: {
+                completedBy: mockCurrentUser.id,
+                completedAt: new Date().toISOString(),
+              },
+            };
+          }
+          // If task is being unmarked, remove completion info
+          else {
+            const { ...rest } = task; // Убрали completion из деструктуризации
+            return { ...rest, completed: false };
+          }
         }
-        // If task is being unmarked, remove completion info
-        else {
-          const { ...rest } = task; // Убрали completion из деструктуризации
-          return { ...rest, completed: false };
-        }
-      }
-      return task;
-    });
+        return task;
+      });
 
-    onUpdateProject({
-      ...project,
-      tasks: updatedTasks,
-    });
+      onUpdateProject({
+        ...project,
+        tasks: updatedTasks,
+      });
+
+    } catch {
+      addNotification("error", "Update Failed", "Failed to update task status. Please try again.", 5000);
+    }
   };
 
   const handleAddTask = (task: Omit<Task, "id">) => {
-    const newTask: Task = {
-      id: `task-${Date.now()}`,
-      ...task,
-    };
+    try {
+      const newTask: Task = {
+        id: `task-${Date.now()}`,
+        ...task,
+      };
 
-    onUpdateProject({
-      ...project,
-      tasks: [...project.tasks, newTask],
-    });
+      onUpdateProject({
+        ...project,
+        tasks: [...project.tasks, newTask],
+      });
 
-    setTaskDialogOpen(false);
+      addNotification("success", "Task Created", `Task "${task.title}" has been added to the project`, 3000);
+      setTaskDialogOpen(false);
+    } catch {
+      addNotification("error", "Creation Failed", "Failed to create task. Please try again.", 5000);
+    }
   };
 
   const handleEditTask = (task: Task) => {
-    const updatedTasks = project.tasks.map((t) => (t.id === task.id ? task : t));
+    try {
+      const updatedTasks = project.tasks.map((t) => (t.id === task.id ? task : t));
 
-    onUpdateProject({
-      ...project,
-      tasks: updatedTasks,
-    });
+      onUpdateProject({
+        ...project,
+        tasks: updatedTasks,
+      });
 
-    setEditingTask(null);
+      setEditingTask(null);
+    } catch {
+      addNotification("error", "Update Failed", "Failed to update task. Please try again.", 5000);
+    }
   };
 
   const handleDeleteTask = (taskId: string) => {
-    const updatedTasks = project.tasks.filter((task) => task.id !== taskId);
+    try {
+      const updatedTasks = project.tasks.filter((task) => task.id !== taskId);
 
-    onUpdateProject({
-      ...project,
-      tasks: updatedTasks,
-    });
+      onUpdateProject({
+        ...project,
+        tasks: updatedTasks,
+      });
 
-    // If we were editing this task, close the dialog
-    if (editingTask && editingTask.id === taskId) {
-      setEditingTask(null);
+      // If we were editing this task, close the dialog
+      if (editingTask && editingTask.id === taskId) {
+        setEditingTask(null);
+      }
+    } catch {
+      addNotification("error", "Deletion Failed", "Failed to delete task. Please try again.", 5000);
     }
   };
 
@@ -129,8 +149,13 @@ export default function ProjectCard({
   };
 
   const handleDeleteProject = () => {
-    onDeleteProject(project.id);
-    setDeleteDialogOpen(false);
+    try {
+      onDeleteProject(project.id);
+      addNotification("success", "Project Deleted", `Project "${project.title}" has been deleted`, 3000);
+      setDeleteDialogOpen(false);
+    } catch {
+      addNotification("error", "Deletion Failed", "Failed to delete project. Please try again.", 5000);
+    }
   };
 
   // Check user permissions

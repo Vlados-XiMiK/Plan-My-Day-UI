@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/projects/avatar"
 import { motion, MotionProps } from "framer-motion"
 import { HTMLAttributes } from 'react'
+import { useNotification } from '@/contexts/notification-context'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -33,6 +34,8 @@ export default function TaskItem({
   canComplete,
   completedByUser,
 }: TaskItemProps) {
+  const { addNotification } = useNotification()
+
   const priorityColors = {
     low: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800",
     medium:
@@ -57,6 +60,38 @@ export default function TaskItem({
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const completedDate = task.completion ? new Date(task.completion.completedAt) : null
 
+  const handleToggleComplete = () => {
+    try {
+      onToggleComplete()
+      addNotification(
+        'success',
+        'Task Status Updated',
+        `Task "${task.title}" marked as ${task.completed ? 'incomplete' : 'complete'}`,
+        3000
+      )
+    } catch {
+      addNotification('error', 'Update Failed', 'Failed to update task status. Please try again.', 5000)
+    }
+  }
+
+  const handleEdit = () => {
+    try {
+      onEdit()
+      addNotification('info', 'Edit Task', `Editing task: ${task.title}`, 3000)
+    } catch {
+      addNotification('error', 'Edit Failed', 'Failed to initiate task edit. Please try again.', 5000)
+    }
+  }
+
+  const handleDelete = () => {
+    try {
+      onDelete()
+      addNotification('success', 'Task Deleted', `Task "${task.title}" has been deleted`, 3000)
+    } catch {
+      addNotification('error', 'Deletion Failed', 'Failed to delete task. Please try again.', 5000)
+    }
+  }
+
   return (
     <TooltipProvider>
       <motion.div
@@ -71,7 +106,7 @@ export default function TaskItem({
             <Checkbox
               id={task.id}
               checked={task.completed}
-              onCheckedChange={onToggleComplete}
+              onCheckedChange={handleToggleComplete}
               className="mt-1 transition-all duration-300 data-[state=checked]:bg-purple-600 data-[state=checked]:text-white flex-shrink-0"
             />
           ) : (
@@ -102,7 +137,7 @@ export default function TaskItem({
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 transition-all duration-200 hover:bg-purple-500/10"
-                          onClick={onEdit}
+                          onClick={handleEdit}
                         >
                           <Edit className="h-3.5 w-3.5" />
                           <span className="sr-only">Edit task</span>
@@ -117,7 +152,7 @@ export default function TaskItem({
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-destructive transition-all duration-200 hover:bg-destructive/10"
-                          onClick={onDelete}
+                          onClick={handleDelete}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                           <span className="sr-only">Delete task</span>

@@ -176,7 +176,7 @@ export const Notification: React.FC<NotificationProps> = ({
 
 export const NotificationContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col items-end space-y-2 max-w-sm">
+    <div className="fixed top-4 right-4 z-[10000] flex flex-col items-end space-y-2 max-w-sm">
       {children}
     </div>
   )
