@@ -21,7 +21,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/projects/av
 import { Badge } from "@/components/ui/badge"
 import { motion, MotionProps } from "framer-motion"
 import { availableUsers, currentUser } from "@/lib/project-data"
-import CustomAvatar from "@/components/ui/Avatar"
 import { HTMLAttributes } from 'react'
 
 // type for motion.div
@@ -150,8 +149,13 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                       </AvatarFallback>
                     </Avatar>
                   ) : (
-                    <div className="h-5 w-5 border-2 border-purple-500/20 rounded-full overflow-hidden">
-                      <CustomAvatar name={currentUser.name} size="small" />
+                    <div className="h-5 w-5 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-[10px] font-bold flex-shrink-0">
+                      {currentUser.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .substring(0, 2)
+                        .toUpperCase()}
                     </div>
                   )}
                   <span>{currentUser.name}</span>
@@ -179,8 +183,13 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <div className="h-5 w-5 rounded-full overflow-hidden">
-                          <CustomAvatar name={user.name} size="small" />
+                        <div className="h-5 w-5 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-[10px] font-bold flex-shrink-0">
+                          {user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase()}
                         </div>
                       )}
                       <span>{user.name}</span>
@@ -239,7 +248,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                       >
                         <div className="flex items-center gap-2">
                           {user.avatar ? (
-                            <Avatar className="h-6 w-6">
+                            <Avatar className="h-6 w-6 flex-shrink-0">
                               <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
                               <AvatarFallback>
                                 {user.name
@@ -251,8 +260,13 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                               </AvatarFallback>
                             </Avatar>
                           ) : (
-                            <div className="h-6 w-6 rounded-full overflow-hidden">
-                              <CustomAvatar name={user.name} size="small" />
+                            <div className="h-6 w-6 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-xs font-bold flex-shrink-0">
+                              {user.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .substring(0, 2)
+                                .toUpperCase()}
                             </div>
                           )}
                           <div>
