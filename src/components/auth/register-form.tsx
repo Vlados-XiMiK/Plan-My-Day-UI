@@ -9,21 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/shared/icons"
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react"
-import { useLanguage } from "@/contexts/LanguageContext"
-import en from "@/translations/en.json"
-import uk from "@/translations/uk.json"
+import { useTranslation } from "react-i18next"
 import type React from "react"
 import { HTMLAttributes } from "react"
-
 import { useNotification } from "@/contexts/notification-context"
-
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 // type for motion.p
 type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
-
 
 interface FormData {
   email: string
@@ -57,7 +52,9 @@ const steps = [
 ]
 
 export default function RegisterForm() {
-  const { addNotification } = useNotification();
+  const { t: tAuth } = useTranslation("auth")
+  const { t: tNotifications } = useTranslation("notifications")
+  const { addNotification } = useNotification()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(0)
@@ -71,9 +68,6 @@ export default function RegisterForm() {
     confirmPassword: "",
   })
   const [errors, setErrors] = useState<FormErrors>({})
-  const { language } = useLanguage()
-  const t = language === "uk" ? uk : en
-
 
   const validateStep = (): boolean => {
     const newErrors: FormErrors = {}
@@ -83,53 +77,53 @@ export default function RegisterForm() {
       switch (field) {
         case "email":
           if (!formData.email) {
-            newErrors.email = t.auth.register.email + " " + t.auth.register.required
+            newErrors.email = `${tAuth("register.email")} ${tAuth("register.required")}`
           } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = t.auth.register.invalidEmail
+            newErrors.email = tAuth("register.invalidEmail")
           } else if (formData.email.length > 255) {
-            newErrors.email = t.auth.register.emailTooLong
+            newErrors.email = tAuth("register.emailTooLong")
           } else if (!/^[a-zA-Z0-9@._-]+$/.test(formData.email)) {
-            newErrors.email = t.auth.register.invalidEmail
+            newErrors.email = tAuth("register.invalidEmail")
           }
           break
         case "name":
           if (!formData.name) {
-            newErrors.name = t.auth.register.name + " " + t.auth.register.required
+            newErrors.name = `${tAuth("register.name")} ${tAuth("register.required")}`
           } else if (formData.name.length < 2) {
-            newErrors.name = t.auth.register.nameTooShort
+            newErrors.name = tAuth("register.nameTooShort")
           } else if (formData.name.length > 50) {
-            newErrors.name = t.auth.register.nameTooLong
+            newErrors.name = tAuth("register.nameTooLong")
           } else if (!/^[a-zA-Z\s]*$/.test(formData.name)) {
-            newErrors.name = t.auth.register.nameInvalid
+            newErrors.name = tAuth("register.nameInvalid")
           }
           break
         case "username":
           if (!formData.username) {
-            newErrors.username = t.auth.register.username + " " + t.auth.register.required
+            newErrors.username = `${tAuth("register.username")} ${tAuth("register.required")}`
           } else if (formData.username.length < 3) {
-            newErrors.username = t.auth.register.usernameTooShort
+            newErrors.username = tAuth("register.usernameTooShort")
           } else if (formData.username.length > 30) {
-            newErrors.username = t.auth.register.usernameTooLong
+            newErrors.username = tAuth("register.usernameTooLong")
           } else if (!/^[a-zA-Z0-9_]*$/.test(formData.username)) {
-            newErrors.username = t.auth.register.usernameInvalid
+            newErrors.username = tAuth("register.usernameInvalid")
           }
           break
         case "password":
           if (!formData.password) {
-            newErrors.password = t.auth.register.password + " " + t.auth.register.required
+            newErrors.password = `${tAuth("register.password")} ${tAuth("register.required")}`
           } else if (formData.password.length < 8) {
-            newErrors.password = t.auth.register.passwordTooShort
+            newErrors.password = tAuth("register.passwordTooShort")
           } else if (formData.password.length > 100) {
-            newErrors.password = t.auth.register.passwordTooLong
+            newErrors.password = tAuth("register.passwordTooLong")
           } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(formData.password)) {
-            newErrors.password = t.auth.register.passwordRequirements
+            newErrors.password = tAuth("register.passwordRequirements")
           }
           break
         case "confirmPassword":
           if (!formData.confirmPassword) {
-            newErrors.confirmPassword = t.auth.register.confirmPassword + " " + t.auth.register.required
+            newErrors.confirmPassword = `${tAuth("register.confirmPassword")} ${tAuth("register.required")}`
           } else if (formData.confirmPassword !== formData.password) {
-            newErrors.confirmPassword = t.auth.register.passwordsMismatch
+            newErrors.confirmPassword = tAuth("register.passwordsMismatch")
           }
           break
       }
@@ -162,11 +156,11 @@ export default function RegisterForm() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      addNotification("success", "Welcome!", "You have successfully registered.", 3000);
+      addNotification("success", tNotifications("welcome"), tNotifications("registerSuccess"), 3000)
       router.push("/dashboard")
     } catch (error) {
       console.error("Registration failed:", error)
-      setErrors({ password: t.auth.register.registrationFailed })
+      setErrors({ password: tAuth("register.registrationFailed") })
     } finally {
       setIsLoading(false)
     }
@@ -198,8 +192,8 @@ export default function RegisterForm() {
       {...({} as MotionDivProps)}
     >
       <div className="flex flex-col space-y-2 text-center mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{t.auth.register.title}</h1>
-        <p className="text-xs text-gray-600 dark:text-gray-400">{t.auth.register.subtitle}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{tAuth("register.title")}</h1>
+        <p className="text-xs text-gray-600 dark:text-gray-400">{tAuth("register.subtitle")}</p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <motion.div
@@ -216,7 +210,7 @@ export default function RegisterForm() {
           {step === 0 && (
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm text-gray-700 dark:text-gray-200">
-                {t.auth.register.email}
+                {tAuth("register.email")}
               </Label>
               <Input
                 id="email"
@@ -234,7 +228,7 @@ export default function RegisterForm() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
-                {...({} as MotionPProps)}
+                  {...({} as MotionPProps)}
                 >
                   {errors.email}
                 </motion.p>
@@ -246,13 +240,13 @@ export default function RegisterForm() {
             <div className="space-y-2">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm text-gray-700 dark:text-gray-200">
-                  {t.auth.register.name}
+                  {tAuth("register.name")}
                 </Label>
                 <Input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder={t.auth.register.namePlaceholder}
+                  placeholder={"John Doe"}
                   value={formData.name}
                   onChange={handleInputChange}
                   disabled={isLoading}
@@ -271,13 +265,13 @@ export default function RegisterForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-sm text-gray-700 dark:text-gray-200">
-                  {t.auth.register.username}
+                  {tAuth("register.username")}
                 </Label>
                 <Input
                   id="username"
                   name="username"
                   type="text"
-                  placeholder={t.auth.register.usernamePlaceholder}
+                  placeholder={"johndoe"}
                   value={formData.username}
                   onChange={handleInputChange}
                   disabled={isLoading}
@@ -301,7 +295,7 @@ export default function RegisterForm() {
             <div className="space-y-2">
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm text-gray-700 dark:text-gray-200">
-                  {t.auth.register.password}
+                  {tAuth("register.password")}
                 </Label>
                 <div className="relative">
                   <Input
@@ -334,7 +328,7 @@ export default function RegisterForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-sm text-gray-700 dark:text-gray-200">
-                  {t.auth.register.confirmPassword}
+                  {tAuth("register.confirmPassword")}
                 </Label>
                 <div className="relative">
                   <Input
@@ -379,7 +373,7 @@ export default function RegisterForm() {
               className="bg-gray-50 dark:bg-[#1a1a2e] text-gray-700 dark:text-white border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-[#16213e] text-xs py-1"
             >
               <ArrowLeft className="mr-2 h-3 w-3" />
-              {t.auth.register.back}
+              {tAuth("register.back")}
             </Button>
           )}
           <Button
@@ -390,7 +384,7 @@ export default function RegisterForm() {
             disabled={isLoading}
           >
             {isLoading && <Icons.spinner className="mr-2 h-3 w-3 animate-spin" />}
-            {step === steps.length - 1 ? t.auth.register.createAccount : t.auth.register.next}
+            {step === steps.length - 1 ? tAuth("register.createAccount") : tAuth("register.next")}
             {step < steps.length - 1 && <ArrowRight className="ml-2 h-3 w-3" />}
           </Button>
         </div>
@@ -407,12 +401,12 @@ export default function RegisterForm() {
             </div>
           </div>
           <div className="mt-4 text-center text-xs text-gray-600 dark:text-gray-400">
-            {t.auth.register.haveAccount}{" "}
+            {tAuth("register.haveAccount")}{" "}
             <Link
               href="/auth/login"
-              className="text-purple-600 hover:text:purple-500 dark:text-purple-400 dark:hover:text-purple-300"
+              className="text-purple-600 hover:text-purple-500 dark:text-purple-400 dark:hover:text-purple-300"
             >
-              {t.auth.register.signIn}
+              {tAuth("register.signIn")}
             </Link>
           </div>
         </>
@@ -420,4 +414,3 @@ export default function RegisterForm() {
     </motion.div>
   )
 }
-

@@ -1,0 +1,80 @@
+{
+    "welcome": "Welcome!",
+    "loginSuccess": "You have successfully logged in.",
+    "registerSuccess": "You have successfully registered.",
+        "taskReopened": {
+          "title": "Task Reopened",
+          "message": "The task \"{{title}}\" has been reopened and is now active again."
+        },
+        "taskCompleted": {
+          "title": "Task Completed",
+          "message": "You have successfully marked the task \"{{title}}\" as completed."
+        },
+        "taskSnoozed": {
+          "title": "Task Snoozed",
+          "message": "Task \"{{title}}\" has been snoozed for 2 hours."
+        },
+        "addedToFavorites": {
+          "title": "Added to Favorites",
+          "message": "The task \"{{title}}\" has been added to your favorites list."
+        },
+        "removedFromFavorites": {
+          "title": "Removed from Favorites",
+          "message": "The task \"{{title}}\" has been removed from your favorites list."
+        },
+        "taskCreated": {
+          "title": "Task Created",
+          "message": "The task \"{{title}}\" has been successfully created."
+        },
+        "taskUpdated": {
+          "title": "Task Updated",
+          "message": "The task \"{{title}}\" has been successfully updated."
+        },
+        "taskDeleted": {
+          "title": "Task Deleted",
+          "message": "The task \"{{title}}\" has been successfully removed."
+        },
+        "categories": {
+      "loadFailed": {
+        "title": "Load Failed",
+        "message": "Failed to load categories."
+      },
+      "invalidName": {
+        "title": "Invalid Name",
+        "message": "Category name must contain only letters, numbers, and spaces and cannot be empty."
+      },
+      "duplicateCategory": {
+        "title": "Duplicate Category",
+        "message": "This category already exists."
+      },
+      "categoryAdded": {
+        "title": "Category Added",
+        "message": "Category \"{{name}}\" added."
+      },
+      "addFailed": {
+        "title": "Add Failed",
+        "message": "An error occurred while adding the category."
+      },
+      "categoryDeleted": {
+        "title": "Category Deleted",
+        "message": "Category \"{{name}}\" deleted."
+      },
+      "deletionFailed": {
+        "title": "Deletion Failed",
+        "message": "An error occurred while deleting the category."
+      },
+      "noChanges": {
+        "title": "No Changes",
+        "message": "No changes were made."
+      },
+      "categoryUpdated": {
+        "title": "Category Updated",
+        "message": "Category \"{{name}}\" updated."
+      },
+      "updateFailed": {
+        "title": "Update Failed",
+        "message": "An error occurred while updating the category."
+      }
+    }
+  }
+  

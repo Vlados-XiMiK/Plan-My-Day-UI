@@ -1,0 +1,52 @@
+{
+    "language": "ua",
+    "filtersAndSearch": "Фільтри та пошук",
+    "searchPlaceholder": "Пошук (наприклад, 'високий пріоритет цього тижня')",
+    "status": {
+      "all": "Усі статуси",
+      "completed": "Завершені",
+      "incomplete": "Незавершені"
+    },
+    "priority": {
+      "all": "Усі пріоритети",
+      "high": "Високий",
+      "medium": "Середній",
+      "low": "Низький",
+      "label": "Пріоритет"
+    },
+    "sort": {
+      "createdDate": "Дата створення",
+      "lastModified": "Остання зміна",
+      "dueDate": "Термін виконання"
+    },
+    "clearFilters": "Очистити фільтри",
+    "createTask": "Створити завдання",
+    "loadMore": "Завантажити більше",
+    "editTask": "Редагувати завдання",
+    "addToFavorites": "Додати до обраних",
+    "removeFromFavorites": "Видалити з обраних",
+    "deleteTask": "Видалити завдання",
+    "created": "Створено",
+    "due": "Термін",
+    "timeRemaining": {
+      "completed": "Завершено",
+      "overdue": "Прострочено",
+      "dueInDays": "Термін через {{days}} {{dayPlural}} {{hours}}г {{minutes}}хв",
+      "dueInHours": "Термін через {{hours}} {{hourPlural}} {{minutes}} {{minutePlural}}",
+      "day": "день",
+      "days": "дні",
+      "hour": "година",
+      "hours": "години",
+      "minute": "хвилина",
+      "minutes": "хвилини"
+    },
+    "deadlineReminder": {
+      "upcomingDeadlines": "Наближені терміни",
+      "tasksCount": "{{count}} завдань",
+      "noUrgentTasks": "Немає термінових завдань",
+      "hide": "Сховати",
+      "snooze": "Відкласти",
+      "complete": "Завершити",
+      "remaining": "Залишилось"
+    }
+  }

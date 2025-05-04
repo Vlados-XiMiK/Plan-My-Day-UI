@@ -4,17 +4,14 @@ import { HTMLAttributes } from "react"
 import { motion, MotionProps } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/contexts/LanguageContext"
-import en from "@/translations/en.json"
-import uk from "@/translations/uk.json"
+import { useTranslation } from "react-i18next"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 export default function Hero() {
   const router = useRouter()
-  const { language } = useLanguage()
-  const t = language === "uk" ? uk : en
+  const { t } = useTranslation("welcome")
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
@@ -28,10 +25,10 @@ export default function Hero() {
             {...({} as MotionDivProps)}
           >
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-800 dark:from-blue-400 dark:to-purple-600 filter drop-shadow-lg py-2">
-              {t.hero.title}
+              {t("main.title")}
             </h1>
             <p className="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-200 max-w-2xl mx-auto">
-              {t.hero.description}
+              {t("main.description")}
             </p>
             <motion.div
               className="flex flex-col sm:flex-row justify-center gap-4"
@@ -45,7 +42,7 @@ export default function Hero() {
                 onClick={() => router.push("/auth/register")}
                 className="text-base md:text-lg bg-purple-600 hover:bg-purple-700 text-white dark:bg-gradient-to-r dark:from-purple-600 dark:to-blue-600 dark:hover:from-purple-700 dark:hover:to-blue-700 border-0 px-6 py-3 w-full sm:w-auto"
               >
-                {t.hero.getStartedFree}
+                {t("main.getStartedFree")}
               </Button>
               <Button
                 size="lg"
@@ -53,7 +50,7 @@ export default function Hero() {
                 onClick={() => router.push("/features")}
                 className="text-base md:text-lg border-purple-600 text-purple-600 hover:bg-purple-50 dark:border-purple-400 dark:text-purple-400 dark:hover:bg-purple-900/20 px-6 py-3 w-full sm:w-auto"
               >
-                {t.hero.learnMore}
+                {t("main.learnMore")}
               </Button>
             </motion.div>
           </motion.div>
@@ -62,4 +59,3 @@ export default function Hero() {
     </section>
   )
 }
-

@@ -6,10 +6,8 @@ import { motion, useScroll, MotionProps } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import Logo from "@/components/shared/logo"
 import { ThemeLanguageToggle } from "@/components/shared/theme-language-toggle"
-import { useLanguage } from "@/contexts/LanguageContext"
+import { useTranslation } from "react-i18next"
 import { Menu } from "lucide-react"
-import en from "@/translations/en.json"
-import uk from "@/translations/uk.json"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -19,13 +17,13 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const router = useRouter()
-  const { language } = useLanguage()
-  const t = language === "uk" ? uk : en
+  const { t } = useTranslation("welcome")
 
   useEffect(() => {
-    return scrollY.onChange((latest) => {
+    const unsubscribe = scrollY.on("change", (latest) => {
       setIsScrolled(latest > 0)
     })
+    return () => unsubscribe()
   }, [scrollY])
 
   return (
@@ -48,13 +46,13 @@ export default function Header() {
               onClick={() => router.push("/auth/login")}
               className="text-gray-700 hover:bg-purple-50 dark:text-white dark:hover:bg-white/10"
             >
-              {t.header.signIn}
+              {t("header.signIn")}
             </Button>
             <Button
               onClick={() => router.push("/auth/register")}
               className="bg-purple-600 hover:bg-purple-700 text-white dark:bg-white/10 dark:backdrop-blur-md dark:hover:bg-white/20"
             >
-              {t.header.getStarted}
+              {t("header.getStarted")}
             </Button>
           </div>
           <div className="md:hidden">
@@ -82,7 +80,7 @@ export default function Header() {
               }}
               className="w-full text-left text-gray-700 hover:bg-purple-50 dark:text-white dark:hover:bg-white/10"
             >
-              {t.header.signIn}
+              {t("header.signIn")}
             </Button>
             <Button
               onClick={() => {
@@ -91,7 +89,7 @@ export default function Header() {
               }}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white dark:bg-white/10 dark:backdrop-blur-md dark:hover:bg-white/20"
             >
-              {t.header.getStarted}
+              {t("header.getStarted")}
             </Button>
           </div>
         </motion.div>
@@ -99,4 +97,3 @@ export default function Header() {
     </motion.header>
   )
 }
-

@@ -5,12 +5,11 @@ import { useTheme } from "next-themes"
 import { Moon, Sun, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useLanguage } from "@/contexts/LanguageContext"
+import { setLanguage } from "@/i18n/i18n"
 
 export function ThemeLanguageToggle() {
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
-  const { setLanguage } = useLanguage()
 
   useEffect(() => {
     setMounted(true)
@@ -24,7 +23,7 @@ export function ThemeLanguageToggle() {
     setTheme(theme === "light" ? "dark" : "light")
   }
 
-  const changeLanguage = (lang: "en" | "uk") => {
+  const changeLanguage = (lang: "en" | "ua") => {
     setLanguage(lang)
   }
 
@@ -52,10 +51,9 @@ export function ThemeLanguageToggle() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => changeLanguage("en")}>English</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => changeLanguage("uk")}>Українська</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => changeLanguage("ua")}>Українська</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
   )
 }
-

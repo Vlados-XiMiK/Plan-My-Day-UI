@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchCategories } from '@/lib/tasks-data';
-import { Category } from '@/types'
+import { Category } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 export function useCategories() {
+  const { t } = useTranslation('notifications');
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newCategory, setNewCategory] = useState(false);
@@ -13,6 +15,12 @@ export function useCategories() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [tempCategory, setTempCategory] = useState('');
   const { addNotification } = useNotification();
+
+  // Функция для обрезки длинных названий категорий
+  const truncateName = (name: string, maxLength: number = 30): string => {
+    if (name.length <= maxLength) return name;
+    return name.slice(0, maxLength - 3) + '...';
+  };
 
   // Load categories on mount
   useEffect(() => {
@@ -22,27 +30,32 @@ export function useCategories() {
         setCategories(loadedCategories);
       } catch (error) {
         console.error('Error loading categories:', error);
-        addNotification('error', 'Load Failed', 'Failed to load categories.');
+        addNotification('error', t('categories.loadFailed.title'), t('categories.loadFailed.message'));
       } finally {
         setIsLoading(false);
       }
     }
     loadCategories();
-  }, [addNotification]);
+  }, [addNotification, t]);
 
   const isValidCategoryName = (name: string) => {
-    return /^[a-zA-Z\s]+$/.test(name) && name.trim().length > 0;
+    // Разрешаем латинские и кириллические буквы, цифры и пробелы; запрещаем специальные символы
+    const isValid = /^[a-zA-Zа-яА-Я0-9\s]+$/.test(name) && name.trim().length > 0;
+    if (!isValid) {
+      console.log('Invalid category name:', name, 'Characters:', name.split('').map(c => c.charCodeAt(0)));
+    }
+    return isValid;
   };
 
   const addCategory = () => {
     if (!isValidCategoryName(newCategoryName)) {
-      addNotification('error', 'Invalid Name', 'Category name must contain only Latin letters and cannot be empty.');
+      addNotification('error', t('categories.invalidName.title'), t('categories.invalidName.message'));
       setNewCategory(false);
       return;
     }
     const trimmedName = newCategoryName.trim();
     if (categories.some((cat) => cat.name === trimmedName)) {
-      addNotification('error', 'Duplicate Category', 'This category already exists.');
+      addNotification('error', t('categories.duplicateCategory.title'), t('categories.duplicateCategory.message'));
       setNewCategory(false);
       return;
     }
@@ -51,7 +64,8 @@ export function useCategories() {
       color: '#9d75b5', // Default color (gray); can be customized later
     };
     setCategories([...categories, newCategoryObj]);
-    addNotification('success', 'Category Added', `Category "${trimmedName}" added.`);
+    const truncatedName = truncateName(trimmedName);
+    addNotification('success', t('categories.categoryAdded.title'), t('categories.categoryAdded.message', { name: truncatedName }));
 
     // Placeholder API call - replace with real endpoint when available
     fetch('/api/categories', {
@@ -59,7 +73,7 @@ export function useCategories() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newCategoryObj),
     }).catch(() =>
-      addNotification('error', 'Add Failed', 'An error occurred while adding the category.')
+      addNotification('error', t('categories.addFailed.title'), t('categories.addFailed.message'))
     );
 
     setNewCategory(false);
@@ -68,12 +82,13 @@ export function useCategories() {
 
   const deleteCategory = (index: number) => {
     const categoryToDelete = categories[index];
+    const truncatedName = truncateName(categoryToDelete.name);
     setCategories(categories.filter((_, i) => i !== index));
-    addNotification('info', 'Category Deleted', `Category "${categoryToDelete.name}" deleted.`);
+    addNotification('info', t('categories.categoryDeleted.title'), t('categories.categoryDeleted.message', { name: truncatedName }));
 
     // Placeholder API call - replace with real endpoint when available
     fetch(`/api/categories/${categoryToDelete.name}`, { method: 'DELETE' }).catch(() =>
-      addNotification('error', 'Deletion Failed', 'An error occurred while deleting the category.')
+      addNotification('error', t('categories.deletionFailed.title'), t('categories.deletionFailed.message'))
     );
   };
 
@@ -84,25 +99,26 @@ export function useCategories() {
 
   const saveEditing = (index: number) => {
     if (!isValidCategoryName(tempCategory)) {
-      addNotification('error', 'Invalid Name', 'Category name must contain only Latin letters and cannot be empty.');
+      addNotification('error', t('categories.invalidName.title'), t('categories.invalidName.message'));
       setEditingIndex(null);
       return;
     }
     const trimmedName = tempCategory.trim();
     if (categories[index].name === trimmedName) {
-      addNotification('info', 'No Changes', 'No changes were made.');
+      addNotification('info', t('categories.noChanges.title'), t('categories.noChanges.message'));
       setEditingIndex(null);
       return;
     }
     if (categories.some((cat) => cat.name === trimmedName)) {
-      addNotification('error', 'Duplicate Category', 'This category already exists.');
+      addNotification('error', t('categories.duplicateCategory.title'), t('categories.duplicateCategory.message'));
       setEditingIndex(null);
       return;
     }
     const updatedCategories = [...categories];
     updatedCategories[index] = { ...updatedCategories[index], name: trimmedName };
     setCategories(updatedCategories);
-    addNotification('success', 'Category Updated', `Category "${trimmedName}" updated.`);
+    const truncatedName = truncateName(trimmedName);
+    addNotification('success', t('categories.categoryUpdated.title'), t('categories.categoryUpdated.message', { name: truncatedName }));
 
     // Placeholder API call - replace with real endpoint when available
     fetch(`/api/categories/${categories[index].name}`, {
@@ -110,7 +126,7 @@ export function useCategories() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: trimmedName, color: categories[index].color }),
     }).catch(() =>
-      addNotification('error', 'Update Failed', 'An error occurred while updating the category.')
+      addNotification('error', t('categories.updateFailed.title'), t('categories.updateFailed.message'))
     );
 
     setEditingIndex(null);

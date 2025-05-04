@@ -1,77 +1,72 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence, MotionProps } from "framer-motion"; 
-import { useTheme } from "next-themes";
-import { useLanguage } from "@/contexts/LanguageContext";
-import Switch from "@/components/ui/Switch"; 
-import { Label } from "@/components/ui/label"; 
-import { Button } from "@/components/ui/button";
-import en from "@/translations/en.json";
-import ukTranslations from "@/translations/uk.json";
-import { HTMLAttributes } from "react";
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence, MotionProps } from "framer-motion"
+import { useTheme } from "next-themes"
+import { useTranslation } from "react-i18next"
+import { setLanguage } from "@/i18n/i18n"
+import Switch from "@/components/ui/Switch"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { HTMLAttributes } from "react"
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface SettingsPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
 export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
-  const { theme, setTheme } = useTheme();
-  const { language, setLanguage } = useLanguage();
-  const t = language === "uk" ? ukTranslations : en;
-  const [deadlineRemindersEnabled, setDeadlineRemindersEnabled] = useState(true);
-  const [shouldStayOpen, setShouldStayOpen] = useState(isOpen);
-
+  const { t } = useTranslation("welcome_main")
+  const { theme, setTheme } = useTheme()
+  const [deadlineRemindersEnabled, setDeadlineRemindersEnabled] = useState(true)
+  const [shouldStayOpen, setShouldStayOpen] = useState(isOpen)
 
   useEffect(() => {
     try {
-      const savedSetting = localStorage.getItem("deadlineRemindersEnabled");
-      setDeadlineRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true);
-        // Check if the popup should stay open after reboot
-      const savedPopupState = localStorage.getItem("settingsPopupOpen");
+      const savedSetting = localStorage.getItem("deadlineRemindersEnabled")
+      setDeadlineRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true)
+      const savedPopupState = localStorage.getItem("settingsPopupOpen")
       if (savedPopupState === "true") {
-        setShouldStayOpen(true);
-        // Clear the state after use so that the popup does not open on next login
-        localStorage.removeItem("settingsPopupOpen");
+        setShouldStayOpen(true)
+        localStorage.removeItem("settingsPopupOpen")
       }
     } catch (error) {
-      console.error("Error parsing localStorage:", error);
-      setDeadlineRemindersEnabled(true);
+      console.error("Error parsing localStorage:", error)
+      setDeadlineRemindersEnabled(true)
     }
-  }, []);
+  }, [])
 
-  // Save the state and reload the page
   const handleDeadlineRemindersToggle = () => {
-    const newValue = !deadlineRemindersEnabled;
-    setDeadlineRemindersEnabled(newValue);
-    localStorage.setItem("deadlineRemindersEnabled", JSON.stringify(newValue));
-    localStorage.setItem("settingsPopupOpen", "true");
-    window.location.reload();
-  };
+    const newValue = !deadlineRemindersEnabled
+    setDeadlineRemindersEnabled(newValue)
+    localStorage.setItem("deadlineRemindersEnabled", JSON.stringify(newValue))
+    localStorage.setItem("settingsPopupOpen", "true")
+    window.location.reload()
+  }
 
   const handleClose = () => {
-    setShouldStayOpen(false);
-    onClose();
-  };
+    setShouldStayOpen(false)
+    onClose()
+  }
 
   const handleThemeChange = (newTheme: "light" | "dark") => {
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
+    setTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
+  }
 
   const handleLanguageChange = () => {
-    setLanguage(language === "en" ? "uk" : "en");
-  };
+    const newLanguage = t("language") === "en" ? "ua" : "en"
+    setLanguage(newLanguage)
+  }
 
   // Animations
   const modalVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
     exit: { opacity: 0, y: 50, transition: { duration: 0.2, ease: "easeIn" } },
-  };
+  }
 
   return (
     <AnimatePresence>
@@ -94,13 +89,13 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
             {...({} as MotionDivProps)}
           >
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
-              {t.settings.title || "Settings"}
+              {t("settings.title")}
             </h2>
 
             <div className="space-y-6">
               {/* Theme */}
               <div className="flex items-center justify-between">
-                <Label className="text-gray-800 dark:text-gray-200 font-medium">{t.settings.theme || "Theme"}</Label>
+                <Label className="text-gray-800 dark:text-gray-200 font-medium">{t("settings.theme")}</Label>
                 <div className="flex space-x-2">
                   <Button
                     variant={theme === "light" ? "default" : "outline"}
@@ -111,7 +106,7 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
                         : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
                     }`}
                   >
-                    {t.settings.lightTheme || "Light"}
+                    {t("settings.lightTheme")}
                   </Button>
                   <Button
                     variant={theme === "dark" ? "default" : "outline"}
@@ -122,45 +117,43 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
                         : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
                     }`}
                   >
-                    {t.settings.darkTheme || "Dark"}
+                    {t("settings.darkTheme")}
                   </Button>
                 </div>
               </div>
 
               {/* Languages */}
               <div className="flex items-center justify-between">
-                <Label className="text-gray-800 dark:text-gray-200 font-medium">{t.settings.language || "Language"}</Label>
+                <Label className="text-gray-800 dark:text-gray-200 font-medium">{t("settings.language")}</Label>
                 <div className="flex space-x-2">
                   <Button
-                    variant={language === "en" ? "default" : "outline"}
-                    onClick={() => handleLanguageChange()}
+                    variant={t("language") === "en" ? "default" : "outline"}
+                    onClick={handleLanguageChange}
                     className={`px-4 py-2 text-sm rounded-full transition-all duration-200 ${
-                      language === "en"
+                      t("language") === "en"
                         ? "bg-purple-600 text-white hover:bg-purple-700"
                         : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
                     }`}
                   >
-                    English
+                    {t("settings.languageEnglish")}
                   </Button>
                   <Button
-                    variant={language === "uk" ? "default" : "outline"}
-                    onClick={() => handleLanguageChange()}
+                    variant={t("language") === "ua" ? "default" : "outline"}
+                    onClick={handleLanguageChange}
                     className={`px-4 py-2 text-sm rounded-full transition-all duration-200 ${
-                      language === "uk"
+                      t("language") === "ua"
                         ? "bg-purple-600 text-white hover:bg-purple-700"
                         : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
                     }`}
                   >
-                    Українська
+                    {t("settings.languageUkrainian")}
                   </Button>
                 </div>
               </div>
 
               {/* Deadline Reminders Toggle */}
               <div className="flex items-center justify-between">
-                <Label className="text-gray-800 dark:text-gray-200 font-medium">
-                  {t.settings.deadlineReminders || "Deadline Reminders"}
-                </Label>
+                <Label className="text-gray-800 dark:text-gray-200 font-medium">{t("settings.deadlineReminders")}</Label>
                 <Switch
                   checked={deadlineRemindersEnabled}
                   onCheckedChange={handleDeadlineRemindersToggle}
@@ -174,12 +167,12 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
                 onClick={handleClose}
                 className="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-all duration-200"
               >
-                {t.settings.close || "Close"}
+                {t("settings.close")}
               </Button>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
+  )
 }

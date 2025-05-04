@@ -13,7 +13,7 @@ export default function Logo({ size = 100 }: LogoProps) {
         alt="Plan My Day Logo"
         width={size}  // Use size for width
         height={size} // Use size for height
-        className="object-contain"
+        className="object-contain w-auto h-auto"
         priority
       />
       <span className="font-bold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400">

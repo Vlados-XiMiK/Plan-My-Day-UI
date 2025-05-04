@@ -11,6 +11,7 @@ import { HTMLAttributes } from 'react'
 import type { Task } from "@/types"
 import { calculateTimeRemaining } from "@/lib/tasks-data"
 import { isPast } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -21,15 +22,16 @@ interface FloatingDeadlineReminderProps {
 }
 
 export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }: FloatingDeadlineReminderProps) {
+  const { t } = useTranslation('tasks')
   const [isOpen, setIsOpen] = useState(false)
   const [isPulsing, setIsPulsing] = useState(false)
   const [remindersEnabled, setRemindersEnabled] = useState(true)
 
   // Загружаем настройку напоминаний из localStorage
   useEffect(() => {
-    const savedSetting = localStorage.getItem("deadlineRemindersEnabled");
-    setRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true);
-  }, []);
+    const savedSetting = localStorage.getItem("deadlineRemindersEnabled")
+    setRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true)
+  }, [])
 
   // Filter tasks that are approaching deadline (less than 48 hours) or overdue
   const urgentTasks = tasks
@@ -57,23 +59,45 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
 
   // Если напоминания выключены, не рендерим компонент
   if (!remindersEnabled) {
-    return null;
+    return null
   }
 
   // Format remaining time text
   const formatRemainingTime = (task: Task) => {
     const dueDate = new Date(task.dueDate)
     if (isPast(dueDate)) {
-      return { text: 'Overdue', isOverdue: true }
+      return { text: t('timeRemaining.overdue'), isOverdue: true }
     }
     const timeRemaining = calculateTimeRemaining(task.dueDate)
     if (timeRemaining.days === 0 && timeRemaining.hours === 0) {
-      return { text: `${timeRemaining.minutes}m`, isOverdue: false }
+      return { 
+        text: t('timeRemaining.dueInMinutes', { 
+          minutes: timeRemaining.minutes, 
+          minutePlural: timeRemaining.minutes === 1 ? t('timeRemaining.minute') : t('timeRemaining.minutes')
+        }), 
+        isOverdue: false 
+      }
     }
     if (timeRemaining.days === 0) {
-      return { text: `${timeRemaining.hours}h ${timeRemaining.minutes}m`, isOverdue: false }
+      return { 
+        text: t('timeRemaining.dueInHours', { 
+          hours: timeRemaining.hours, 
+          minutes: timeRemaining.minutes, 
+          hourPlural: timeRemaining.hours === 1 ? t('timeRemaining.hour') : t('timeRemaining.hours'), 
+          minutePlural: timeRemaining.minutes === 1 ? t('timeRemaining.minute') : t('timeRemaining.minutes')
+        }), 
+        isOverdue: false 
+      }
     }
-    return { text: `${timeRemaining.days}d ${timeRemaining.hours}h`, isOverdue: false }
+    return { 
+      text: t('timeRemaining.dueInDays', { 
+        days: timeRemaining.days, 
+        hours: timeRemaining.hours, 
+        minutes: timeRemaining.minutes, 
+        dayPlural: timeRemaining.days > 1 ? t('timeRemaining.days') : t('timeRemaining.day')
+      }), 
+      isOverdue: false 
+    }
   }
 
   // Get color for progress bar based on remaining time
@@ -136,10 +160,10 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Bell className="h-5 w-5" />
-                    <h3 className="font-medium">Upcoming Deadlines</h3>
+                    <h3 className="font-medium">{t('deadlineReminder.upcomingDeadlines')}</h3>
                   </div>
                   <Badge variant="outline" className="bg-white/20 text-white border-white/20">
-                    {urgentTasks.length} tasks
+                    {t('deadlineReminder.tasksCount', { count: urgentTasks.length })}
                   </Badge>
                 </div>
               </CardHeader>
@@ -162,7 +186,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                                     <Clock className="h-3 w-3 text-muted-foreground" />
                                   )}
                                   <span className={isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"}>
-                                    Remaining: {text}
+                                    {t('deadlineReminder.remaining')}: {text}
                                   </span>
                                 </div>
                                 <Badge
@@ -174,7 +198,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                                         : "bg-purple-100 text-purple-800"
                                   }`}
                                 >
-                                  {task.priority === "high" ? "High" : task.priority === "medium" ? "Medium" : "Low"}
+                                  {t(`priority.${task.priority}`)}
                                 </Badge>
                               </div>
                               <Progress
@@ -191,7 +215,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                                 onClick={() => onSnooze(task.id)}
                               >
                                 <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="sr-only">Snooze</span>
+                                <span className="sr-only">{t('deadlineReminder.snooze')}</span>
                               </Button>
                               <Button
                                 size="icon"
@@ -200,7 +224,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                                 onClick={() => onComplete(task.id)}
                               >
                                 <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                                <span className="sr-only">Complete</span>
+                                <span className="sr-only">{t('deadlineReminder.complete')}</span>
                               </Button>
                             </div>
                           </div>
@@ -210,7 +234,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                   </div>
                 ) : (
                   <div className="py-8 text-center text-muted-foreground">
-                    <p>No urgent tasks</p>
+                    <p>{t('deadlineReminder.noUrgentTasks')}</p>
                   </div>
                 )}
               </CardContent>
@@ -219,7 +243,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
                 <CardFooter className="p-3 bg-muted/20 flex justify-center border-t">
                   <Button variant="ghost" size="sm" className="text-xs w-full" onClick={() => setIsOpen(false)}>
                     <ChevronUp className="h-4 w-4 mr-1" />
-                    Hide
+                    {t('deadlineReminder.hide')}
                   </Button>
                 </CardFooter>
               )}

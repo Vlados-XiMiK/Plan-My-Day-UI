@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from "react";
 import { Inter } from "next/font/google";
+import { I18nextProvider } from "@/i18n/i18n"
 import { NotificationProvider } from '@/contexts/notification-context';
 import { ThemeProvider } from "@/components/theme-provider";
 import { AnimatedBackground } from "@/components/ui/animated-background";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               enableSystem
               disableTransitionOnChange
             >
+              <I18nextProvider>
               <LanguageProvider>
                 <div className="relative">
                   <div className="dark:hidden">
@@ -48,9 +50,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <div className="hidden dark:block">
                     <AnimatedBackground />
                   </div>
-                  <div className="relative z-10">{children}</div>
+                  <div className="relative z-10">
+                    {children}
+                    </div>
                 </div>
               </LanguageProvider>
+              </I18nextProvider>
             </ThemeProvider>
           )}
         </NotificationProvider>

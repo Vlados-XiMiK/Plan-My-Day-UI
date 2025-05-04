@@ -1,24 +1,21 @@
 "use client"
+
 import { useRef, useState, useCallback, HTMLAttributes } from "react"
 import { motion, useScroll, useTransform, AnimatePresence, MotionProps } from "framer-motion"
 import Image from "next/image"
 import Header from "@/components/landing/header"
 import Footer from "@/components/shared/footer"
-import { useLanguage } from "@/contexts/LanguageContext"
+import { useTranslation } from "react-i18next"
 import { AnimatedBackground, LightAnimatedBackground } from "@/components/ui/animated-background"
 import { useTheme } from "next-themes"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import en from "@/translations/en.json"
-import uk from "@/translations/uk.json"
-import type { Feature } from "@/types"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 export default function FeaturesPage() {
-  const { language } = useLanguage()
-  const t = language === "uk" ? uk : en
+  const { t } = useTranslation("welcome")
   const { theme } = useTheme()
   
   const [expandedFeatures, setExpandedFeatures] = useState<Record<string, boolean>>({})
@@ -34,26 +31,45 @@ export default function FeaturesPage() {
   const headerY = useTransform(scrollYProgress, [0, 0.5], [0, -100])
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.8])
 
-  const features = Object.entries(t.features)
-      .filter(([key]) => key !== "title")
-      .map(([key, feature]) => ({
-        ...feature as Feature,
-        key,
-        color:
-          key === "smartCalendar"
-            ? "#ef4444"
-            : key === "taskManagement"
-              ? "#8b5cf6"
-              : key === "categoryManagement"
-                ? "#06b6d4"
-                : key === "teamCollaboration"
-                  ? "#10b981"
-                  : key === "smartNotifications"
+  const features = [
+    "smartCalendar",
+    "taskManagement",
+    "categoryManagement",
+    "teamCollaboration",
+    "smartNotifications",
+    "statistics",
+  ].map((key) => {
+    const images: Record<string, string> = {
+      smartCalendar: "/placeholder.svg",
+      taskManagement: "/placeholder.svg",
+      categoryManagement: "/placeholder.svg",
+      teamCollaboration: "/placeholder.svg",
+      smartNotifications: "/placeholder.svg",
+      statistics: "/placeholder.svg",
+    }
+  
+    return {
+      key,
+      title: t(`features.${key}.title`),
+      description: t(`features.${key}.description`),
+      details: t(`features.${key}.details`),
+      image: images[key], // Привязка изображения по ключу
+      color:
+        key === "smartCalendar"
+          ? "#ef4444"
+          : key === "taskManagement"
+            ? "#8b5cf6"
+            : key === "categoryManagement"
+              ? "#06b6d4"
+              : key === "teamCollaboration"
+                ? "#10b981"
+                : key === "smartNotifications"
+                  ? "#f59e0b"
+                  : key === "statistics"
                     ? "#f59e0b"
-                    : key === "statistics"
-                        ? "#f59e0b"
-                        : "#ec4899",
-      }))
+                    : "#ec4899",
+    }
+  })
 
   // Create individual transform values for each card
   const card0Y = useTransform(scrollYProgress, [0, 1], [0, -40])
@@ -83,14 +99,17 @@ export default function FeaturesPage() {
       <div className="relative z-20">
         <Header />
         <main ref={containerRef} className="relative">
-          <motion.div className="container mx-auto px-4 pt-36 pb-20 text-center" style={{ y: headerY, opacity }}
-          {...({} as MotionDivProps)}>
+          <motion.div
+            className="relative container mx-auto px-4 pt-36 pb-20 text-center"
+            style={{ y: headerY, opacity }}
+            {...({} as MotionDivProps)}
+          >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 leading-tight">
-              {t.features.title}
+              {t("features.title")}
             </h1>
 
             <p className="text-lg md:text-xl max-w-3xl mx-auto text-gray-600 dark:text-gray-300 leading-relaxed mb-16">
-              {t.featuresPage.subtitle}
+              {t("features.subtitle")}
             </p>
           </motion.div>
           
@@ -122,11 +141,12 @@ export default function FeaturesPage() {
                       {/* Image Section */}
                       <div className="relative w-full h-48 overflow-hidden">
                         <Image
-                          src={feature.image || "/placeholder.svg"}
+                          src={feature.image}
                           alt={feature.title}
                           fill
                           className="object-cover transition-transform duration-500 hover:scale-110"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          priority={index === 0}
                         />
                         <div
                           className="absolute inset-0 opacity-30 transition-opacity duration-300 hover:opacity-0"
@@ -148,16 +168,11 @@ export default function FeaturesPage() {
                           className="w-full flex items-center justify-center mb-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                           onClick={() => toggleFeatureExpanded(feature.key)}
                         >
+                          {isExpanded ? t("features.hideDetails") : t("features.showDetails")}
                           {isExpanded ? (
-                            <>
-                              {language === "uk" ? "Приховати деталі" : "Hide details"}{" "}
-                              <ChevronUp className="ml-2 h-4 w-4" />
-                            </>
+                            <ChevronUp className="ml-2 h-4 w-4" />
                           ) : (
-                            <>
-                              {language === "uk" ? "Показати деталі" : "Show details"}{" "}
-                              <ChevronDown className="ml-2 h-4 w-4" />
-                            </>
+                            <ChevronDown className="ml-2 h-4 w-4" />
                           )}
                         </Button>
 

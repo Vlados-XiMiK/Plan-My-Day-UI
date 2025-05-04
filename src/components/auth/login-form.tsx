@@ -9,12 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icons } from "@/components/shared/icons"
 import { Eye, EyeOff } from "lucide-react"
-import { useLanguage } from "@/contexts/LanguageContext"
-import en from "@/translations/en.json"
-import uk from "@/translations/uk.json"
+import { useTranslation } from "react-i18next"
 import type React from "react"
 import { HTMLAttributes } from "react"
-
 import { useNotification } from "@/contexts/notification-context"
 
 // type for motion.div
@@ -29,7 +26,9 @@ interface FormErrors {
 }
 
 export default function LoginForm() {
-  const { addNotification } = useNotification();
+  const { t: tAuth } = useTranslation("auth")
+  const { t: tNotifications } = useTranslation("notifications")
+  const { addNotification } = useNotification()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -38,23 +37,20 @@ export default function LoginForm() {
     password: "",
   })
   const [errors, setErrors] = useState<FormErrors>({})
-  const { language } = useLanguage()
-  const t = language === "uk" ? uk : en
-
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
 
     if (!formData.email) {
-      newErrors.email = `${t.auth.login.email} ${t.auth.register.required}`
+      newErrors.email = `${tAuth("login.email")} ${tAuth("register.required")}`
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = t.auth.register.invalidEmail
+      newErrors.email = tAuth("register.invalidEmail")
     } else if (!/^[a-zA-Z0-9@._-]+$/.test(formData.email)) {
-      newErrors.email = t.auth.register.invalidEmail
+      newErrors.email = tAuth("register.invalidEmail")
     }
   
     if (!formData.password) {
-      newErrors.password = `${t.auth.login.password} ${t.auth.register.required}`
+      newErrors.password = `${tAuth("login.password")} ${tAuth("register.required")}`
     }
 
     setErrors(newErrors)
@@ -70,24 +66,22 @@ export default function LoginForm() {
   }
 
   const onSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!validateForm()) return;
+    event.preventDefault()
+    if (!validateForm()) return
   
-    setIsLoading(true);
-  
-    
+    setIsLoading(true)
   
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      addNotification("success", "Welcome!", "You have successfully logged in.", 3000);
-      router.push("/dashboard");
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      addNotification("success", tNotifications("welcome"), tNotifications("loginSuccess"), 3000)
+      router.push("/dashboard")
     } catch (error) {
-      console.error("Login failed:", error);
-      setErrors({ password: t.auth.login.invalidCredentials });
+      console.error("Login failed:", error)
+      setErrors({ password: tAuth("login.invalidCredentials") })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <motion.div
@@ -98,13 +92,13 @@ export default function LoginForm() {
       {...({} as MotionDivProps)}
     >
       <div className="flex flex-col space-y-2 text-center mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{t.auth.login.title}</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{t.auth.login.subtitle}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">{tAuth("login.title")}</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{tAuth("login.subtitle")}</p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         <div className="space-y-2">
           <Label htmlFor="email" className="text-sm text-gray-700 dark:text-gray-200">
-            {t.auth.login.email}
+            {tAuth("login.email")}
           </Label>
           <Input
             id="email"
@@ -130,7 +124,7 @@ export default function LoginForm() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password" className="text-sm text-gray-700 dark:text-gray-200">
-            {t.auth.login.password}
+            {tAuth("login.password")}
           </Label>
           <div className="relative">
             <Input
@@ -155,7 +149,7 @@ export default function LoginForm() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
-            {...({} as MotionPProps)}
+              {...({} as MotionPProps)}
             >
               {errors.password}
             </motion.p>
@@ -167,7 +161,7 @@ export default function LoginForm() {
           disabled={isLoading}
         >
           {isLoading ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {t.auth.login.signIn}
+          {tAuth("login.signIn")}
         </Button>
       </form>
       <div className="mt-6">
@@ -181,15 +175,14 @@ export default function LoginForm() {
         </div>
       </div>
       <div className="mt-4 text-center text-xs text-gray-600 dark:text-gray-400">
-        {t.auth.login.noAccount}{" "}
+        {tAuth("login.noAccount")}{" "}
         <Link
           href="/auth/register"
           className="text-purple-600 hover:text-purple-500 dark:text-purple-400 dark:hover:text-purple-300"
         >
-          {t.auth.login.signUp}
+          {tAuth("login.signUp")}
         </Link>
       </div>
     </motion.div>
   )
 }
-
