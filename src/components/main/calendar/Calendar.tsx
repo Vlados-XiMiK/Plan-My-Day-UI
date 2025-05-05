@@ -21,11 +21,6 @@ export default function Calendar() {
   // Get all calendar functionality from the custom hook
   const calendar = useCalendar()
 
-  // Debug translations
-  useEffect(() => {
-    console.log('Calendar Translations:', t('dayNames.0'), i18n.language)
-  }, [t, i18n.language])
-
   // Fetch tasks and categories on component mount
   useEffect(() => {
     const loadData = async () => {
@@ -149,7 +144,7 @@ export default function Calendar() {
           onClose={() => calendar.setIsModalOpen(false)}
           onAddTask={calendar.addTask}
           selectedDate={calendar.selectedDate}
-          categories={calendar.allCategories}
+          categories={calendar.categories}
         />
       )}
 

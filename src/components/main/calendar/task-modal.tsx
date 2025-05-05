@@ -10,24 +10,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useNotification } from '@/contexts/notification-context'
-import type { Task } from '@/types'
+import type { Task, Category } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { enUS, uk } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 type TaskModalProps = {
   isOpen: boolean
   onClose: () => void
   onAddTask: (task: Omit<Task, 'id' | 'createdAt' | 'starred'>) => void
   selectedDate: string | null
-  categories: string[]
+  categories: Category[]
 }
 
 export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, categories }: TaskModalProps) {
   const { t, i18n } = useTranslation(['popups', 'notifications'])
   const [title, setTitle] = useState('')
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
-  const [category, setCategory] = useState(categories[0] || t('calendar_popup.defaultCategory', { ns: 'popups' }))
+  const [category, setCategory] = useState<string | undefined>(undefined)
   const [description, setDescription] = useState('')
   const [time, setTime] = useState('09:00')
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -73,7 +74,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
       // Reset the form
       setTitle('')
       setPriority('medium')
-      setCategory(categories[0] || t('calendar_popup.defaultCategory', { ns: 'popups' }))
+      setCategory(undefined)
       setDescription('')
       setTime('09:00')
       onClose()
@@ -94,9 +95,11 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-xl">
+      <DialogContent className="sm:max-w-lg max-w-full rounded-xl overflow-y-auto max-h-[calc(100vh-100px)]">
         <DialogHeader>
-          <DialogTitle>{t('calendar_popup.addTask', { ns: 'popups', date: formatDate(selectedDate) })}</DialogTitle>
+          <DialogTitle className="mb-4">
+            {t('calendar_popup.addTask', { ns: 'popups', date: formatDate(selectedDate) })}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -142,14 +145,33 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
 
           <div className="space-y-2">
             <Label htmlFor="category">{t('calendar_popup.category', { ns: 'popups' })}</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Select
+              value={category ?? '__none__'}
+              onValueChange={(value) => setCategory(value === '__none__' ? undefined : value)}
+            >
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder={t('calendar_popup.placeholder.category', { ns: 'popups' })} />
               </SelectTrigger>
               <SelectContent className="rounded-lg max-h-[200px] overflow-y-auto">
+                <SelectItem
+                  value="__none__"
+                  className={cn(
+                    'flex items-center gap-2 text-muted-foreground hover:bg-indigo-50 dark:hover:bg-indigo-950',
+                    category === undefined && 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium'
+                  )}
+                >
+                  {t('calendar_popup.placeholder.category', { ns: 'popups' })}
+                </SelectItem>
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                  <SelectItem
+                    key={cat.name}
+                    value={cat.name}
+                    className={cn(
+                      'flex items-center gap-2 hover:bg-indigo-50 dark:hover:bg-indigo-950',
+                      category === cat.name && 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium'
+                    )}
+                  >
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>

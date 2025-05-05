@@ -35,7 +35,7 @@ export interface Task {
   description: string;
   createdAt: string;
   dueDate: string;
-  category: string;
+  category?: string
   priority: 'high' | 'medium' | 'low';
   completed: boolean;
   starred: boolean;
