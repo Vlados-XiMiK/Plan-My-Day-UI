@@ -16,6 +16,8 @@ const resources = {
     profile: require('../locales/en/profile.json'),
     legal: require('../locales/en/legal.json'),
     stats: require('../locales/en/stats.json'),
+    calendar: require('../locales/en/calendar.json'),
+    popups: require('../locales/en/popups.json')
   },
   ua: {
     welcome: require("../locales/ua/welcome.json"),
@@ -26,6 +28,8 @@ const resources = {
     profile: require('../locales/ua/profile.json'),
     legal: require('../locales/ua/legal.json'),
     stats: require('../locales/ua/stats.json'),
+    calendar: require('../locales/ua/calendar.json'),
+    popups: require('../locales/ua/popups.json')
   },
 }
 
@@ -35,7 +39,8 @@ i18next
     lng: "en",
     fallbackLng: "en",
     resources,
-    ns: ["welcome", "auth", "notifications", "welcome_main", "tasks", "profile", "legal", "stats"],
+    ns: ["welcome", "auth", "notifications", "welcome_main", 
+        "tasks", "profile", "legal", "stats", "calendar"],
     defaultNS: "welcome",
     interpolation: {
       escapeValue: false,

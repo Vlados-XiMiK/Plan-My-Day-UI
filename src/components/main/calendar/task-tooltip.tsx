@@ -1,13 +1,15 @@
-"use client"
+'use client'
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Calendar, Clock, FolderIcon, CheckCircle2, Circle, CheckCircle, Star } from "lucide-react"
-import { TooltipContent } from "@/components/ui/tooltip"
-import { getPriorityColorClass } from "@/lib/calendar-utils"
-import { cn } from "@/lib/utils"
-import type { Task } from "@/types"
+import type React from 'react'
+import { useState, useEffect } from 'react'
+import { Calendar, Clock, FolderIcon, CheckCircle2, Circle, CheckCircle, Star } from 'lucide-react'
+import { TooltipContent } from '@/components/ui/tooltip'
+import { getPriorityColorClass } from '@/lib/calendar-utils'
+import { cn } from '@/lib/utils'
+import type { Task } from '@/types'
+import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
+import { enUS, uk } from 'date-fns/locale'
 
 type TaskTooltipProps = {
   task: Task
@@ -15,8 +17,13 @@ type TaskTooltipProps = {
 }
 
 export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipProps) {
-  // Use local state to provide immediate visual feedback
+  const { t, i18n } = useTranslation('calendar')
   const [isCompleted, setIsCompleted] = useState(task.completed)
+
+  // Debug translations
+  useEffect(() => {
+    console.log('TaskTooltip Translations:', t('status.completed'), i18n.language)
+  }, [t, i18n.language])
 
   // Update local state when task prop changes
   useEffect(() => {
@@ -26,33 +33,42 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
   const handleToggleCompletion = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-
-    // Update local state for immediate feedback
     setIsCompleted(!isCompleted)
-
-    // Call the actual toggle function
     toggleTaskCompletion(task.id)
   }
 
   // Extract time from dueDate
-  const time = task.dueDate ? task.dueDate.split("T")[1]?.substring(0, 5) : undefined
+  const time = task.dueDate ? task.dueDate.split('T')[1]?.substring(0, 5) : undefined
+
+  // Format dates using date-fns
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const locale = i18n.language === 'ua' ? uk : enUS
+    return format(date, 'd MMM yyyy', { locale })
+  }
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const locale = i18n.language === 'ua' ? uk : enUS
+    return format(date, 'd MMM yyyy, HH:mm:ss', { locale })
+  }
 
   return (
     <TooltipContent side="bottom" className="max-w-[300px] p-3 text-xs">
       <div className="flex items-center justify-between">
         <div className="font-medium flex items-center gap-1">
           <span className={getPriorityColorClass(task.priority)}>
-            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+            {t(`priority.${task.priority}`)}
           </span>
           {task.starred && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
         </div>
         <div className="flex-shrink-0 cursor-pointer" onClick={handleToggleCompletion}>
           <div
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200",
+              'flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200',
               isCompleted
-                ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                : "bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700",
+                ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700',
             )}
           >
             {isCompleted ? <CheckCircle className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
@@ -66,7 +82,7 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
       <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
         <div className="flex items-center mr-3">
           <Calendar className="h-3 w-3 mr-1" />
-          {new Date(task.dueDate.split("T")[0]).toLocaleDateString()}
+          {formatDate(task.dueDate.split('T')[0])}
         </div>
         {time && (
           <span className="flex items-center mr-2">
@@ -81,11 +97,11 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
       </div>
       {isCompleted && (
         <div className="mt-1 flex items-center text-green-600 dark:text-green-400">
-          <CheckCircle2 className="h-3 w-3 mr-1" /> Completed
+          <CheckCircle2 className="h-3 w-3 mr-1" /> {t('status.completed')}
         </div>
       )}
       <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        Created: {new Date(task.createdAt).toLocaleString()}
+        {t('created')} {formatDateTime(task.createdAt)}
       </div>
     </TooltipContent>
   )

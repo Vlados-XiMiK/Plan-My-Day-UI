@@ -1,23 +1,30 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { useMobile } from "@/hooks/use-mobile"
-import TaskDetailModal from "./task-detail-modal"
-import TaskModal from "./task-modal"
-import { fetchTasks, fetchCategories } from "@/lib/tasks-data"
-import { useCalendar } from "@/hooks/use-calendar"
-import CalendarHeader from "./calendar-header"
-import CalendarToolbar from "./calendar-toolbar"
-import MonthView from "./calendar-views/month-view"
-import ListView from "./calendar-views/list-view"
+import { useState, useEffect } from 'react'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { useMobile } from '@/hooks/use-mobile'
+import TaskDetailModal from './task-detail-modal'
+import TaskModal from './task-modal'
+import { fetchTasks, fetchCategories } from '@/lib/tasks-data'
+import { useCalendar } from '@/hooks/use-calendar'
+import CalendarHeader from './calendar-header'
+import CalendarToolbar from './calendar-toolbar'
+import MonthView from './calendar-views/month-view'
+import ListView from './calendar-views/list-view'
+import { useTranslation } from 'react-i18next'
 
 export default function Calendar() {
+  const { t, i18n } = useTranslation('calendar')
   const [isLoading, setIsLoading] = useState(true)
   const isMobile = useMobile()
 
   // Get all calendar functionality from the custom hook
   const calendar = useCalendar()
+
+  // Debug translations
+  useEffect(() => {
+    console.log('Calendar Translations:', t('dayNames.0'), i18n.language)
+  }, [t, i18n.language])
 
   // Fetch tasks and categories on component mount
   useEffect(() => {
@@ -28,7 +35,7 @@ export default function Calendar() {
         calendar.setTasks(tasksData)
         calendar.setCategories(categoriesData)
       } catch (error) {
-        console.error("Error loading data:", error)
+        console.error('Error loading data:', error)
       } finally {
         setIsLoading(false)
       }
@@ -38,10 +45,26 @@ export default function Calendar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Get day names
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  // Get day names from translations
+  const dayNames = [
+    t('dayNames.0'),
+    t('dayNames.1'),
+    t('dayNames.2'),
+    t('dayNames.3'),
+    t('dayNames.4'),
+    t('dayNames.5'),
+    t('dayNames.6'),
+  ]
   // For mobile, use shorter day names
-  const shortDayNames = ["S", "M", "T", "W", "T", "F", "S"]
+  const shortDayNames = [
+    t('shortDayNames.0'),
+    t('shortDayNames.1'),
+    t('shortDayNames.2'),
+    t('shortDayNames.3'),
+    t('shortDayNames.4'),
+    t('shortDayNames.5'),
+    t('shortDayNames.6'),
+  ]
 
   if (isLoading) {
     return (
@@ -85,7 +108,7 @@ export default function Calendar() {
       <Tabs
         value={calendar.view}
         className="w-full"
-        onValueChange={(value) => calendar.setView(value as "month" | "list")}
+        onValueChange={(value) => calendar.setView(value as 'month' | 'list')}
       >
         {/* Month View */}
         <TabsContent value="month" className="m-0 overflow-hidden">

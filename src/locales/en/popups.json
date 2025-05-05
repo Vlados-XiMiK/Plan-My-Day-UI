@@ -1,0 +1,29 @@
+{
+    "language": "en",
+    "calendar_popup": {
+      "addTask": "Add Task for {{date}}",
+      "taskTitle": "Task Title",
+      "date": "Date",
+      "time": "Time",
+      "descriptionOptional": "Description (Optional)",
+      "category": "Category",
+      "priorityLabel": "Priority",
+      "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "placeholder": {
+        "taskTitle": "Enter task title",
+        "description": "Add details about this task",
+        "category": "Select a category"
+      },
+      "cancel": "Cancel",
+      "addTaskButton": "Add Task",
+      "validation": {
+        "pastDate": "Cannot create tasks in the past. Please select a future date and time.",
+        "taskTitleRequired": "Task title is required."
+      },
+      "defaultCategory": "Work"
+    }
+  }

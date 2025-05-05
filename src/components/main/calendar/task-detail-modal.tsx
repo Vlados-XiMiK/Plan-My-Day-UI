@@ -1,15 +1,18 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
-import { motion, MotionProps } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { Clock, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react"
-import { getTaskStatus } from "@/types"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { Task } from "@/types"
+import { useState, useEffect } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { motion, MotionProps } from 'framer-motion'
+import { cn } from '@/lib/utils'
+import { Clock, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { getTaskStatus } from '@/types'
+import { Checkbox } from '@/components/ui/checkbox'
+import type { Task } from '@/types'
 import { HTMLAttributes } from 'react'
+import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
+import { enUS, uk } from 'date-fns/locale'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -27,8 +30,13 @@ export default function TaskDetailModal({
   onClose,
   toggleTaskCompletion,
 }: TaskDetailModalProps) {
-  // Add local state to track checkbox status for immediate UI feedback
+  const { t, i18n } = useTranslation('calendar')
   const [isCompleted, setIsCompleted] = useState(false)
+
+  // Debug translations
+  useEffect(() => {
+    console.log('TaskDetailModal Translations:', t('status.completed'), i18n.language)
+  }, [t, i18n.language])
 
   // Update local state when task changes
   useEffect(() => {
@@ -41,12 +49,8 @@ export default function TaskDetailModal({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return new Intl.DateTimeFormat("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(date)
+    const locale = i18n.language === 'ua' ? uk : enUS
+    return format(date, 'PPPP', { locale })
   }
 
   const taskStatus = getTaskStatus(task)
@@ -57,26 +61,26 @@ export default function TaskDetailModal({
   }
 
   // Extract time from dueDate
-  const time = task.dueDate ? task.dueDate.split("T")[1]?.substring(0, 5) : undefined
+  const time = task.dueDate ? task.dueDate.split('T')[1]?.substring(0, 5) : undefined
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md rounded-xl overflow-hidden p-0">
         <div
           className={cn(
-            "p-4",
-            task.priority === "high"
-              ? "bg-red-50 dark:bg-red-900/20"
-              : task.priority === "medium"
-                ? "bg-amber-50 dark:bg-amber-900/20"
-                : "bg-blue-50 dark:bg-blue-900/20",
-            taskStatus === "overdue" && "border-l-4 border-red-500 dark:border-red-700",
-            taskStatus === "approaching" && "border-l-4 border-amber-500 dark:border-amber-700",
+            'p-4',
+            task.priority === 'high'
+              ? 'bg-red-50 dark:bg-red-900/20'
+              : task.priority === 'medium'
+                ? 'bg-amber-50 dark:bg-amber-900/20'
+                : 'bg-blue-50 dark:bg-blue-900/20',
+            taskStatus === 'overdue' && 'border-l-4 border-red-500 dark:border-red-700',
+            taskStatus === 'approaching' && 'border-l-4 border-amber-500 dark:border-amber-700',
           )}
         >
           <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <DialogTitle
-              className={cn("text-xl font-bold flex items-center gap-2", isCompleted && "line-through opacity-70")}
+              className={cn('text-xl font-bold flex items-center gap-2', isCompleted && 'line-through opacity-70')}
             >
               <div className="cursor-pointer">
                 <Checkbox checked={isCompleted} onCheckedChange={handleCheckboxChange} className="h-6 w-6 rounded-md" />
@@ -85,11 +89,11 @@ export default function TaskDetailModal({
                 className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
                 style={{
                   backgroundColor:
-                    task.priority === "high"
-                      ? "rgb(220, 38, 38)"
-                      : task.priority === "medium"
-                        ? "rgb(217, 119, 6)"
-                        : "rgb(37, 99, 235)",
+                    task.priority === 'high'
+                      ? 'rgb(220, 38, 38)'
+                      : task.priority === 'medium'
+                        ? 'rgb(217, 119, 6)'
+                        : 'rgb(37, 99, 235)',
                 }}
               ></span>
               {task.title}
@@ -98,56 +102,56 @@ export default function TaskDetailModal({
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <Badge
               className={cn(
-                "rounded-lg",
-                task.priority === "high"
-                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                  : task.priority === "medium"
-                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+                'rounded-lg',
+                task.priority === 'high'
+                  ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                  : task.priority === 'medium'
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
               )}
             >
-              {task.priority} priority
+              {t(`priority.${task.priority}`)}
             </Badge>
             <Badge variant="outline" className="rounded-lg">
               {task.category}
             </Badge>
-            {taskStatus === "overdue" && (
+            {taskStatus === 'overdue' && (
               <Badge variant="destructive" className="rounded-lg flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" /> Overdue
+                <AlertCircle className="h-3 w-3" /> {t('status.overdue')}
               </Badge>
             )}
-            {taskStatus === "approaching" && (
+            {taskStatus === 'approaching' && (
               <motion.div
                 animate={{ opacity: [0.7, 1, 0.7] }}
                 transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
               >
                 <Badge className="rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" /> Due soon
+                  <AlertTriangle className="h-3 w-3" /> {t('status.dueSoon')}
                 </Badge>
               </motion.div>
             )}
             {isCompleted && (
               <Badge className="rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> Completed
+                <CheckCircle2 className="h-3 w-3" /> {t('status.completed')}
               </Badge>
             )}
             {task.starred && (
               <Badge className="rounded-lg bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1">
-                ⭐ Starred
+                ⭐ {t('starred')}
               </Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(task.dueDate.split("T")[0])}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(task.dueDate.split('T')[0])}</p>
             {time && (
               <div
                 className={cn(
-                  "flex items-center text-sm",
-                  taskStatus === "overdue"
-                    ? "text-red-500 dark:text-red-400"
-                    : taskStatus === "approaching"
-                      ? "text-amber-500 dark:text-amber-400"
-                      : "text-gray-500 dark:text-gray-400",
+                  'flex items-center text-sm',
+                  taskStatus === 'overdue'
+                    ? 'text-red-500 dark:text-red-400'
+                    : taskStatus === 'approaching'
+                      ? 'text-amber-500 dark:text-amber-400'
+                      : 'text-gray-500 dark:text-gray-400',
                 )}
               >
                 <Clock className="h-3 w-3 mr-1" />
@@ -162,15 +166,15 @@ export default function TaskDetailModal({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn("text-gray-700 dark:text-gray-300", isCompleted && "opacity-70")}
+            className={cn('text-gray-700 dark:text-gray-300', isCompleted && 'opacity-70')}
             {...({} as MotionDivProps)}
           >
-            {task.description || "No description provided."}
+            {task.description || t('noDescription')}
           </motion.div>
 
           {task.createdAt && (
             <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-              Created: {new Date(task.createdAt).toLocaleString()}
+              {t('created')} {new Date(task.createdAt).toLocaleString(i18n.language === 'ua' ? 'uk-UA' : 'en-US')}
             </div>
           )}
         </div>

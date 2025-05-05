@@ -1,0 +1,29 @@
+{
+    "language": "ua",
+    "calendar_popup": {
+      "addTask": "Додати завдання на {{date}}",
+      "taskTitle": "Назва завдання",
+      "date": "Дата",
+      "time": "Час",
+      "descriptionOptional": "Опис (необов’язково)",
+      "category": "Категорія",
+      "priorityLabel": "Пріоритет",
+      "priority": {
+        "high": "Високий",
+        "medium": "Середній",
+        "low": "Низький"
+      },
+      "placeholder": {
+        "taskTitle": "Введіть назву завдання",
+        "description": "Додайте деталі про це завдання",
+        "category": "Виберіть категорію"
+      },
+      "cancel": "Скасувати",
+      "addTaskButton": "Додати завдання",
+      "validation": {
+        "pastDate": "Неможливо створювати завдання в минулому. Виберіть майбутню дату та час.",
+        "taskTitleRequired": "Назва завдання є обов’язковою."
+      },
+      "defaultCategory": "Робота"
+    }
+  }
