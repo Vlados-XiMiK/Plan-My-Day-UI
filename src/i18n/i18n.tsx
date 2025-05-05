@@ -6,30 +6,53 @@ import { initReactI18next } from "react-i18next"
 import Cookies from "js-cookie"
 
 // Translation resources
+import welcome_en from "../locales/en/welcome.json"
+import auth_en from "../locales/en/auth.json"
+import notifications_en from "../locales/en/notifications.json"
+import welcome_main_en from "../locales/en/welcome_main.json"
+import tasks_en from "../locales/en/tasks.json"
+import profile_en from "../locales/en/profile.json"
+import legal_en from "../locales/en/legal.json"
+import stats_en from "../locales/en/stats.json"
+import calendar_en from "../locales/en/calendar.json"
+import popups_en from "../locales/en/popups.json"
+
+import welcome_ua from "../locales/ua/welcome.json"
+import auth_ua from "../locales/ua/auth.json"
+import notifications_ua from "../locales/ua/notifications.json"
+import welcome_main_ua from "../locales/ua/welcome_main.json"
+import tasks_ua from "../locales/ua/tasks.json"
+import profile_ua from "../locales/ua/profile.json"
+import legal_ua from "../locales/ua/legal.json"
+import stats_ua from "../locales/ua/stats.json"
+import calendar_ua from "../locales/ua/calendar.json"
+import popups_ua from "../locales/ua/popups.json"
+
+// Translation resources
 const resources = {
   en: {
-    welcome: require("../locales/en/welcome.json"),
-    auth: require("../locales/en/auth.json"),
-    notifications: require("../locales/en/notifications.json"),
-    welcome_main: require("../locales/en/welcome_main.json"),
-    tasks: require("../locales/en/tasks.json"),
-    profile: require('../locales/en/profile.json'),
-    legal: require('../locales/en/legal.json'),
-    stats: require('../locales/en/stats.json'),
-    calendar: require('../locales/en/calendar.json'),
-    popups: require('../locales/en/popups.json')
+    welcome: welcome_en,
+    auth: auth_en,
+    notifications: notifications_en,
+    welcome_main: welcome_main_en,
+    tasks: tasks_en,
+    profile: profile_en,
+    legal: legal_en,
+    stats: stats_en,
+    calendar: calendar_en,
+    popups: popups_en,
   },
   ua: {
-    welcome: require("../locales/ua/welcome.json"),
-    auth: require("../locales/ua/auth.json"),
-    notifications: require("../locales/ua/notifications.json"),
-    welcome_main: require("../locales/ua/welcome_main.json"),
-    tasks: require("../locales/ua/tasks.json"),
-    profile: require('../locales/ua/profile.json'),
-    legal: require('../locales/ua/legal.json'),
-    stats: require('../locales/ua/stats.json'),
-    calendar: require('../locales/ua/calendar.json'),
-    popups: require('../locales/ua/popups.json')
+    welcome: welcome_ua,
+    auth: auth_ua,
+    notifications: notifications_ua,
+    welcome_main: welcome_main_ua,
+    tasks: tasks_ua,
+    profile: profile_ua,
+    legal: legal_ua,
+    stats: stats_ua,
+    calendar: calendar_ua,
+    popups: popups_ua,
   },
 }
 

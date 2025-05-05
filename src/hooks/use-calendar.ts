@@ -75,7 +75,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
       }
 
       if (selectedCategories.length > 0) {
-        filtered = filtered.filter((task) => selectedCategories.includes(task.category))
+        filtered = filtered.filter((task) => selectedCategories.includes(task.category || ""))
       }
 
       return filtered

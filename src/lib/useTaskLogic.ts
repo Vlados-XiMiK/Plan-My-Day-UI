@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { differenceInMinutes, isPast, format, addHours } from 'date-fns'
 import { uk, enUS } from 'date-fns/locale'
 import { useNotification } from '@/contexts/notification-context'
@@ -160,7 +160,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString)
     const locale = t('tasks:language') === 'ua' ? uk : enUS
     const dateFormat = t('tasks:language') === 'ua' ? 'd MMMM yyyy' : 'MMM d, yyyy'
@@ -170,7 +170,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     return t('tasks:language') === 'ua'
       ? `${formattedDate} о ${formattedTime}`
       : `${formattedDate} at ${formattedTime}`
-  }
+  }, [t]);
 
   const getTimeRemaining = (dueDate: string, completed: boolean = false): TimeRemaining => {
     const now = new Date()
@@ -244,13 +244,13 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
       return (
         task.title.toLowerCase().includes(query) ||
         task.description.toLowerCase().includes(query) ||
-        task.category.toLowerCase().includes(query) ||
+        (task.category && task.category.toLowerCase().includes(query)) ||
         task.priority.toLowerCase().includes(query) ||
         formatDate(task.createdAt).toLowerCase().includes(query) ||
         formatDate(task.dueDate).toLowerCase().includes(query)
       )
     })
-  }, [tasks, searchQuery])
+  }, [tasks, searchQuery, formatDate])
 
   return {
     tasks,

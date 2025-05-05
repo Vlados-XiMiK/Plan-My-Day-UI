@@ -14,7 +14,7 @@ import ListView from './calendar-views/list-view'
 import { useTranslation } from 'react-i18next'
 
 export default function Calendar() {
-  const { t, i18n } = useTranslation('calendar')
+  const { t } = useTranslation('calendar')
   const [isLoading, setIsLoading] = useState(true)
   const isMobile = useMobile()
 
