@@ -5,11 +5,11 @@ import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucid
 import { motion, AnimatePresence, MotionProps } from 'framer-motion'
 import { useNotification } from '@/contexts/notification-context'
 import { HTMLAttributes } from 'react'
-import { useTheme } from 'next-themes' // Добавляем useTheme для управления темой
+import { useTheme } from 'next-themes'
+import { useTranslation } from 'react-i18next'
 
-import type { Task,} from '@/types'
+import type { Task } from '@/types'
 
-// type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface TaskCreationPopupProps {
@@ -20,25 +20,22 @@ interface TaskCreationPopupProps {
 }
 
 export default function TaskCreationPopup({ isOpen, onClose, onSave, categories }: TaskCreationPopupProps) {
+  const { t } = useTranslation(['popups', 'notifications'])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState(categories[0])
+  const [category, setCategory] = useState<string | undefined>(undefined)
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('23:59')
-  const [priority, setPriority] = useState('medium')
+  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { addNotification } = useNotification()
-  const { theme } = useTheme() // Используем useTheme для определения текущей темы
-
-  // Состояние для управления темой, синхронизированное с useTheme
+  const { theme } = useTheme()
   const [isDarkTheme, setIsDarkTheme] = useState(false)
 
-  // Определение темы при монтировании из useTheme и localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || theme
     setIsDarkTheme(savedTheme === 'dark')
 
-    // Обновляем тему при изменении через localStorage
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'theme') {
         setIsDarkTheme(e.newValue === 'dark')
@@ -67,17 +64,19 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
     const selectedDate = new Date(`${dueDate}T${dueTime}`)
 
     if (!title.trim()) {
-      newErrors.title = 'Title is required'
+      newErrors.title = t('popups:task_creation_popup.validation.titleRequired')
     }
     if (!description.trim()) {
-      newErrors.description = 'Description is required'
+      newErrors.description = t('popups:task_creation_popup.validation.descriptionRequired')
     }
-    if (!dueDate || !dueTime) {
-      newErrors.dueDate = 'Due date is required'
-      newErrors.dueTime = 'Due time is required'
+    if (!dueDate) {
+      newErrors.dueDate = t('popups:task_creation_popup.validation.dueDateRequired')
+    }
+    if (!dueTime) {
+      newErrors.dueTime = t('popups:task_creation_popup.validation.dueTimeRequired')
     } else if (selectedDate < currentDate) {
-      newErrors.dueDate = 'Date and time cannot be in the past'
-      newErrors.dueTime = 'Date and time cannot be in the past'
+      newErrors.dueDate = t('popups:task_creation_popup.validation.pastDateTime')
+      newErrors.dueTime = t('popups:task_creation_popup.validation.pastDateTime')
     }
 
     setErrors(newErrors)
@@ -93,7 +92,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
       setTimeout(() => {
         form?.classList.remove('animate-shake')
       }, 500)
-      addNotification('error', 'Error validation', 'Please fix the errors in the form.')
+      addNotification('error', t('popups:task_creation_popup.validation.errorTitle'), t('popups:task_creation_popup.validation.errorMessage'))
       return
     }
 
@@ -104,16 +103,14 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
       createdAt: new Date().toISOString(),
       dueDate: `${dueDate}T${dueTime}`,
       category,
-      priority: priority as 'high' | 'medium' | 'low',
+      priority,
       completed: false,
-      starred: false 
+      starred: false
     })
-
-    addNotification('success', 'Task created', 'Task created successfully!')
 
     setTitle('')
     setDescription('')
-    setCategory(categories[0])
+    setCategory(undefined)
     setDueDate('')
     setDueTime('23:59')
     setPriority('medium')
@@ -164,11 +161,11 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                 <X className="w-6 h-6" />
               </button>
 
-              <h2 className={`${isDarkTheme ? 'text-white' : 'text-gray-800'} text-2xl font-bold mb-6`}>Create New Task</h2>
+              <h2 className={`${isDarkTheme ? 'text-white' : 'text-gray-800'} text-2xl font-bold mb-6`}>{t('popups:task_creation_popup.title')}</h2>
 
               <form id="task-form" onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1 sm:col-span-2">
-                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>Title</label>
+                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>{t('popups:task_creation_popup.labels.title')}</label>
                   <div className="flex items-center space-x-2">
                     <FileText className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <input
@@ -178,14 +175,14 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                       className={`flex-grow rounded-lg border ${
                         errors.title ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
-                      placeholder="Enter task title"
+                      placeholder={t('popups:task_creation_popup.placeholders.title')}
                     />
                   </div>
                   {errors.title && <p className={`${isDarkTheme ? 'text-red-400' : 'text-red-500'} text-sm`}>{errors.title}</p>}
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
-                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>Description</label>
+                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>{t('popups:task_creation_popup.labels.description')}</label>
                   <div className="flex items-start space-x-2">
                     <ListTodo className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'} mt-2`} />
                     <textarea
@@ -195,21 +192,24 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                       className={`flex-grow rounded-lg border ${
                         errors.description ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
-                      placeholder="Enter task description"
+                      placeholder={t('popups:task_creation_popup.placeholders.description')}
                     />
                   </div>
                   {errors.description && <p className={`${isDarkTheme ? 'text-red-400' : 'text-red-500'} text-sm mt-1`}>{errors.description}</p>}
                 </div>
 
                 <div className="space-y-1">
-                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>Category</label>
+                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>{t('popups:task_creation_popup.labels.category')}</label>
                   <div className="flex items-center space-x-2">
                     <Tag className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      value={category ?? ''}
+                      onChange={(e) => setCategory(e.target.value === '' ? undefined : e.target.value)}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                     >
+                      <option value="" className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
+                        {t('popups:task_creation_popup.placeholders.category')}
+                      </option>
                       {categories.map((cat) => (
                         <option key={cat} value={cat} className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
                           {cat}
@@ -220,23 +220,29 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                 </div>
 
                 <div className="space-y-1">
-                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>Priority</label>
+                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>{t('popups:task_creation_popup.labels.priority')}</label>
                   <div className="flex items-center space-x-2">
                     <BarChart className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <select
                       value={priority}
-                      onChange={(e) => setPriority(e.target.value)}
+                      onChange={(e) => setPriority(e.target.value as 'high' | 'medium' | 'low')}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                     >
-                      <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>Low</option>
-                      <option value="medium" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>Medium</option>
-                      <option value="high" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>High</option>
+                      <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                        {t('popups:task_creation_popup.priority.low')}
+                      </option>
+                      <option value="medium" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                        {t('popups:task_creation_popup.priority.medium')}
+                      </option>
+                      <option value="high" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                        {t('popups:task_creation_popup.priority.high')}
+                      </option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
-                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>Due Date and Time</label>
+                  <label className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} block text-sm font-medium`}>{t('popups:task_creation_popup.labels.dueDateTime')}</label>
                   <div className="flex items-center space-x-2">
                     <CalendarIcon className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -272,13 +278,13 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                     onClick={onClose}
                     className={`px-4 py-2 ${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors duration-200`}
                   >
-                    Cancel
+                    {t('popups:task_creation_popup.buttons.cancel')}
                   </button>
                   <button
                     type="submit"
                     className={`px-4 py-2 ${isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'} rounded-lg transition-colors duration-200`}
                   >
-                    Create Task
+                    {t('popups:task_creation_popup.buttons.createTask')}
                   </button>
                 </div>
               </form>

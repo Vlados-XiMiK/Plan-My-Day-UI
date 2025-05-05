@@ -99,7 +99,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
       description: task.description || '',
       createdAt: now,
       dueDate: task.dueDate || now,
-      category: task.category || 'Uncategorized',
+      category: task.category || '',
       priority: task.priority || 'low',
       completed: false,
       starred: false,

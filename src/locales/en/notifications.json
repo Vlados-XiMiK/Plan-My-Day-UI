@@ -22,6 +22,14 @@
           "title": "Removed from Favorites",
           "message": "The task \"{{title}}\" has been removed from your favorites list."
         },
+        "validationError": {
+          "title": "Error validation",
+          "message": "Please fix the errors in the form."
+        },
+        "taskEditCancelled": {
+          "title": "Edit cancelled",
+          "message": "Task editing has been cancelled."
+        },
         "taskCreated": {
           "title": "Task Created",
           "message": "The task \"{{title}}\" has been successfully created."
@@ -34,7 +42,24 @@
           "title": "Task Deleted",
           "message": "The task \"{{title}}\" has been successfully removed."
         },
-        "categories": {
+        "noChanges": {
+    "title": "No Changes",
+    "message": "No changes were made."
+  },
+  "profileUpdated": {
+    "title": "Profile Updated",
+    "message": "The profile for \"{{username}}\" has been successfully updated."
+  },
+  "profileUpdateFailed": {
+    "title": "Profile Update Failed",
+    "message": "Failed to update profile. Please try again."
+  },
+  "profileEditCancelled": {
+    "title": "Profile Edit Cancelled",
+    "message": "Editing of profile for \"{{username}}\" was cancelled."
+  },
+        
+  "categories": {
       "loadFailed": {
         "title": "Load Failed",
         "message": "Failed to load categories."

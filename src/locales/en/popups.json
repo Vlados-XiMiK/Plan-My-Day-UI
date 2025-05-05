@@ -25,5 +25,103 @@
         "taskTitleRequired": "Task title is required."
       },
       "defaultCategory": "Work"
+    },
+    "task_creation_popup": {
+      "title": "Create New Task",
+      "labels": {
+        "title": "Title",
+        "description": "Description",
+        "category": "Category",
+        "priority": "Priority",
+        "dueDateTime": "Due Date and Time"
+      },
+      "placeholders": {
+        "title": "Enter task title",
+        "description": "Enter task description",
+        "category": "Select a category"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "createTask": "Create Task"
+      },
+      "validation": {
+        "titleRequired": "Title is required",
+        "descriptionRequired": "Description is required",
+        "dueDateRequired": "Due date is required",
+        "dueTimeRequired": "Due time is required",
+        "pastDateTime": "Date and time cannot be in the past"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      }
+    },
+    "task_edit_popup": {
+    "title": "Edit Task",
+    "labels": {
+      "title": "Task Title",
+      "description": "Description",
+      "category": "Category",
+      "priority": "Priority",
+      "dueDateTime": "Due Date and Time"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Enter task description",
+      "category": "Select a category"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "updateTask": "Update Task"
+    },
+    "validation": {
+      "titleRequired": "Task title is required",
+      "descriptionRequired": "Description is required",
+      "dueDateRequired": "Due date is required",
+      "dueTimeRequired": "Due time is required",
+      "pastDateTime": "Due date and time cannot be in the past",
+      "errorTitle": "Validation Error",
+      "errorMessage": "Please fix the errors in the form"
+    }
+  },
+  "edit_profile_popup": {
+    "title": "Update Profile",
+    "labels": {
+      "username": "Username",
+      "email": "Email",
+      "age": "Age",
+      "placeOfWork": "Place of Work",
+      "phoneNumber": "Phone Number",
+      "avatar": "Profile Picture (Optional)"
+    },
+    "placeholders": {
+      "username": "Enter username",
+      "email": "Enter email",
+      "ageOptional": "Enter age (optional)",
+      "placeOfWorkOptional": "Enter place of work (optional)",
+      "phoneNumberOptional": "Enter phone number (optional)"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "updateProfile": "Update Profile",
+      "upload": "Upload"
+    },
+    "validation": {
+      "noCyrillic": "Only Latin characters are allowed",
+      "usernameRequired": "Username is required",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email format",
+      "invalidAge": "Age must be a positive number",
+      "invalidPhoneFormat": "Phone number must contain only digits, spaces, '+' or '-'",
+      "invalidPhoneLength": "Invalid phone number (max 15 digits)",
+      "errorTitle": "Validation Error",
+      "errorMessage": "Please fix the errors in the form"
     }
   }
+}

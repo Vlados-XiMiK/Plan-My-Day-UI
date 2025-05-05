@@ -7,6 +7,7 @@ import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide
 import { useNotification } from '@/contexts/notification-context'
 import { useUser } from '@/contexts/UserContext'
 import { InputHTMLAttributes, HTMLAttributes, ButtonHTMLAttributes } from 'react'
+import { useTranslation } from 'react-i18next'
 
 // type for motion.input
 type MotionInputProps = MotionProps & InputHTMLAttributes<HTMLInputElement>
@@ -26,6 +27,7 @@ interface EditProfilePopupProps {
 }
 
 export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupProps) {
+  const { t } = useTranslation(['popups', 'notifications'])
   const { user, updateUser } = useUser()
   const [formData, setFormData] = useState({
     username: '',
@@ -72,26 +74,26 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     const containsCyrillic = /[а-яА-ЯёЁ]/.test(value)
 
     if (containsCyrillic) {
-      error = 'Only Latin characters are allowed.'
+      error = t('popups:edit_profile_popup.validation.noCyrillic')
     } else {
       switch (name) {
         case 'username':
-          if (!value.trim()) error = 'Username is required.'
+          if (!value.trim()) error = t('popups:edit_profile_popup.validation.usernameRequired')
           break
         case 'email':
-          if (!value.trim()) error = 'Email is required.'
-          else if (!/\S+@\S+\.\S+/.test(value)) error = 'Invalid email format.'
+          if (!value.trim()) error = t('popups:edit_profile_popup.validation.emailRequired')
+          else if (!/\S+@\S+\.\S+/.test(value)) error = t('popups:edit_profile_popup.validation.invalidEmail')
           break
         case 'age':
           if (value.trim() && (isNaN(Number(value)) || Number(value) <= 0)) {
-            error = 'Age must be a positive number.'
+            error = t('popups:edit_profile_popup.validation.invalidAge')
           }
           break
         case 'phoneNumber':
           if (value.trim() && (!/^\+?[0-9\s-]{0,15}$/.test(value))) {
-            error = 'Phone number must contain only digits, spaces, "+" or "-".'
+            error = t('popups:edit_profile_popup.validation.invalidPhoneFormat')
           } else if (value.trim() && value.replace(/[^0-9]/g, '').length > 15) {
-            error = 'Invalid phone number (max 15 digits).'
+            error = t('popups:edit_profile_popup.validation.invalidPhoneLength')
           }
           break
       }
@@ -123,7 +125,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     setErrors((prev) => ({ ...prev, [name]: error }))
 
     if (error && !notificationShown) {
-      addNotification('error', 'Validation error', error)
+      addNotification('error', t('popups:edit_profile_popup.validation.errorTitle'), error)
       setNotificationShown(true)
     } else if (!error) {
       setNotificationShown(false)
@@ -144,13 +146,13 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) {
-      addNotification('error', 'Validation error', 'Please fix validation errors.')
+      addNotification('error', t('popups:edit_profile_popup.validation.errorTitle'), t('popups:edit_profile_popup.validation.errorMessage'))
       return
     }
 
     // Check if there were any changes
     if (!hasChanges()) {
-      addNotification('info', 'No Changes', 'No changes were made.')
+      addNotification('info', t('notifications:noChanges.title'), t('notifications:noChanges.message'))
       return
     }
 
@@ -164,10 +166,10 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
         phone: formData.phoneNumber,
         avatar: image || undefined
       })
-      addNotification('success', 'Profile Updated', 'Profile updated successfully!')
+      addNotification('success', t('notifications:profileUpdated.title'), t('notifications:profileUpdated.message', { username: formData.username }))
       onClose()
     } catch {
-      addNotification('error', 'Server error', 'Failed to update profile. Please try again.')
+      addNotification('error', t('notifications:profileUpdateFailed.title'), t('notifications:profileUpdateFailed.message'))
     }
   }
 
@@ -204,7 +206,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   transition={{ delay: 0.1 }}
                   {...({} as MotionH2Props)}
                 >
-                  Update Profile
+                  {t('popups:edit_profile_popup.title')}
                 </motion.h2>
                 <motion.button
                   whileHover={{ scale: 1.1, rotate: 90 }}
@@ -219,14 +221,16 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
 
               <form onSubmit={handleSubmit} className="space-y-3" noValidate>
                 {[
-                  { icon: User, label: 'Username', name: 'username', type: 'text', placeholder: 'Enter username' },
-                  { icon: Mail, label: 'Email', name: 'email', type: 'email', placeholder: 'Enter email' },
-                  { icon: Cake, label: 'Age', name: 'age', type: 'number', placeholder: 'Enter age' },
-                  { icon: Building2, label: 'Place of Work', name: 'placeOfWork', type: 'text', placeholder: 'Enter workplace' },
-                  { icon: Phone, label: 'Phone Number', name: 'phoneNumber', type: 'text', placeholder: 'Enter phone number' }
-                ].map(({ icon: Icon, label, name, type, placeholder }) => (
+                  { icon: User, name: 'username', type: 'text', optional: false },
+                  { icon: Mail, name: 'email', type: 'email', optional: false },
+                  { icon: Cake, name: 'age', type: 'number', optional: true },
+                  { icon: Building2, name: 'placeOfWork', type: 'text', optional: true },
+                  { icon: Phone, name: 'phoneNumber', type: 'text', optional: true }
+                ].map(({ icon: Icon, name, type, optional }) => (
                   <div key={name} className="relative">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">{label}</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">
+                      {t(`popups:edit_profile_popup.labels.${name}`)}
+                    </label>
                     <div className="relative">
                       <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 z-10">
                         <Icon className="h-5 w-5 bg-white dark:bg-[#2a2a3e] p-0.5 rounded-full" />
@@ -236,7 +240,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                         name={name}
                         value={formData[name as keyof typeof formData]}
                         onChange={handleChange}
-                        placeholder={placeholder}
+                        placeholder={t(`popups:edit_profile_popup.placeholders.${name}${optional ? 'Optional' : ''}`)}
                         whileFocus="focus"
                         variants={inputVariants}
                         maxLength={name === 'phoneNumber' ? 15 : undefined}
@@ -251,7 +255,9 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                 ))}
 
                 <div className="relative">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">Profile Picture (Optional)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">
+                    {t('popups:edit_profile_popup.labels.avatar')}
+                  </label>
                   <div className="mt-1 flex items-center gap-4">
                     {image ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
@@ -278,7 +284,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                       {...({} as MotionButtonProps)}
                     >
                       <Upload className="h-4 w-4 inline-block mr-2" />
-                      Upload
+                      {t('popups:edit_profile_popup.buttons.upload')}
                     </motion.button>
                     <input
                       type="file"
@@ -299,7 +305,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     className="px-4 py-1.5 text-sm rounded-lg text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#3a3a5e] hover:bg-gray-200 dark:hover:bg-[#4a4a7e] transition-colors duration-300 w-full sm:w-auto"
                     {...({} as MotionButtonProps)}
                   >
-                    Cancel
+                    {t('popups:edit_profile_popup.buttons.cancel')}
                   </motion.button>
                   <motion.button
                     type="submit"
@@ -308,7 +314,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     className="px-4 py-1.5 text-sm rounded-lg text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-300 w-full sm:w-auto"
                     {...({} as MotionButtonProps)}
                   >
-                    Update Profile
+                    {t('popups:edit_profile_popup.buttons.updateProfile')}
                   </motion.button>
                 </div>
               </form>
