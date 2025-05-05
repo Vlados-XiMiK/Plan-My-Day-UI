@@ -12,14 +12,20 @@ const resources = {
     auth: require("../locales/en/auth.json"),
     notifications: require("../locales/en/notifications.json"),
     welcome_main: require("../locales/en/welcome_main.json"),
-    tasks: require("../locales/en/tasks.json")
+    tasks: require("../locales/en/tasks.json"),
+    profile: require('../locales/en/profile.json'),
+    legal: require('../locales/en/legal.json'),
+    stats: require('../locales/en/stats.json'),
   },
   ua: {
     welcome: require("../locales/ua/welcome.json"),
     auth: require("../locales/ua/auth.json"),
     notifications: require("../locales/ua/notifications.json"),
     welcome_main: require("../locales/ua/welcome_main.json"),
-    tasks: require("../locales/ua/tasks.json")
+    tasks: require("../locales/ua/tasks.json"),
+    profile: require('../locales/ua/profile.json'),
+    legal: require('../locales/ua/legal.json'),
+    stats: require('../locales/ua/stats.json'),
   },
 }
 
@@ -29,7 +35,7 @@ i18next
     lng: "en",
     fallbackLng: "en",
     resources,
-    ns: ["welcome", "auth", "notifications", "welcome_main", "tasks"],
+    ns: ["welcome", "auth", "notifications", "welcome_main", "tasks", "profile", "legal", "stats"],
     defaultNS: "welcome",
     interpolation: {
       escapeValue: false,

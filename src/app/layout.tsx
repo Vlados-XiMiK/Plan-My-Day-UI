@@ -6,7 +6,6 @@ import { NotificationProvider } from '@/contexts/notification-context';
 import { ThemeProvider } from "@/components/theme-provider";
 import { AnimatedBackground } from "@/components/ui/animated-background";
 import { LightAnimatedBackground } from "@/components/ui/animated-background";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 import Preloader from "@/components/ui/preloader";
 import "./globals.css";
 import type React from "react";
@@ -42,7 +41,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               disableTransitionOnChange
             >
               <I18nextProvider>
-              <LanguageProvider>
                 <div className="relative">
                   <div className="dark:hidden">
                     <LightAnimatedBackground />
@@ -54,7 +52,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {children}
                     </div>
                 </div>
-              </LanguageProvider>
               </I18nextProvider>
             </ThemeProvider>
           )}

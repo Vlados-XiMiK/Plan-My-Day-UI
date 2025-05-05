@@ -16,11 +16,9 @@ import {
   Legend,
 } from 'chart.js';
 import { motion, MotionProps } from 'framer-motion';
-import { HTMLAttributes } from 'react'
-import { useLanguage } from '@/contexts/LanguageContext';
+import { HTMLAttributes } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotification } from '@/contexts/notification-context';
-import en from '@/translations/en.json';
-import uk from '@/translations/uk.json';
 import { fetchTasks, fetchCategories } from '@/lib/tasks-data';
 import { Task, Category } from '@/types';
 
@@ -28,16 +26,20 @@ import { Task, Category } from '@/types';
 ChartJS.register(BarElement, BarController, PieController, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
 // type for motion.div
-type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
 export default function StatsView() {
-  const { language } = useLanguage();
+  const { t, i18n } = useTranslation('stats');
   const { addNotification } = useNotification();
-  const t = language === 'uk' ? uk : en;
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Debug translations
+  useEffect(() => {
+    console.log('Stats Translations:', t('title'), i18n.language);
+  }, [t, i18n.language]);
 
   // Fetch tasks and categories
   useEffect(() => {
@@ -49,8 +51,8 @@ export default function StatsView() {
         setError(null);
       } catch (error) {
         console.error('Error loading data:', error);
-        setError('Failed to load statistics data.');
-        addNotification('error', 'Load Failed', 'Failed to load statistics data.');
+        setError(t('error.loadFailed'));
+        addNotification('error', t('error.loadFailedTitle'), t('error.loadFailed'));
       } finally {
         setIsLoading(false);
       }
@@ -102,34 +104,34 @@ export default function StatsView() {
     return color;
   };
 
-// Calculate statistics
-const taskDistribution = categories
-  .map((category) => ({
-    name: category.name,
-    count: tasks.filter((task) => task.category === category.name).length,
-    color: category.color, // Note: This color is no longer used for the chart
-  }))
-  .filter((item) => item.count > 0);
+  // Calculate statistics
+  const taskDistribution = categories
+    .map((category) => ({
+      name: category.name,
+      count: tasks.filter((task) => task.category === category.name).length,
+      color: category.color, // Note: This color is no longer used for the chart
+    }))
+    .filter((item) => item.count > 0);
 
   // Chart data for task distribution with random colors
-const taskDistributionData = {
-  labels: taskDistribution.map((item) => item.name),
-  datasets: [
-    {
-      data: taskDistribution.map((item) => item.count),
-      backgroundColor: taskDistribution.map(() => getRandomColor()),
-      borderColor: taskDistribution.map(() => getRandomColor()),
-      borderWidth: 1,
-      hoverOffset: 20,
-    },
-  ],
-};
-
-  const productivityData = {
-    labels: [t.stats.productivity.lastWeek || 'Last Week', t.stats.productivity.thisWeek || 'This Week'],
+  const taskDistributionData = {
+    labels: taskDistribution.map((item) => item.name),
     datasets: [
       {
-        label: t.stats.productivity.label || 'Productivity',
+        data: taskDistribution.map((item) => item.count),
+        backgroundColor: taskDistribution.map(() => getRandomColor()),
+        borderColor: taskDistribution.map(() => getRandomColor()),
+        borderWidth: 1,
+        hoverOffset: 20,
+      },
+    ],
+  };
+
+  const productivityData = {
+    labels: [t('productivity.lastWeek'), t('productivity.thisWeek')],
+    datasets: [
+      {
+        label: t('productivity.label'),
         data: [lastWeekProductivity, thisWeekProductivity],
         backgroundColor: ['#6EE7B7', '#10B981'],
         borderColor: ['#6EE7B7', '#10B981'],
@@ -211,8 +213,8 @@ const taskDistributionData = {
         setError(null);
       } catch (error) {
         console.error('Error loading data:', error);
-        setError('Failed to load statistics data.');
-        addNotification('error', 'Load Failed', 'Failed to load statistics data.');
+        setError(t('error.loadFailed'));
+        addNotification('error', t('error.loadFailedTitle'), t('error.loadFailed'));
       } finally {
         setIsLoading(false);
       }
@@ -231,7 +233,6 @@ const taskDistributionData = {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]">
         <div className="w-12 h-12 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
-        
       </div>
     );
   }
@@ -239,14 +240,14 @@ const taskDistributionData = {
   // Error UI
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]overflow-y-auto">
+      <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f] overflow-y-auto">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <p className="text-red-500 text-lg mb-4">{error}</p>
         <button
           onClick={retryFetch}
           className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
         >
-          {'Retry'}
+          {t('retry')}
         </button>
       </div>
     );
@@ -261,14 +262,10 @@ const taskDistributionData = {
         transition={{ duration: 0.5 }}
         {...({} as MotionDivProps)}
       >
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-          {t.stats.title || 'Statistics'}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          {t.stats.subtitle || 'Overview of your task management'}
-        </p>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('title')}</h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">{t('subtitle')}</p>
       </motion.div>
-  
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Tasks Completed */}
         <motion.div
@@ -279,19 +276,13 @@ const taskDistributionData = {
           {...({} as MotionDivProps)}
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
-              {t.stats.tasksCompleted || 'Tasks Completed'}
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{t('tasksCompleted')}</h3>
             <BarChart2 className="h-6 w-6 text-purple-500 dark:text-purple-400 animate-pulse" />
           </div>
-          <p className="text-4xl font-bold text-gray-800 dark:text-gray-100 mt-4">
-            {tasksCompletedLast7Days}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            {t.stats.last7Days || 'Last 7 days'}
-          </p>
+          <p className="text-4xl font-bold text-gray-800 dark:text-gray-100 mt-4">{tasksCompletedLast7Days}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('last7Days')}</p>
         </motion.div>
-  
+
         {/* Productivity Score */}
         <motion.div
           className="bg-white dark:bg-[#2a2a3e] rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
@@ -301,18 +292,14 @@ const taskDistributionData = {
           {...({} as MotionDivProps)}
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
-              {t.stats.productivityScore || 'Productivity Score'}
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{t('productivityScore')}</h3>
             <TrendingUp className="h-6 w-6 text-green-500 dark:text-green-400 animate-bounce" />
           </div>
           <div className="h-48 mt-4">
             {productivityData && productivityData.datasets?.length > 0 ? (
               <Chart type="bar" data={productivityData} options={barChartOptions} />
             ) : (
-              <p className="text-center text-gray-500 dark:text-gray-400">
-                {'Loading data...'}
-              </p>
+              <p className="text-center text-gray-500 dark:text-gray-400">{t('loadingData')}</p>
             )}
           </div>
           <p className="text-4xl font-bold text-gray-800 dark:text-gray-100 mt-4">
@@ -320,22 +307,22 @@ const taskDistributionData = {
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
             {thisWeekTasks.length === 0
-              ? 'No tasks this week'
+              ? t('noTasksThisWeek')
               : `${
                   productivityChange >= 0
                     ? `+${Math.round(productivityChange)}%`
                     : `${Math.round(productivityChange)}%`
-                } ${t.stats.productivityChange || 'from last week'}`}
+                } ${t('productivityChange')}`}
           </p>
           {thisWeekTasks.length > 0 && (
             <p className="text-sm text-green-600 dark:text-green-400 mt-2 font-medium">
               {thisWeekProductivity >= lastWeekProductivity
-                ? t.stats.productivityMessage || 'Great job! You’re on your way to 100%!'
-                : t.stats.productivityDecline || 'Keep going! You can improve next week!'}
+                ? t('productivityMessage')
+                : t('productivityDecline')}
             </p>
           )}
         </motion.div>
-  
+
         {/* Task Distribution */}
         <motion.div
           className="bg-white dark:bg-[#2a2a3e] rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300"
@@ -345,9 +332,7 @@ const taskDistributionData = {
           {...({} as MotionDivProps)}
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
-              {t.stats.taskDistribution.title || 'Task Distribution'}
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">{t('taskDistribution.title')}</h3>
             <PieChart className="h-6 w-6 text-blue-500 dark:text-blue-400 animate-spin-slow" />
           </div>
           <div className="h-64 mt-4">
@@ -355,9 +340,7 @@ const taskDistributionData = {
               <Chart type="pie" data={taskDistributionData} options={pieChartOptions} />
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400 mt-8">
-                {taskDistribution.length === 0
-                  ? t.stats.noTasks || 'No tasks available'
-                  : 'Loading data...'}
+                {taskDistribution.length === 0 ? t('noTasks') : t('loadingData')}
               </p>
             )}
           </div>

@@ -1,0 +1,21 @@
+{
+    "language": "en",
+    "title": "Profile",
+    "backToTasks": "Back to Tasks",
+    "editProfile": "Edit Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone number",
+    "workplaceLabel": "Place of work",
+    "ageLabel": "Age",
+    "taskCompletionRate": "Task Completion Rate",
+    "noTasksYet": "No tasks completed yet",
+    "activeTasks": "Active Tasks",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "recentActivity": "Recent Activity",
+    "lastLogin": "Last login",
+    "profileEdited": "Profile edited",
+    "lastTaskCompleted": "Last task completed"
+  }

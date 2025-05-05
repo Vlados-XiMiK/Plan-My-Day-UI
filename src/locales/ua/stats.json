@@ -1,0 +1,27 @@
+{
+    "language": "ua",
+    "title": "Статистика",
+    "subtitle": "Огляд вашого управління завданнями",
+    "tasksCompleted": "Завершені завдання",
+    "last7Days": "Останні 7 днів",
+    "productivityScore": "Показник продуктивності",
+    "productivity": {
+      "label": "Продуктивність",
+      "lastWeek": "Минулий тиждень",
+      "thisWeek": "Цей тиждень"
+    },
+    "productivityChange": "порівняно з минулим тижнем",
+    "productivityMessage": "Чудова робота! Ви на шляху до 100%!",
+    "productivityDecline": "Продовжуйте! Ви можете покращити наступного тижня!",
+    "taskDistribution": {
+      "title": "Розподіл завдань"
+    },
+    "noTasks": "Немає доступних завдань",
+    "retry": "Повторити",
+    "noTasksThisWeek": "Немає завдань цього тижня",
+    "loadingData": "Завантаження даних...",
+    "error": {
+      "loadFailed": "Не вдалося завантажити дані статистики.",
+      "loadFailedTitle": "Помилка завантаження"
+    }
+  }
