@@ -68,7 +68,7 @@ body {
 
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 4px; /* Very thin scrollbar */
 }
 
 ::-webkit-scrollbar-track {
@@ -94,4 +94,3 @@ body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
-

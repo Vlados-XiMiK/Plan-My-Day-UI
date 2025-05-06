@@ -49,7 +49,7 @@
     "today": "Сьогодні",
     "searchPlaceholder": "Пошук завдань...",
     "categories": "Категорії",
-    "clearFilters": "Очистити фільтри ({count})",
+    "clearFilters": "Очистити фільтри ({{count}})",
     "showCompleted": "Показати завершені",
     "hideCompleted": "Приховати завершені",
     "priority": {

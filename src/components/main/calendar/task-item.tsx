@@ -79,13 +79,6 @@ export default function TaskItem({
 
   const handleTaskClick = () => {
     openTaskDetail(task)
-    // Show notification for task edit initiation
-    addNotification(
-      'info',
-      t('notifications:taskEditInitiated.title'),
-      t('notifications:taskEditInitiated.message'),
-      3000
-    )
   }
 
   // Extract time from dueDate

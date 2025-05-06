@@ -46,6 +46,11 @@
     "title": "No Changes",
     "message": "No changes were made."
   },
+  "invalidInput": {
+    "title": "Invalid input",
+    "message": "Please check the fields and try again.",
+    "taskDueDate": "Please select a task due date."
+  },
   "profileUpdated": {
     "title": "Profile Updated",
     "message": "The profile for \"{{username}}\" has been successfully updated."
@@ -120,6 +125,7 @@
   "title": "Date cleared",
   "message": "The date has been successfully cleared."
 },
+
 "taskEditInitiated": {
   "title": "Editing started",
   "message": "You can now edit the task details."

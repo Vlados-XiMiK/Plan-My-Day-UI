@@ -49,7 +49,7 @@
     "today": "Today",
     "searchPlaceholder": "Search tasks...",
     "categories": "Categories",
-    "clearFilters": "Clear filters ({count})",
+    "clearFilters": "Clear filters ({{count}})",
     "showCompleted": "Show completed",
     "hideCompleted": "Hide completed",
     "priority": {

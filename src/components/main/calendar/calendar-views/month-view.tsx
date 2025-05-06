@@ -113,7 +113,7 @@ export default function MonthView({
                   "bg-white dark:bg-gray-950 p-2 relative transition-all duration-200 group rounded-xl",
                   isMobile ? "h-20" : "h-24 sm:h-28 md:h-32",
                   today &&
-                    "ring-2 ring-indigo-500 ring-inset shadow-[0_0_15px_rgba(99,102,241,0.5)] dark:shadow-[0_0_15px_rgba(99,102,241,0.3)] z-10",
+                    "ring-2 ring-indigo-500 ring-inset shadow-[0_0_15px_rgba(99,102,241,0.5)] dark:shadow-[0_0_15px_rgba(99,102,241,0.3)] z-5",
                   dayStatus === "overdue" && "ring-2 ring-red-500 ring-inset",
                   dayStatus === "approaching" && "ring-2 ring-amber-500 ring-inset",
                   dayStatus === "completed" && "ring-2 ring-green-500 ring-inset",
