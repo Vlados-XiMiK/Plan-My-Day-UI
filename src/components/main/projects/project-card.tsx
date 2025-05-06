@@ -10,6 +10,7 @@ import ProjectManageDialog from './project-manage-dialog'
 import TaskDialog from './task-dialog'
 import TaskItem from './task-item'
 import { formatDistanceToNow } from 'date-fns'
+import { enUS, uk } from 'date-fns/locale'
 import { motion, MotionProps, AnimatePresence } from 'framer-motion'
 import {
   AlertDialog,
@@ -45,12 +46,15 @@ export default function ProjectCard({
   onToggleExpanded,
   currentUser: userProp,
 }: ProjectCardProps) {
-  const { t } = useTranslation(['projects', 'notifications'])
+  const { t, i18n } = useTranslation(['projects', 'notifications'])
   const [manageOpen, setManageOpen] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { addNotification } = useNotification()
+
+  // Выбор локали date-fns на основе текущего языка
+  const locale = i18n.language === 'ua' ? uk : enUS
 
   const mockCurrentUser: User = userProp || currentUser
 
@@ -204,7 +208,7 @@ export default function ProjectCard({
               <div className='flex items-center text-sm text-muted-foreground'>
                 <Clock className='mr-1 h-3 w-3 flex-shrink-0' />
                 <span className='line-clamp-1'>
-                  {t('projects:project_card.created')} {formatDistanceToNow(createdDate, { addSuffix: true })}
+                  {t('projects:project_card.created')} {formatDistanceToNow(createdDate, { addSuffix: true, locale })}
                 </span>
               </div>
               <AvatarGroup users={project.members} />

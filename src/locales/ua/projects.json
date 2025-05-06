@@ -78,19 +78,12 @@
       "medium": "Середній пріоритет",
       "high": "Високий пріоритет"
     },
-    "categories": {
-      "design": "Дизайн",
-      "development": "Розробка",
-      "testing": "Тестування",
-      "marketing": "Маркетинг",
-      "other": "Інше"
-    },
     "buttons": {
       "edit": "Редагувати завдання",
       "delete": "Видалити завдання"
     },
     "created": "Створено {{time}}",
-    "due": "Виконати до {{date}} о {{time}}",
+    "due": "Виконати до {{date}}, {{time}}",
     "completedBy": "Виконано",
     "completed": "Виконано {{time}}"
   }

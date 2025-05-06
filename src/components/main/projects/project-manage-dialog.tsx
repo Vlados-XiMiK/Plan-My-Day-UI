@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/av
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Trash2, UserPlus } from 'lucide-react'
 import { format } from 'date-fns'
+import { enUS, uk } from 'date-fns/locale'
 import { motion, MotionProps } from 'framer-motion'
 import CustomAvatar from '@/components/ui/Avatar'
 import { useNotification } from '@/contexts/notification-context'
@@ -46,7 +47,7 @@ export default function ProjectManageDialog({
   canEdit,
   isCreator,
 }: ProjectManageDialogProps) {
-  const { t } = useTranslation(['projects', 'notifications'])
+  const { t, i18n } = useTranslation(['projects', 'notifications'])
   const [title, setTitle] = useState(project.title)
   const [description, setDescription] = useState(project.description)
   const [members, setMembers] = useState<User[]>(project.members)
@@ -55,6 +56,10 @@ export default function ProjectManageDialog({
   const [newMemberEmail, setNewMemberEmail] = useState('')
   const [activeTab, setActiveTab] = useState<string>('details')
   const { addNotification } = useNotification()
+
+  // Выбор локали date-fns на основе текущего языка
+  const locale = i18n.language === 'ua' ? uk : enUS
+  const dateFormat = i18n.language === 'ua' ? "d MMMM yyyy 'о' HH:mm" : "MMMM d, yyyy 'at' h:mm a"
 
   const handleUpdateMemberRole = (userId: string, role: string) => {
     setPendingRoleChanges((prev) => {
@@ -251,7 +256,7 @@ export default function ProjectManageDialog({
               </div>
 
               <div className='text-sm text-muted-foreground'>
-                {t('projects:project_manage.createdOn')} {format(createdDate, "MMMM d, yyyy 'at' h:mm a")}
+                {t('projects:project_manage.createdOn')} {format(createdDate, dateFormat, { locale })}
               </div>
 
               {(canEdit || isCreator) && (

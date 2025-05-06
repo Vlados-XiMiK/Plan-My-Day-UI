@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, Check, Clock, Edit, Trash2 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
+import { enUS, uk } from 'date-fns/locale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/avatar'
 import { motion, MotionProps } from 'framer-motion'
@@ -34,8 +35,11 @@ export default function TaskItem({
   canComplete,
   completedByUser,
 }: TaskItemProps) {
-  const { t } = useTranslation(['projects', 'notifications'])
+  const { t, i18n } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
+
+  // Выбор локали date-fns на основе текущего языка
+  const locale = i18n.language === 'ua' ? uk : enUS
 
   const priorityColors = {
     low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800',
@@ -64,20 +68,24 @@ export default function TaskItem({
   const handleToggleComplete = () => {
     try {
       onToggleComplete()
+  
+      const isNowCompleted = !task.completed
+  
       addNotification(
-        'success',
-        t('notifications:taskStatusUpdated.title'),
-        t('notifications:taskStatusUpdated.message', {
-          title: task.title,
-          status: task.completed ? t('notifications:taskStatusUpdated.incomplete') : t('notifications:taskStatusUpdated.complete'),
-        }),
+        isNowCompleted ? 'success' : 'info',
+        isNowCompleted
+          ? t('notifications:taskCompleted.title')
+          : t('notifications:taskReopened.title'),
+        isNowCompleted
+          ? t('notifications:taskCompleted.message', { title: task.title })
+          : t('notifications:taskReopened.message', { title: task.title }),
         3000
       )
     } catch {
       addNotification(
         'error',
-        t('notifications:taskStatusUpdateFailed.title'),
-        t('notifications:taskStatusUpdateFailed.message'),
+        t('notifications:validationError.title'),
+        t('notifications:validationError.message'),
         5000
       )
     }
@@ -86,12 +94,17 @@ export default function TaskItem({
   const handleEdit = () => {
     try {
       onEdit()
-      addNotification('info', t('notifications:taskEditInitiated.title'), t('notifications:taskEditInitiated.message', { title: task.title }), 3000)
+      addNotification(
+        'info',
+        t('notifications:taskEditInitiated.title'),
+        t('notifications:taskEditInitiated.message'),
+        3000
+      )
     } catch {
       addNotification(
         'error',
-        t('notifications:taskEditFailed.title'),
-        t('notifications:taskEditFailed.message'),
+        t('notifications:validationError.title'),
+        t('notifications:validationError.message'),
         5000
       )
     }
@@ -109,8 +122,8 @@ export default function TaskItem({
     } catch {
       addNotification(
         'error',
-        t('notifications:taskDeletionFailed.title'),
-        t('notifications:taskDeletionFailed.message'),
+        t('notifications:validationError.title'),
+        t('notifications:validationError.message'),
         5000
       )
     }
@@ -218,7 +231,7 @@ export default function TaskItem({
                     categoryColors[task.category as keyof typeof categoryColors] || categoryColors.default
                   } transition-all duration-300 hover:shadow-sm text-xs`}
                 >
-                  {t(`projects:task_item.categories.${task.category}`)}
+                  {t(`${task.category}`)}
                 </Badge>
               )}
             </div>
@@ -227,7 +240,7 @@ export default function TaskItem({
               <div className='flex items-center'>
                 <Clock className='mr-1 h-3 w-3 flex-shrink-0' />
                 <span className='line-clamp-1'>
-                  {t('projects:task_item.created', { time: formatDistanceToNow(createdDate, { addSuffix: true }) })}
+                  {t('projects:task_item.created', { time: formatDistanceToNow(createdDate, { addSuffix: true, locale }) })}
                 </span>
               </div>
 
@@ -236,7 +249,7 @@ export default function TaskItem({
                   <Calendar className='mr-1 h-3 w-3 flex-shrink-0' />
                   <span className='line-clamp-1'>
                     {t('projects:task_item.due', {
-                      date: format(dueDate, 'MMM d'),
+                      date: format(dueDate, 'd MMM yyyy', { locale }),
                       time: format(dueDate, 'HH:mm'),
                     })}
                   </span>
@@ -281,7 +294,7 @@ export default function TaskItem({
                     <TooltipContent>
                       <p>
                         {t('projects:task_item.completed', {
-                          time: formatDistanceToNow(completedDate, { addSuffix: true }),
+                          time: formatDistanceToNow(completedDate, { addSuffix: true, locale }),
                         })}
                       </p>
                     </TooltipContent>

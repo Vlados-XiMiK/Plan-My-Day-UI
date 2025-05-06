@@ -169,51 +169,6 @@
   "roleUpdateFailed": {
     "title": "Update Failed",
     "message": "Failed to update member roles. Please try again."
-  },
-  "task_dialog": {
-    "title": {
-      "create": "Create new task",
-      "edit": "Edit task"
-    },
-    "description": {
-      "create": "Add a new task to your project.",
-      "edit": "Update the details of your task."
-    },
-    "labels": {
-      "title": "Task title",
-      "description": "Description",
-      "priority": "Priority",
-      "category": "Category",
-      "dueDate": "Due date"
-    },
-    "placeholders": {
-      "title": "Enter task title",
-      "description": "Describe your task",
-      "priority": "Select priority",
-      "category": "Select category",
-      "date": "Select a date"
-    },
-    "priorities": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High"
-    },
-    "categories": {
-      "design": "Design",
-      "development": "Development",
-      "testing": "Testing",
-      "marketing": "Marketing",
-      "other": "Other"
-    },
-    "buttons": {
-      "cancel": "Cancel",
-      "create": "Create task",
-      "save": "Save changes",
-      "clearDate": "Clear date"
-    },
-    "dueDateText": "Task will be due on {{date}} at {{time}}",
-    "dueDateInvalid": "Due date cannot be in the past",
-    "noDueDate": "No due date set"
   }
   }
   

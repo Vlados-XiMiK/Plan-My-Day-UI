@@ -175,13 +175,6 @@
       "medium": "Medium",
       "high": "High"
     },
-    "categories": {
-      "design": "Design",
-      "development": "Development",
-      "testing": "Testing",
-      "marketing": "Marketing",
-      "other": "Other"
-    },
     "buttons": {
       "cancel": "Cancel",
       "create": "Create task",

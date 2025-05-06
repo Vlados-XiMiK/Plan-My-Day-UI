@@ -78,19 +78,12 @@
       "medium": "Medium priority",
       "high": "High priority"
     },
-    "categories": {
-      "design": "Design",
-      "development": "Development",
-      "testing": "Testing",
-      "marketing": "Marketing",
-      "other": "Other"
-    },
     "buttons": {
       "edit": "Edit task",
       "delete": "Delete task"
     },
     "created": "Created {{time}}",
-    "due": "Due {{date}} at {{time}}",
+    "due": "Due on {{date}} at {{time}}",
     "completedBy": "Completed by",
     "completed": "Completed {{time}}"
   }

@@ -16,14 +16,17 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { Task } from '@/types/project'
+import type { Category } from '@/types'
 import { CalendarIcon, Clock, X } from 'lucide-react'
 import { format } from 'date-fns'
+import { enUS, uk } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { motion, MotionProps, AnimatePresence } from 'framer-motion'
 import CustomCalendar from '@/components/ui/projects/custom-calendar'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
 import { HTMLAttributes } from 'react'
+import { fetchCategories } from '@/lib/tasks-data'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -36,7 +39,7 @@ interface TaskDialogProps {
 }
 
 export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, task }: TaskDialogProps) {
-  const { t } = useTranslation(['popups', 'notifications'])
+  const { t, i18n } = useTranslation(['popups', 'notifications'])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<string>('medium')
@@ -44,13 +47,36 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
   const [dueTime, setDueTime] = useState<string>('23:59')
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
   const { addNotification } = useNotification()
+
+  // Выбор локали date-fns и формата даты на основе текущего языка
+  const locale = i18n.language === 'ua' ? uk : enUS
+  const dateFormat = i18n.language === 'ua' ? 'd MMMM yyyy' : 'MMMM d, yyyy'
 
   const calendarRef = useRef<HTMLDivElement>(null)
   const calendarButtonRef = useRef<HTMLButtonElement>(null)
 
   const isEditing = !!task
   const isDateSelectionEnabled = title.trim() && description.trim() && priority
+
+  // Загрузка категорий при открытии диалога
+  useEffect(() => {
+    if (open) {
+      fetchCategories()
+        .then((fetchedCategories) => {
+          setCategories(fetchedCategories)
+        })
+        .catch(() => {
+          addNotification(
+            'error',
+            t('notifications:fetchCategoriesFailed.title'),
+            t('notifications:fetchCategoriesFailed.message'),
+            5000
+          )
+        })
+    }
+  }, [open, t, addNotification])
 
   const isValidDateTime = () => {
     if (!dueDate || !dueTime) return true
@@ -282,7 +308,10 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
               </div>
               <div className='grid gap-2'>
                 <Label htmlFor='category'>{t('popups:task_dialog.labels.category')}</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select
+                  value={category}
+                  onValueChange={(value) => setCategory(value === 'none' ? '' : value)}
+                >
                   <SelectTrigger
                     id='category'
                     className='transition-all duration-200 focus:ring-2 focus:ring-purple-500/20'
@@ -290,11 +319,12 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                     <SelectValue placeholder={t('popups:task_dialog.placeholders.category')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='design'>{t('popups:task_dialog.categories.design')}</SelectItem>
-                    <SelectItem value='development'>{t('popups:task_dialog.categories.development')}</SelectItem>
-                    <SelectItem value='testing'>{t('popups:task_dialog.categories.testing')}</SelectItem>
-                    <SelectItem value='marketing'>{t('popups:task_dialog.categories.marketing')}</SelectItem>
-                    <SelectItem value='other'>{t('popups:task_dialog.categories.other')}</SelectItem>
+                    <SelectItem value='none'>{t('popups:task_dialog.placeholders.category')}</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.name} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -324,7 +354,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                     disabled={!isDateSelectionEnabled}
                   >
                     <CalendarIcon className='mr-2 h-4 w-4' />
-                    {dueDate ? format(dueDate, 'MMMM d, yyyy') : t('popups:task_dialog.placeholders.date')}
+                    {dueDate ? format(dueDate, dateFormat, { locale }) : t('popups:task_dialog.placeholders.date')}
                     {dueDate && (
                       <span
                         onClick={clearDate}
@@ -371,7 +401,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                 {dueDate
                   ? isValidDateTime()
                     ? t('popups:task_dialog.dueDateText', {
-                        date: format(dueDate, 'MMMM d, yyyy'),
+                        date: format(dueDate, dateFormat, { locale }),
                         time: dueTime,
                       })
                     : t('popups:task_dialog.dueDateInvalid')
