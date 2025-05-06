@@ -27,38 +27,51 @@
     }
   },
   "project_manage": {
-    "title": "Manage Project",
-    "description": {
-      "edit": "Update project details or manage team members.",
-      "view": "View project details and team members."
-    },
-    "tabs": {
-      "details": "Project Details",
-      "members": "Team Members"
-    },
-    "labels": {
-      "title": "Project title",
-      "description": "Description",
-      "addMember": "Add team member"
-    },
-    "placeholders": {
-      "email": "Email address"
-    },
-    "buttons": {
-      "save": "Save changes",
-      "add": "Add",
-      "cancel": "Cancel",
-      "saveRoles": "Save role changes",
-      "removeMember": "Remove member"
-    },
-    "roles": {
-      "full_access": "Full access",
-      "read_only": "Read only",
-      "complete_only": "Complete tasks only"
-    },
-    "createdOn": "Created on",
-    "creator": "(Creator)"
-  },
+        "title": "Manage Project",
+        "description": {
+          "edit": "Update project details or manage team members.",
+          "view": "View project details and team members."
+        },
+        "tabs": {
+          "details": "Project Details",
+          "members": "Team Members"
+        },
+        "labels": {
+          "title": "Project Title",
+          "description": "Description",
+          "inviteMembers": "Invite Team Members",
+          "inviteViaLink": "Invite via Link",
+          "usageLimit": "Usage Limit",
+          "expiresOn": "Expires On",
+          "inviteLink": "Invite Link"
+        },
+        "placeholders": {
+          "email": "Enter member's email",
+          "usageLimit": "Number of Uses",
+          "selectDate": "Select Date",
+          "inviteLink": "Generate a link to invite team members"
+        },
+        "buttons": {
+          "save": "Save Changes",
+          "cancel": "Cancel",
+          "saveRoles": "Save Roles",
+          "removeMember": "Remove Member",
+          "add": "Add",
+          "generateLink": "Generate Link",
+          "copyLink": "Copy Link",
+          "deleteLink": "Delete Link",
+          "leaveProject": "Leave Project"
+        },
+        "createdOn": "Created on",
+        "creator": "(Creator)",
+        "roles": {
+          "full_access": "Full Access",
+          "read_only": "Read Only",
+          "complete_only": "Complete Tasks Only"
+        },
+        "linkInfo": "This link can be used {{usageLimit}} time{{plural}} and expires on {{expirationDate}}",
+        "linkWarning": "Link settings cannot be modified after creation."
+      },
   "projects_list": {
     "title": "PROJECTS",
     "noProjects": "No projects yet",

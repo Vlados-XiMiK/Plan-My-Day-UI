@@ -49,7 +49,8 @@
   "invalidInput": {
     "title": "Invalid input",
     "message": "Please check the fields and try again.",
-    "taskDueDate": "Please select a task due date."
+    "taskDueDate": "Please select a task due date.",
+    "invalidExpirationDate": "Expiration date cannot be in the past"
   },
   "profileUpdated": {
     "title": "Profile Updated",
@@ -113,14 +114,6 @@
     "title": "Creation Failed",
     "message": "Failed to create project. Please try again."
   },
-  "memberAdded": {
-    "title": "Member Added",
-    "message": "{{name}} added to the project"
-  },
-  "memberRemoved": {
-    "title": "Member Removed",
-    "message": "{{name}} removed from the project"
-  },
   "dateCleared": {
   "title": "Date cleared",
   "message": "The date has been successfully cleared."
@@ -154,6 +147,22 @@
     "title": "Changes Cancelled",
     "message": "Pending role changes have been cancelled"
   },
+  "inviteLinkGenerated": {
+        "title": "Invite Link Generated",
+        "message": "The invite link has been successfully created."
+      },
+      "linkCopied": {
+        "title": "Link Copied",
+        "message": "Invite link copied to clipboard."
+      },
+      "linkDeleted": {
+        "title": "Link Deleted",
+        "message": "The invite link has been successfully revoked."
+      },
+      "leftProject": {
+        "title": "Left Project",
+        "message": "You have successfully left the project."
+      },
   "permissionDenied": {
     "title": "Permission Denied",
     "updateProject": "You do not have permission to update this project",
