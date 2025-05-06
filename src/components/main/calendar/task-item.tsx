@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { enUS, uk } from 'date-fns/locale'
 import { HTMLAttributes } from 'react'
+import { useNotification } from '@/contexts/notification-context'
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -48,9 +49,10 @@ export default function TaskItem({
   view,
   isTaskToday = false,
 }: TaskItemProps) {
-  const { t, i18n } = useTranslation('calendar')
+  const { t, i18n } = useTranslation(['calendar', 'notifications'])
   const status = getTaskStatus(task)
   const isMobile = useMobile()
+  const { addNotification } = useNotification()
 
   // Add local state to track completion status for immediate UI feedback
   const [isCompleted, setIsCompleted] = useState(task.completed)
@@ -62,8 +64,28 @@ export default function TaskItem({
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsCompleted(!isCompleted)
+    const newCompletedState = !isCompleted
+    setIsCompleted(newCompletedState)
     toggleTaskCompletion(task.id)
+    // Show notification based on completion state
+    const notificationKey = newCompletedState ? 'taskCompleted' : 'taskReopened'
+    addNotification(
+      newCompletedState ? 'success' : 'info',
+      t(`notifications:${notificationKey}.title`),
+      t(`notifications:${notificationKey}.message`, { title: task.title }),
+      3000
+    )
+  }
+
+  const handleTaskClick = () => {
+    openTaskDetail(task)
+    // Show notification for task edit initiation
+    addNotification(
+      'info',
+      t('notifications:taskEditInitiated.title'),
+      t('notifications:taskEditInitiated.message'),
+      3000
+    )
   }
 
   // Extract time from dueDate
@@ -94,7 +116,7 @@ export default function TaskItem({
             isCompleted && 'opacity-60 line-through',
             task.priority === 'high' && 'font-bold',
           )}
-          onClick={() => openTaskDetail(task)}
+          onClick={handleTaskClick}
           {...({} as MotionDivProps)}
         >
           <div className='flex-shrink-0 mr-1' onClick={handleCheckboxClick}>
@@ -156,7 +178,7 @@ export default function TaskItem({
           !isCompleted &&
           'border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10',
       )}
-      onClick={() => openTaskDetail(task)}
+      onClick={handleTaskClick}
       {...({} as MotionDivProps)}
     >
       <div className='flex-shrink-0 mr-3 flex items-center gap-2'>
@@ -186,17 +208,17 @@ export default function TaskItem({
           {task.starred && <Star className='h-4 w-4 ml-1 text-yellow-500 fill-yellow-500' />}
           {status === 'overdue' && (
             <span className='ml-2 px-2 py-0.5 text-xs font-medium rounded-lg bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'>
-              {t('status.overdue')}
+              {t('calendar:status.overdue')}
             </span>
           )}
           {status === 'approaching' && (
             <span className='ml-2 px-2 py-0.5 text-xs font-medium rounded-lg bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'>
-              {t('status.dueSoon')}
+              {t('calendar:status.dueSoon')}
             </span>
           )}
           {isCompleted && (
             <span className='ml-2 px-2 py-0.5 text-xs font-medium rounded-lg bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'>
-              {t('status.completed')}
+              {t('calendar:status.completed')}
             </span>
           )}
         </div>
@@ -210,7 +232,7 @@ export default function TaskItem({
             )}
           >
             {formatDate(task.dueDate.split('T')[0])}
-            {isTaskToday && ` (${t('today')})`}
+            {isTaskToday && ` (${t('calendar:today')})`}
           </p>
           {time && (
             <div
@@ -239,7 +261,7 @@ export default function TaskItem({
               : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
         )}
       >
-        {t(`priority.${task.priority}`)}
+        {t(`calendar:priority.${task.priority}`)}
       </span>
     </motion.div>
   )

@@ -29,7 +29,7 @@ ChartJS.register(BarElement, BarController, PieController, CategoryScale, Linear
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
 export default function StatsView() {
-  const { t, i18n } = useTranslation('stats');
+  const { t } = useTranslation('stats');
   const { addNotification } = useNotification();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

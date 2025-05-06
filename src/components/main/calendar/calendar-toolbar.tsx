@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils'
 import type { Category } from '@/types'
 import { useMobile } from '@/hooks/use-mobile'
 import { useTranslation } from 'react-i18next'
-import { useEffect } from 'react'
 
 type CalendarToolbarProps = {
   searchQuery: string

@@ -10,6 +10,7 @@ import type { Task } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { enUS, uk } from 'date-fns/locale'
+import { useNotification } from '@/contexts/notification-context'
 
 type TaskTooltipProps = {
   task: Task
@@ -17,8 +18,9 @@ type TaskTooltipProps = {
 }
 
 export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipProps) {
-  const { t, i18n } = useTranslation('calendar')
+  const { t, i18n } = useTranslation(['calendar', 'notifications'])
   const [isCompleted, setIsCompleted] = useState(task.completed)
+  const { addNotification } = useNotification()
 
   // Update local state when task prop changes
   useEffect(() => {
@@ -28,8 +30,17 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
   const handleToggleCompletion = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    setIsCompleted(!isCompleted)
+    const newCompletedState = !isCompleted
+    setIsCompleted(newCompletedState)
     toggleTaskCompletion(task.id)
+    // Show notification based on completion state
+    const notificationKey = newCompletedState ? 'taskCompleted' : 'taskReopened'
+    addNotification(
+      newCompletedState ? 'success' : 'info',
+      t(`notifications:${notificationKey}.title`),
+      t(`notifications:${notificationKey}.message`, { title: task.title }),
+      3000
+    )
   }
 
   // Extract time from dueDate
@@ -53,7 +64,7 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
       <div className="flex items-center justify-between">
         <div className="font-medium flex items-center gap-1">
           <span className={getPriorityColorClass(task.priority)}>
-            {t(`priority.${task.priority}`)}
+            {t(`calendar:priority.${task.priority}`)}
           </span>
           {task.starred && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
         </div>
@@ -92,11 +103,11 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
       </div>
       {isCompleted && (
         <div className="mt-1 flex items-center text-green-600 dark:text-green-400">
-          <CheckCircle2 className="h-3 w-3 mr-1" /> {t('status.completed')}
+          <CheckCircle2 className="h-3 w-3 mr-1" /> {t('calendar:status.completed')}
         </div>
       )}
       <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        {t('created')} {formatDateTime(task.createdAt)}
+        {t('calendar:created')} {formatDateTime(task.createdAt)}
       </div>
     </TooltipContent>
   )
