@@ -1,0 +1,97 @@
+{
+    "page": {
+      "title": "Projects",
+      "description": "Manage your tasks and collaborate with your team"
+    },
+    "project_card": {
+    "created": "Created",
+    "of": "of",
+    "tasksCompleted": "tasks completed",
+    "noTasks": "No tasks yet",
+    "noEditPermission": "You can view but not modify project settings",
+    "buttons": {
+      "settings": "Project settings",
+      "settingsTitle": "{{title}}",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "addTask": "Add task",
+      "add": "Add",
+      "deleteProject": "Delete project",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Are you sure?",
+      "description": "This will permanently delete the project \"{{title}}\" and all its tasks. This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    }
+  },
+  "project_manage": {
+    "title": "Manage Project",
+    "description": {
+      "edit": "Update project details or manage team members.",
+      "view": "View project details and team members."
+    },
+    "tabs": {
+      "details": "Project Details",
+      "members": "Team Members"
+    },
+    "labels": {
+      "title": "Project title",
+      "description": "Description",
+      "addMember": "Add team member"
+    },
+    "placeholders": {
+      "email": "Email address"
+    },
+    "buttons": {
+      "save": "Save changes",
+      "add": "Add",
+      "cancel": "Cancel",
+      "saveRoles": "Save role changes",
+      "removeMember": "Remove member"
+    },
+    "roles": {
+      "full_access": "Full access",
+      "read_only": "Read only",
+      "complete_only": "Complete tasks only"
+    },
+    "createdOn": "Created on",
+    "creator": "(Creator)"
+  },
+  "projects_list": {
+    "title": "PROJECTS",
+    "noProjects": "No projects yet",
+    "noProjectsDescription": "Create your first project to start organizing your tasks and collaborating with your team.",
+    "buttons": {
+      "newProject": "New Project",
+      "createFirstProject": "Create Your First Project"
+    },
+    "tooltips": {
+      "listView": "List view",
+      "gridView": "Grid view"
+    }
+  },
+  "task_item": {
+    "priorities": {
+      "low": "Low priority",
+      "medium": "Medium priority",
+      "high": "High priority"
+    },
+    "categories": {
+      "design": "Design",
+      "development": "Development",
+      "testing": "Testing",
+      "marketing": "Marketing",
+      "other": "Other"
+    },
+    "buttons": {
+      "edit": "Edit task",
+      "delete": "Delete task"
+    },
+    "created": "Created {{time}}",
+    "due": "Due {{date}} at {{time}}",
+    "completedBy": "Completed by",
+    "completed": "Completed {{time}}"
+  }
+  }

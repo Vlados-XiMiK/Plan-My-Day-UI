@@ -1,6 +1,6 @@
 {
-    "language": "en",
-    "calendar_popup": {
+  "language": "en",
+  "calendar_popup": {
       "addTask": "Add Task for {{date}}",
       "taskTitle": "Task Title",
       "date": "Date",
@@ -26,7 +26,7 @@
       },
       "defaultCategory": "Work"
     },
-    "task_creation_popup": {
+  "task_creation_popup": {
       "title": "Create New Task",
       "labels": {
         "title": "Title",
@@ -57,7 +57,7 @@
         "high": "High"
       }
     },
-    "task_edit_popup": {
+  "task_edit_popup": {
     "title": "Edit Task",
     "labels": {
       "title": "Task Title",
@@ -89,7 +89,7 @@
       "errorTitle": "Validation Error",
       "errorMessage": "Please fix the errors in the form"
     }
-  },
+    },
   "edit_profile_popup": {
     "title": "Update Profile",
     "labels": {
@@ -123,5 +123,73 @@
       "errorTitle": "Validation Error",
       "errorMessage": "Please fix the errors in the form"
     }
-  }
+    },
+  "create_project": {
+    "title": "Create new project",
+    "description": "Add a new project to organize your tasks.",
+    "labels": {
+      "title": "Project title",
+      "description": "Description",
+      "teamMembers": "Team members"
+    },
+    "placeholders": {
+      "title": "Enter project title",
+      "description": "Describe your project",
+      "search": "Search by name or email"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create project",
+      "addMember": "Add member",
+      "add": "Add",
+      "remove": "Remove {{name}}"
+    },
+    "currentUser": "(you)",
+    "noUsersFound": "No users found"
+    },
+  "task_dialog": {
+    "title": {
+      "create": "Create new task",
+      "edit": "Edit task"
+    },
+    "description": {
+      "create": "Add a new task to your project.",
+      "edit": "Update the details of your task."
+    },
+    "labels": {
+      "title": "Task title",
+      "description": "Description",
+      "priority": "Priority",
+      "category": "Category",
+      "dueDate": "Due date"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Describe your task",
+      "priority": "Select priority",
+      "category": "Select category",
+      "date": "Select a date"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "categories": {
+      "design": "Design",
+      "development": "Development",
+      "testing": "Testing",
+      "marketing": "Marketing",
+      "other": "Other"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create task",
+      "save": "Save changes",
+      "clearDate": "Clear date"
+    },
+    "dueDateText": "Task will be due on {{date}} at {{time}}",
+    "dueDateInvalid": "Due date cannot be in the past",
+    "noDueDate": "No due date set"
+    }
 }

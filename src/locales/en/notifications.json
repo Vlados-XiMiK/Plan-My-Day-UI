@@ -57,8 +57,7 @@
   "profileEditCancelled": {
     "title": "Profile Edit Cancelled",
     "message": "Editing of profile for \"{{username}}\" was cancelled."
-  },
-        
+  },        
   "categories": {
       "loadFailed": {
         "title": "Load Failed",
@@ -100,6 +99,121 @@
         "title": "Update Failed",
         "message": "An error occurred while updating the category."
       }
-    }
+    },
+  "projectCreated": {
+    "title": "Project Created",
+    "message": "Successfully created project: {{title}}"
+  },
+  "projectCreationFailed": {
+    "title": "Creation Failed",
+    "message": "Failed to create project. Please try again."
+  },
+  "memberAdded": {
+    "title": "Member Added",
+    "message": "{{name}} added to the project"
+  },
+  "memberRemoved": {
+    "title": "Member Removed",
+    "message": "{{name}} removed from the project"
+  },
+  "dateCleared": {
+  "title": "Date cleared",
+  "message": "The date has been successfully cleared."
+},
+"taskEditInitiated": {
+  "title": "Editing started",
+  "message": "You can now edit the task details."
+},
+  "projectUpdated": {
+  "title": "Project updated",
+  "message": "The project \"{{title}}\" has been successfully updated."
+  },
+  "projectDeleted": {
+    "title": "Project Deleted",
+    "message": "Project \"{{title}}\" has been deleted"
+  },
+  "projectDeletionFailed": {
+    "title": "Deletion Failed",
+    "message": "Failed to delete project. Please try again."
+  },
+  "roleChangePending": {
+    "title": "Role Change Pending",
+    "message": "Role for {{name}} set to {{role}}"
+  },
+  "rolesUpdated": {
+    "title": "Roles Updated",
+    "message": "Team member roles have been updated"
+  },
+  "roleChangesCancelled": {
+    "title": "Changes Cancelled",
+    "message": "Pending role changes have been cancelled"
+  },
+  "permissionDenied": {
+    "title": "Permission Denied",
+    "updateProject": "You do not have permission to update this project",
+    "addMember": "You do not have permission to add members",
+    "removeMember": "You do not have permission to remove members"
+  },
+  "projectUpdateFailed": {
+    "title": "Update Failed",
+    "message": "Failed to update project. Please try again."
+  },
+  "memberAdditionFailed": {
+    "title": "Addition Failed",
+    "message": "Failed to add member. Please try again."
+  },
+  "memberRemovalFailed": {
+    "title": "Removal Failed",
+    "message": "Failed to remove member. Please try again."
+  },
+  "roleUpdateFailed": {
+    "title": "Update Failed",
+    "message": "Failed to update member roles. Please try again."
+  },
+  "task_dialog": {
+    "title": {
+      "create": "Create new task",
+      "edit": "Edit task"
+    },
+    "description": {
+      "create": "Add a new task to your project.",
+      "edit": "Update the details of your task."
+    },
+    "labels": {
+      "title": "Task title",
+      "description": "Description",
+      "priority": "Priority",
+      "category": "Category",
+      "dueDate": "Due date"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Describe your task",
+      "priority": "Select priority",
+      "category": "Select category",
+      "date": "Select a date"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "categories": {
+      "design": "Design",
+      "development": "Development",
+      "testing": "Testing",
+      "marketing": "Marketing",
+      "other": "Other"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create task",
+      "save": "Save changes",
+      "clearDate": "Clear date"
+    },
+    "dueDateText": "Task will be due on {{date}} at {{time}}",
+    "dueDateInvalid": "Due date cannot be in the past",
+    "noDueDate": "No due date set"
+  }
   }
   

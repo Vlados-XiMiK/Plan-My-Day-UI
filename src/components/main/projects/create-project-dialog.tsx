@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import type React from 'react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -10,32 +10,33 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import type { Project, User } from "@/types/project"
-import { UserPlus, X } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/projects/avatar"
-import { Badge } from "@/components/ui/badge"
-import { motion, MotionProps } from "framer-motion"
-import { availableUsers, currentUser } from "@/lib/project-data"
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import type { Project, User } from '@/types/project'
+import { UserPlus, X } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/avatar'
+import { Badge } from '@/components/ui/badge'
+import { motion, MotionProps } from 'framer-motion'
+import { availableUsers, currentUser } from '@/lib/project-data'
 import { HTMLAttributes } from 'react'
 import { useNotification } from '@/contexts/notification-context'
+import { useTranslation } from 'react-i18next'
 
-// type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface CreateProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreateProject: (project: Omit<Project, "id">) => void
+  onCreateProject: (project: Omit<Project, 'id'>) => void
 }
 
 export default function CreateProjectDialog({ open, onOpenChange, onCreateProject }: CreateProjectDialogProps) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
+  const { t } = useTranslation(['popups', 'notifications'])
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
   const [showUserSearch, setShowUserSearch] = useState(false)
   const { addNotification } = useNotification()
@@ -52,7 +53,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
     e.preventDefault()
 
     if (!title.trim()) {
-      addNotification('error', 'Invalid Input', 'Project title is required', 5000)
+      addNotification('error', t('notifications:invalidInput.title'), t('notifications:invalidInput.message'), 5000)
       return
     }
 
@@ -66,32 +67,30 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
         createdAt: new Date().toISOString(),
       })
 
-      addNotification('success', 'Project Created', `Successfully created project: ${title}`, 5000)
+      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { title }), 5000)
 
-      // Reset form
-      setTitle("")
-      setDescription("")
+      setTitle('')
+      setDescription('')
       setSelectedUsers([])
-      setSearchTerm("")
+      setSearchTerm('')
       setShowUserSearch(false)
       onOpenChange(false)
     } catch {
-      addNotification('error', 'Creation Failed', 'Failed to create project. Please try again.', 5000)
+      addNotification('error', t('notifications:projectCreationFailed.title'), t('notifications:projectCreationFailed.message'), 5000)
     }
   }
 
   const addUser = (user: User) => {
-    // Ensure added users have read_only role by default
-    setSelectedUsers([...selectedUsers, { ...user, role: "read_only" }])
-    setSearchTerm("")
-    addNotification('success', 'Member Added', `${user.name} added to the project`, 3000)
+    setSelectedUsers([...selectedUsers, { ...user, role: 'read_only' }])
+    setSearchTerm('')
+    addNotification('success', t('notifications:memberAdded.title'), t('notifications:memberAdded.message', { name: user.name }), 3000)
   }
 
   const removeUser = (userId: string) => {
     const removedUser = selectedUsers.find((user) => user.id === userId)
     setSelectedUsers(selectedUsers.filter((user) => user.id !== userId))
     if (removedUser) {
-      addNotification('info', 'Member Removed', `${removedUser.name} removed from the project`, 3000)
+      addNotification('info', t('notifications:memberRemoved.title'), t('notifications:memberRemoved.message', { name: removedUser.name }), 3000)
     }
   }
 
@@ -100,8 +99,8 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
       <DialogContent className="sm:max-w-[500px] max-w-[95vw] overflow-hidden">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create new project</DialogTitle>
-            <DialogDescription>Add a new project to organize your tasks.</DialogDescription>
+            <DialogTitle>{t('popups:create_project.title')}</DialogTitle>
+            <DialogDescription>{t('popups:create_project.description')}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <motion.div
@@ -111,12 +110,12 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
               transition={{ duration: 0.3 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="title">Project title</Label>
+              <Label htmlFor="title">{t('popups:create_project.labels.title')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter project title"
+                placeholder={t('popups:create_project.placeholders.title')}
                 required
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
               />
@@ -128,12 +127,12 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
               transition={{ duration: 0.3, delay: 0.1 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('popups:create_project.labels.description')}</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your project"
+                placeholder={t('popups:create_project.placeholders.description')}
                 rows={3}
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
               />
@@ -146,7 +145,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
               transition={{ duration: 0.3, delay: 0.2 }}
               {...({} as MotionDivProps)}
             >
-              <Label>Team members</Label>
+              <Label>{t('popups:create_project.labels.teamMembers')}</Label>
               <div className="flex flex-wrap gap-2 mb-2">
                 <Badge
                   variant="outline"
@@ -154,12 +153,12 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                 >
                   {currentUser.avatar ? (
                     <Avatar className="h-5 w-5 border-2 border-purple-500/20">
-                      <AvatarImage src={currentUser.avatar || "/placeholder.svg"} alt={currentUser.name} />
+                      <AvatarImage src={currentUser.avatar || '/placeholder.svg'} alt={currentUser.name} />
                       <AvatarFallback>
                         {currentUser.name
-                          .split(" ")
+                          .split(' ')
                           .map((n) => n[0])
-                          .join("")
+                          .join('')
                           .substring(0, 2)
                           .toUpperCase()}
                       </AvatarFallback>
@@ -167,15 +166,15 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                   ) : (
                     <div className="h-5 w-5 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-[10px] font-bold flex-shrink-0">
                       {currentUser.name
-                        .split(" ")
+                        .split(' ')
                         .map((n) => n[0])
-                        .join("")
+                        .join('')
                         .substring(0, 2)
                         .toUpperCase()}
                     </div>
                   )}
                   <span>{currentUser.name}</span>
-                  <span className="text-xs text-muted-foreground">(you)</span>
+                  <span className="text-xs text-muted-foreground">{t('popups:create_project.currentUser')}</span>
                 </Badge>
 
                 {selectedUsers.map((user, index) => (
@@ -188,12 +187,12 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                     <Badge variant="secondary" className="flex items-center gap-1 px-3 py-1">
                       {user.avatar ? (
                         <Avatar className="h-5 w-5">
-                          <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                          <AvatarImage src={user.avatar || '/placeholder.svg'} alt={user.name} />
                           <AvatarFallback>
                             {user.name
-                              .split(" ")
+                              .split(' ')
                               .map((n) => n[0])
-                              .join("")
+                              .join('')
                               .substring(0, 2)
                               .toUpperCase()}
                           </AvatarFallback>
@@ -201,9 +200,9 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                       ) : (
                         <div className="h-5 w-5 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-[10px] font-bold flex-shrink-0">
                           {user.name
-                            .split(" ")
+                            .split(' ')
                             .map((n) => n[0])
-                            .join("")
+                            .join('')
                             .substring(0, 2)
                             .toUpperCase()}
                         </div>
@@ -216,7 +215,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                         onClick={() => removeUser(user.id)}
                       >
                         <X className="h-3 w-3" />
-                        <span className="sr-only">Remove {user.name}</span>
+                        <span className="sr-only">{t('popups:create_project.buttons.remove', { name: user.name })}</span>
                       </Button>
                     </Badge>
                   </motion.div>
@@ -231,7 +230,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                     onClick={() => setShowUserSearch(true)}
                   >
                     <UserPlus className="h-3 w-3 mr-1" />
-                    Add member
+                    {t('popups:create_project.buttons.addMember')}
                   </Button>
                 )}
               </div>
@@ -240,13 +239,13 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                 <motion.div
                   className="border rounded-md p-2"
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                  animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                   {...({} as MotionDivProps)}
                 >
                   <Input
-                    placeholder="Search by name or email"
+                    placeholder={t('popups:create_project.placeholders.search')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="mb-2 transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
@@ -265,12 +264,12 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                         <div className="flex items-center gap-2">
                           {user.avatar ? (
                             <Avatar className="h-6 w-6 flex-shrink-0">
-                              <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                              <AvatarImage src={user.avatar || '/placeholder.svg'} alt={user.name} />
                               <AvatarFallback>
                                 {user.name
-                                  .split(" ")
+                                  .split(' ')
                                   .map((n) => n[0])
-                                  .join("")
+                                  .join('')
                                   .substring(0, 2)
                                   .toUpperCase()}
                               </AvatarFallback>
@@ -278,9 +277,9 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                           ) : (
                             <div className="h-6 w-6 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-xs font-bold flex-shrink-0">
                               {user.name
-                                .split(" ")
+                                .split(' ')
                                 .map((n) => n[0])
-                                .join("")
+                                .join('')
                                 .substring(0, 2)
                                 .toUpperCase()}
                             </div>
@@ -296,12 +295,12 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                           size="sm"
                           className="h-7 transition-all duration-200 hover:bg-purple-500/10"
                         >
-                          Add
+                          {t('popups:create_project.buttons.add')}
                         </Button>
                       </motion.div>
                     ))}
                     {filteredUsers.length === 0 && (
-                      <div className="text-sm text-muted-foreground text-center py-2">No users found</div>
+                      <div className="text-sm text-muted-foreground text-center py-2">{t('popups:create_project.noUsersFound')}</div>
                     )}
                   </div>
                 </motion.div>
@@ -315,13 +314,13 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
               onClick={() => onOpenChange(false)}
               className="transition-all duration-200 hover:bg-destructive/10"
             >
-              Cancel
+              {t('popups:create_project.buttons.cancel')}
             </Button>
             <Button
               type="submit"
               className="transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700"
             >
-              Create project
+              {t('popups:create_project.buttons.create')}
             </Button>
           </DialogFooter>
         </form>

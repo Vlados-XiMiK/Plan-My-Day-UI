@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import type React from 'react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -10,22 +10,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import type { Project, User } from "@/types/project"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/projects/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, UserPlus } from "lucide-react"
-import { format } from "date-fns"
-import { motion, MotionProps } from "framer-motion"
-import CustomAvatar from "@/components/ui/Avatar"
-import { useNotification } from "@/contexts/notification-context"
+} from '@/components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import type { Project, User } from '@/types/project'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/avatar'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Trash2, UserPlus } from 'lucide-react'
+import { format } from 'date-fns'
+import { motion, MotionProps } from 'framer-motion'
+import CustomAvatar from '@/components/ui/Avatar'
+import { useNotification } from '@/contexts/notification-context'
+import { useTranslation } from 'react-i18next'
 import { HTMLAttributes } from 'react'
 
-// type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectManageDialogProps {
@@ -38,12 +38,6 @@ interface ProjectManageDialogProps {
   isCreator: boolean
 }
 
-const roleLabels = {
-  full_access: "Full access",
-  read_only: "Read only",
-  complete_only: "Complete tasks only",
-}
-
 export default function ProjectManageDialog({
   project,
   open,
@@ -52,13 +46,14 @@ export default function ProjectManageDialog({
   canEdit,
   isCreator,
 }: ProjectManageDialogProps) {
+  const { t } = useTranslation(['projects', 'notifications'])
   const [title, setTitle] = useState(project.title)
   const [description, setDescription] = useState(project.description)
   const [members, setMembers] = useState<User[]>(project.members)
   const [pendingRoleChanges, setPendingRoleChanges] = useState<Record<string, string>>({})
   const [hasRoleChanges, setHasRoleChanges] = useState(false)
-  const [newMemberEmail, setNewMemberEmail] = useState("")
-  const [activeTab, setActiveTab] = useState<string>("details")
+  const [newMemberEmail, setNewMemberEmail] = useState('')
+  const [activeTab, setActiveTab] = useState<string>('details')
   const { addNotification } = useNotification()
 
   const handleUpdateMemberRole = (userId: string, role: string) => {
@@ -69,7 +64,15 @@ export default function ProjectManageDialog({
     })
     const member = members.find((m) => m.id === userId)
     if (member) {
-      addNotification("info", "Role Change Pending", `Role for ${member.name} set to ${roleLabels[role as keyof typeof roleLabels]}`, 3000)
+      addNotification(
+        'info',
+        t('notifications:roleChangePending.title'),
+        t('notifications:roleChangePending.message', {
+          name: member.name,
+          role: t(`projects:project_manage.roles.${role}`),
+        }),
+        3000,
+      )
     }
   }
 
@@ -79,7 +82,7 @@ export default function ProjectManageDialog({
         if (pendingRoleChanges[member.id]) {
           return {
             ...member,
-            role: pendingRoleChanges[member.id] as "full_access" | "read_only" | "complete_only",
+            role: pendingRoleChanges[member.id] as 'full_access' | 'read_only' | 'complete_only',
           }
         }
         return member
@@ -88,36 +91,38 @@ export default function ProjectManageDialog({
       setMembers(updatedMembers)
       setPendingRoleChanges({})
       setHasRoleChanges(false)
-      addNotification("success", "Roles Updated", "Team member roles have been updated", 3000)
+      addNotification('success', t('notifications:rolesUpdated.title'), t('notifications:rolesUpdated.message'), 3000)
     } catch {
-      addNotification("error", "Update Failed", "Failed to update member roles. Please try again.", 5000)
+      addNotification('error', t('notifications:roleUpdateFailed.title'), t('notifications:roleUpdateFailed.message'), 5000)
     }
   }
 
   const cancelRoleChanges = () => {
     setPendingRoleChanges({})
     setHasRoleChanges(false)
-    addNotification("info", "Changes Cancelled", "Pending role changes have been cancelled", 3000)
+    addNotification('info', t('notifications:roleChangesCancelled.title'), t('notifications:roleChangesCancelled.message'), 3000)
   }
 
   const handleUpdateProject = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Only allow updates if user has permission
     if (!canEdit && !isCreator) {
-      addNotification("error", "Permission Denied", "You do not have permission to update this project", 5000)
+      addNotification(
+        'error',
+        t('notifications:permissionDenied.title'),
+        t('notifications:permissionDenied.updateProject'),
+        5000,
+      )
       onOpenChange(false)
       return
     }
 
-    // Validate title
     if (!title.trim()) {
-      addNotification("error", "Invalid Input", "Project title is required", 5000)
+      addNotification('error', t('notifications:invalidInput.title'), t('notifications:invalidInput.projectTitle'), 5000)
       return
     }
 
     try {
-      // Apply any pending role changes before saving
       if (hasRoleChanges) {
         saveRoleChanges()
       }
@@ -129,10 +134,10 @@ export default function ProjectManageDialog({
         members,
       })
 
-      addNotification("success", "Project Updated", `Project "${title}" has been updated`, 3000)
+      addNotification('success', t('notifications:projectUpdated.title'), t('notifications:projectUpdated.message', { title }), 3000)
       onOpenChange(false)
     } catch {
-      addNotification("error", "Update Failed", "Failed to update project. Please try again.", 5000)
+      addNotification('error', t('notifications:projectUpdateFailed.title'), t('notifications:projectUpdateFailed.message'), 5000)
     }
   }
 
@@ -140,35 +145,48 @@ export default function ProjectManageDialog({
     e.preventDefault()
     if (!newMemberEmail.trim() || (!canEdit && !isCreator)) {
       if (!newMemberEmail.trim()) {
-        addNotification("error", "Invalid Input", "Email address is required", 5000)
+        addNotification('error', t('notifications:invalidInput.title'), t('notifications:invalidInput.email'), 5000)
       } else {
-        addNotification("error", "Permission Denied", "You do not have permission to add members", 5000)
+        addNotification(
+          'error',
+          t('notifications:permissionDenied.title'),
+          t('notifications:permissionDenied.addMember'),
+          5000,
+        )
       }
       return
     }
 
     try {
-      // In a real app, you would send an invitation and add the user after they accept
-      // This is just a mock implementation
       const newMember: User = {
         id: `user-${Date.now()}`,
-        name: newMemberEmail.split("@")[0], // Just for demo
+        name: newMemberEmail.split('@')[0],
         email: newMemberEmail,
-        avatar: "", // No avatar for new members
-        role: "read_only", // Default to read_only
+        avatar: '',
+        role: 'read_only',
       }
 
       setMembers([...members, newMember])
-      setNewMemberEmail("")
-      addNotification("success", "Member Added", `${newMember.name} has been added to the project`, 3000)
+      setNewMemberEmail('')
+      addNotification(
+        'success',
+        t('notifications:memberAdded.title'),
+        t('notifications:memberAdded.message', { name: newMember.name }),
+        3000,
+      )
     } catch {
-      addNotification("error", "Addition Failed", "Failed to add member. Please try again.", 5000)
+      addNotification('error', t('notifications:memberAdditionFailed.title'), t('notifications:memberAdditionFailed.message'), 5000)
     }
   }
 
   const handleRemoveMember = (userId: string) => {
     if (!canEdit && !isCreator) {
-      addNotification("error", "Permission Denied", "You do not have permission to remove members", 5000)
+      addNotification(
+        'error',
+        t('notifications:permissionDenied.title'),
+        t('notifications:permissionDenied.removeMember'),
+        5000,
+      )
       return
     }
 
@@ -176,10 +194,15 @@ export default function ProjectManageDialog({
       const member = members.find((m) => m.id === userId)
       setMembers(members.filter((member) => member.id !== userId))
       if (member) {
-        addNotification("success", "Member Removed", `${member.name} has been removed from the project`, 3000)
+        addNotification(
+          'success',
+          t('notifications:memberRemoved.title'),
+          t('notifications:memberRemoved.message', { name: member.name }),
+          3000,
+        )
       }
     } catch {
-      addNotification("error", "Removal Failed", "Failed to remove member. Please try again.", 5000)
+      addNotification('error', t('notifications:memberRemovalFailed.title'), t('notifications:memberRemovalFailed.message'), 5000)
     }
   }
 
@@ -187,104 +210,102 @@ export default function ProjectManageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-w-[95vw] overflow-hidden">
+      <DialogContent className='sm:max-w-[500px] max-w-[95vw] overflow-hidden'>
         <DialogHeader>
-          <DialogTitle>Manage Project</DialogTitle>
+          <DialogTitle>{t('projects:project_manage.title')}</DialogTitle>
           <DialogDescription>
             {canEdit || isCreator
-              ? "Update project details or manage team members."
-              : "View project details and team members."}
+              ? t('projects:project_manage.description.edit')
+              : t('projects:project_manage.description.view')}
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Project Details</TabsTrigger>
-            <TabsTrigger value="members">Team Members</TabsTrigger>
+        <Tabs defaultValue='details' value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className='grid w-full grid-cols-2'>
+            <TabsTrigger value='details'>{t('projects:project_manage.tabs.details')}</TabsTrigger>
+            <TabsTrigger value='members'>{t('projects:project_manage.tabs.members')}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="details">
-            <form onSubmit={handleUpdateProject} className="space-y-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-title">Project title</Label>
+          <TabsContent value='details'>
+            <form onSubmit={handleUpdateProject} className='space-y-4 py-4'>
+              <div className='grid gap-2'>
+                <Label htmlFor='edit-title'>{t('projects:project_manage.labels.title')}</Label>
                 <Input
-                  id="edit-title"
+                  id='edit-title'
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={!canEdit && !isCreator}
-                  className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
+                  className='transition-all duration-200 focus:ring-2 focus:ring-purple-500/20'
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="edit-description">Description</Label>
+              <div className='grid gap-2'>
+                <Label htmlFor='edit-description'>{t('projects:project_manage.labels.description')}</Label>
                 <Textarea
-                  id="edit-description"
+                  id='edit-description'
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
                   disabled={!canEdit && !isCreator}
-                  className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
+                  className='transition-all duration-200 focus:ring-2 focus:ring-purple-500/20'
                 />
               </div>
 
-              <div className="text-sm text-muted-foreground">
-                Created on {format(createdDate, "MMMM d, yyyy 'at' h:mm a")}
+              <div className='text-sm text-muted-foreground'>
+                {t('projects:project_manage.createdOn')} {format(createdDate, "MMMM d, yyyy 'at' h:mm a")}
               </div>
 
               {(canEdit || isCreator) && (
                 <DialogFooter>
                   <Button
-                    type="submit"
-                    className="transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700"
+                    type='submit'
+                    className='transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700'
                   >
-                    Save changes
+                    {t('projects:project_manage.buttons.save')}
                   </Button>
                 </DialogFooter>
               )}
             </form>
           </TabsContent>
 
-          <TabsContent value="members">
-            <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto pr-2">
-              <div className="space-y-4">
+          <TabsContent value='members'>
+            <div className='space-y-4 py-4 max-h-[400px] overflow-y-auto pr-2'>
+              <div className='space-y-4'>
                 {members.map((member, index) => (
                   <motion.div
                     key={member.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.05 }}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-all duration-200 gap-2"
+                    className='flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-all duration-200 gap-2'
                     {...({} as MotionDivProps)}
                   >
-                    <div className="flex items-center space-x-3">
+                    <div className='flex items-center space-x-3'>
                       {member.avatar ? (
-                        // Regular avatar with image
-                        <Avatar className="border-2 border-background shadow-sm">
-                          <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
+                        <Avatar className='border-2 border-background shadow-sm'>
+                          <AvatarImage src={member.avatar || '/placeholder.svg'} alt={member.name} />
                           <AvatarFallback>
                             {member.name
-                              .split(" ")
+                              .split(' ')
                               .map((n) => n[0])
-                              .join("")
+                              .join('')
                               .substring(0, 2)
                               .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        // Custom avatar with initials
-                        <div className="border-2 border-background rounded-full shadow-sm">
-                          <CustomAvatar name={member.name} size="small" />
+                        <div className='border-2 border-background rounded-full shadow-sm'>
+                          <CustomAvatar name={member.name} size='small' />
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-medium">{member.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className='text-sm font-medium'>{member.name}</p>
+                        <p className='text-xs text-muted-foreground'>
                           {member.email}
-                          {member.id === project.createdBy.id ? " (Creator)" : ""}
+                          {member.id === project.createdBy.id ? ` ${t('projects:project_manage.creator')}` : ''}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                    <div className='flex items-center space-x-2 mt-2 sm:mt-0'>
                       {(canEdit || isCreator) && member.id !== project.createdBy.id ? (
                         <>
                           <Select
@@ -294,31 +315,31 @@ export default function ProjectManageDialog({
                             <SelectTrigger
                               className={`h-8 min-w-[160px] ${
                                 pendingRoleChanges[member.id]
-                                  ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                                  : ""
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  : ''
                               }`}
                             >
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="full_access">Full access</SelectItem>
-                              <SelectItem value="read_only">Read only</SelectItem>
-                              <SelectItem value="complete_only">Complete tasks only</SelectItem>
+                              <SelectItem value='full_access'>{t('projects:project_manage.roles.full_access')}</SelectItem>
+                              <SelectItem value='read_only'>{t('projects:project_manage.roles.read_only')}</SelectItem>
+                              <SelectItem value='complete_only'>{t('projects:project_manage.roles.complete_only')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant='ghost'
+                            size='icon'
                             onClick={() => handleRemoveMember(member.id)}
-                            className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive/10"
+                            className='h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive/10'
                           >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Remove member</span>
+                            <Trash2 className='h-4 w-4' />
+                            <span className='sr-only'>{t('projects:project_manage.buttons.removeMember')}</span>
                           </Button>
                         </>
                       ) : (
-                        <div className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md">
-                          {roleLabels[member.role as keyof typeof roleLabels] || member.role}
+                        <div className='text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md'>
+                          {t(`projects:project_manage.roles.${member.role}`)}
                         </div>
                       )}
                     </div>
@@ -327,42 +348,42 @@ export default function ProjectManageDialog({
               </div>
 
               {(canEdit || isCreator) && (
-                <form onSubmit={handleAddMember} className="mt-6 space-y-4">
-                  <div className="text-sm font-medium">Add team member</div>
-                  <div className="flex flex-col sm:flex-row gap-2">
+                <form onSubmit={handleAddMember} className='mt-6 space-y-4'>
+                  <div className='text-sm font-medium'>{t('projects:project_manage.labels.addMember')}</div>
+                  <div className='flex flex-col sm:flex-row gap-2'>
                     <Input
-                      placeholder="Email address"
+                      placeholder={t('projects:project_manage.placeholders.email')}
                       value={newMemberEmail}
                       onChange={(e) => setNewMemberEmail(e.target.value)}
-                      type="email"
-                      className="flex-1 transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
+                      type='email'
+                      className='flex-1 transition-all duration-200 focus:ring-2 focus:ring-purple-500/20'
                     />
                     <Button
-                      type="submit"
-                      className="transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700"
+                      type='submit'
+                      className='transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700'
                     >
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Add
+                      <UserPlus className='mr-2 h-4 w-4' />
+                      {t('projects:project_manage.buttons.add')}
                     </Button>
                   </div>
                 </form>
               )}
               {(canEdit || isCreator) && hasRoleChanges && (
-                <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+                <div className='flex justify-end gap-2 mt-4 pt-4 border-t'>
                   <Button
-                    type="button"
-                    variant="outline"
+                    type='button'
+                    variant='outline'
                     onClick={cancelRoleChanges}
-                    className="transition-all duration-200 hover:bg-destructive/10"
+                    className='transition-all duration-200 hover:bg-destructive/10'
                   >
-                    Cancel
+                    {t('projects:project_manage.buttons.cancel')}
                   </Button>
                   <Button
-                    type="button"
+                    type='button'
                     onClick={saveRoleChanges}
-                    className="transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700"
+                    className='transition-all duration-300 hover:shadow-md bg-purple-600 hover:bg-purple-700'
                   >
-                    Save role changes
+                    {t('projects:project_manage.buttons.saveRoles')}
                   </Button>
                 </div>
               )}

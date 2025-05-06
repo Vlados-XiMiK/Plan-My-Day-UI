@@ -16,6 +16,7 @@ import legal_en from "../locales/en/legal.json"
 import stats_en from "../locales/en/stats.json"
 import calendar_en from "../locales/en/calendar.json"
 import popups_en from "../locales/en/popups.json"
+import projects_en from "../locales/en/projects.json"
 
 import welcome_ua from "../locales/ua/welcome.json"
 import auth_ua from "../locales/ua/auth.json"
@@ -27,6 +28,7 @@ import legal_ua from "../locales/ua/legal.json"
 import stats_ua from "../locales/ua/stats.json"
 import calendar_ua from "../locales/ua/calendar.json"
 import popups_ua from "../locales/ua/popups.json"
+import projects_ua from "../locales/ua/projects.json"
 
 // Translation resources
 const resources = {
@@ -41,6 +43,7 @@ const resources = {
     stats: stats_en,
     calendar: calendar_en,
     popups: popups_en,
+    projects: projects_en,
   },
   ua: {
     welcome: welcome_ua,
@@ -53,6 +56,7 @@ const resources = {
     stats: stats_ua,
     calendar: calendar_ua,
     popups: popups_ua,
+    projects: projects_ua,
   },
 }
 
