@@ -36,11 +36,6 @@ export default function StatsView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug translations
-  useEffect(() => {
-    console.log('Stats Translations:', t('title'), i18n.language);
-  }, [t, i18n.language]);
-
   // Fetch tasks and categories
   useEffect(() => {
     async function loadData() {

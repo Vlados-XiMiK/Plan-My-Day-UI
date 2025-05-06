@@ -55,11 +55,6 @@ export default function TaskItem({
   // Add local state to track completion status for immediate UI feedback
   const [isCompleted, setIsCompleted] = useState(task.completed)
 
-  // Debug translations
-  useEffect(() => {
-    console.log('TaskItem Translations:', t('status.completed'), i18n.language)
-  }, [t, i18n.language])
-
   // Update local state when task prop changes
   useEffect(() => {
     setIsCompleted(task.completed)

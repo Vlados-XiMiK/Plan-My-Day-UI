@@ -36,13 +36,8 @@ export default function CalendarToolbar({
   showCompleted,
   toggleShowCompleted,
 }: CalendarToolbarProps) {
-  const { t, i18n } = useTranslation('calendar')
+  const { t } = useTranslation('calendar')
   const isMobile = useMobile()
-
-  // Debug translations
-  useEffect(() => {
-    console.log('CalendarToolbar Translations:', t('searchPlaceholder'), i18n.language)
-  }, [t, i18n.language])
 
   return (
     <div className="p-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-2">

@@ -6,10 +6,7 @@ import Footer from '@/components/shared/footer'
 import { useTranslation } from 'react-i18next'
 
 export default function TermsContent() {
-  const { t, i18n } = useTranslation('legal')
-
-  // Debug translations
-  console.log('Terms Translations:', t('terms.title'), i18n.language)
+  const { t } = useTranslation('legal')
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#1a1a2e] text-gray-900 dark:text-white">

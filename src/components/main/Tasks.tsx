@@ -17,10 +17,6 @@ export default function Tasks() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false)
 
-  // Debug translations
-  useEffect(() => {
-    console.log('Tasks Translations:', t('filtersAndSearch'), t('language'))
-  }, [t])
 
   // Loading tasks and categories
   useEffect(() => {

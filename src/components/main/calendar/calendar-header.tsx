@@ -40,12 +40,7 @@ export default function CalendarHeader({
   changeYear,
   getYearOptions,
 }: CalendarHeaderProps) {
-  const { t, i18n } = useTranslation('calendar')
-
-  // Debug translations
-  useEffect(() => {
-    console.log('CalendarHeader Translations:', t('today'), i18n.language)
-  }, [t, i18n.language])
+  const { t } = useTranslation('calendar')
 
   // Get month names from translations
   const monthNames = [

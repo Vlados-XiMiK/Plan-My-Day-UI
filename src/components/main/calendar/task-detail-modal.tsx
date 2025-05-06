@@ -33,10 +33,6 @@ export default function TaskDetailModal({
   const { t, i18n } = useTranslation('calendar')
   const [isCompleted, setIsCompleted] = useState(false)
 
-  // Debug translations
-  useEffect(() => {
-    console.log('TaskDetailModal Translations:', t('status.completed'), i18n.language)
-  }, [t, i18n.language])
 
   // Update local state when task changes
   useEffect(() => {

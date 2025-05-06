@@ -22,10 +22,6 @@ export default function Profile() {
   const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0
   const router = useRouter()
 
-  // Debug translations
-  useEffect(() => {
-    console.log('Profile Translations:', t('title'), i18n.language)
-  }, [t, i18n.language])
 
   useEffect(() => {
     const updateIsDesktop = () => setIsDesktop(window.innerWidth >= 768)

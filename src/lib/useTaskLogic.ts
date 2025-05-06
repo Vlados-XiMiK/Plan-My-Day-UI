@@ -25,9 +25,6 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
     return title.slice(0, maxLength - 3) + '...'
   }
 
-  // Debug translations
-  console.log('useTaskLogic Translations:', t('notifications:taskCreated.title'), t('tasks:language'))
-
   const toggleTaskCompletion = (id: number) => {
     setTasks(
       tasks.map((task) =>

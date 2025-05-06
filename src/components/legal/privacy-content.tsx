@@ -6,10 +6,7 @@ import Footer from '@/components/shared/footer'
 import { useTranslation } from 'react-i18next'
 
 export default function PrivacyContent() {
-  const { t, i18n } = useTranslation('legal')
-
-  // Debug translations
-  console.log('Privacy Translations:', t('privacy.title'), i18n.language)
+  const { t } = useTranslation('legal')
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#1a1a2e] text-gray-900 dark:text-white">

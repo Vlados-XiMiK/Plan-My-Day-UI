@@ -20,11 +20,6 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
   const { t, i18n } = useTranslation('calendar')
   const [isCompleted, setIsCompleted] = useState(task.completed)
 
-  // Debug translations
-  useEffect(() => {
-    console.log('TaskTooltip Translations:', t('status.completed'), i18n.language)
-  }, [t, i18n.language])
-
   // Update local state when task prop changes
   useEffect(() => {
     setIsCompleted(task.completed)
