@@ -53,7 +53,7 @@ export default function FeaturesPage() {
       title: t(`features.${key}.title`),
       description: t(`features.${key}.description`),
       details: t(`features.${key}.details`),
-      image: images[key], // Привязка изображения по ключу
+      image: images[key], // Bind the image by key
       color:
         key === "smartCalendar"
           ? "#ef4444"

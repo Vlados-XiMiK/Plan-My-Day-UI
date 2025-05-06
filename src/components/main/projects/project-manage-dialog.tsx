@@ -57,7 +57,7 @@ export default function ProjectManageDialog({
   const [activeTab, setActiveTab] = useState<string>('details')
   const { addNotification } = useNotification()
 
-  // Выбор локали date-fns на основе текущего языка
+  // Selection of the date-fns locale based on the current language
   const locale = i18n.language === 'ua' ? uk : enUS
   const dateFormat = i18n.language === 'ua' ? "d MMMM yyyy 'о' HH:mm" : "MMMM d, yyyy 'at' h:mm a"
 

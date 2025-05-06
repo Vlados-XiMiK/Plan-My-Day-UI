@@ -29,17 +29,14 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const { user } = useUser()
   const [isDarkTheme, setIsDarkTheme] = useState(false)
 
-  // Выбор локали на основе языка
   const locale = t("language") === "ua" ? uk : enUS
   const now = new Date()
 
-  // Формат даты и времени
   const dateFormat = t("language") === "ua"
     ? isDesktop ? "EEEE, MMMM d, yyyy · HH:mm" : "d MMMM yyyy · HH:mm"
     : isDesktop ? "EEEE, MMMM d, yyyy 'at' h:mm a" : "MMM d, yyyy 'at' h:mm a"
   let formattedDate = format(now, dateFormat, { locale })
 
-  // Капитализация для украинского языка
   if (t("language") === "ua") {
     formattedDate = formattedDate
       .split(", ")

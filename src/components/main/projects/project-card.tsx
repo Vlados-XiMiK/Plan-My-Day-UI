@@ -53,7 +53,7 @@ export default function ProjectCard({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { addNotification } = useNotification()
 
-  // Выбор локали date-fns на основе текущего языка
+  // Selection of the date-fns locale based on the current language
   const locale = i18n.language === 'ua' ? uk : enUS
 
   const mockCurrentUser: User = userProp || currentUser

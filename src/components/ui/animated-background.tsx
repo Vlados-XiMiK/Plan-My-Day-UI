@@ -64,7 +64,7 @@ export function AnimatedBackground() {
       }
     }
 
-    let animationFrameId: number // Для хранения ID анимации
+    let animationFrameId: number // To store the ID of the animation
 
     const animateParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -105,7 +105,7 @@ export function AnimatedBackground() {
 
     return () => {
       window.removeEventListener("resize", handleResize)
-      cancelAnimationFrame(animationFrameId) // Очистка анимации
+      cancelAnimationFrame(animationFrameId) // Clear the animation
     }
   }, [])
 

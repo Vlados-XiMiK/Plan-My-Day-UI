@@ -5,7 +5,6 @@ import { DayPicker, DayPickerProps } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-// Тип CalendarProps для режима single (совместим с react-day-picker@9.6.7)
 export type CalendarProps = Omit<DayPickerProps, "mode" | "onSelect"> & {
   mode?: "single";
   className?: string;

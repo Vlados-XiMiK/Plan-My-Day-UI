@@ -50,7 +50,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
   const [categories, setCategories] = useState<Category[]>([])
   const { addNotification } = useNotification()
 
-  // Выбор локали date-fns и формата даты на основе текущего языка
+  // Selection of the date-fns locale based on the current language
   const locale = i18n.language === 'ua' ? uk : enUS
   const dateFormat = i18n.language === 'ua' ? 'd MMMM yyyy' : 'MMMM d, yyyy'
 
@@ -60,7 +60,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
   const isEditing = !!task
   const isDateSelectionEnabled = title.trim() && description.trim() && priority
 
-  // Загрузка категорий при открытии диалога
+  // Load categories when opening the dialog
   useEffect(() => {
     if (open) {
       fetchCategories()

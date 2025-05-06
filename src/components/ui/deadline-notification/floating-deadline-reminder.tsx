@@ -27,7 +27,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
   const [isPulsing, setIsPulsing] = useState(false)
   const [remindersEnabled, setRemindersEnabled] = useState(true)
 
-  // Загружаем настройку напоминаний из localStorage
+  // We load the configuration recalled from localStorage
   useEffect(() => {
     const savedSetting = localStorage.getItem("deadlineRemindersEnabled")
     setRemindersEnabled(savedSetting !== null ? JSON.parse(savedSetting) : true)
@@ -57,7 +57,7 @@ export default function FloatingDeadlineReminder({ tasks, onComplete, onSnooze }
     }
   }, [urgentTasks.length])
 
-  // Если напоминания выключены, не рендерим компонент
+  // If reminders are off, don't render the component
   if (!remindersEnabled) {
     return null
   }

@@ -48,10 +48,10 @@ const categories: Category[] = [
 export async function fetchTasks(): Promise<Task[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Преобразуем задачи, добавляя поле date на основе dueDate
+      // Transform tasks by adding a date field based on dueDate
       const transformedTasks = tasks.map((task) => ({
         ...task,
-        date: task.dueDate.split('T')[0], // Извлекаем дату (YYYY-MM-DD) из dueDate
+        date: task.dueDate.split('T')[0], // Extract the date (YYYY-MM-DD) from dueDate
       }));
       resolve(transformedTasks);
     }, 500);

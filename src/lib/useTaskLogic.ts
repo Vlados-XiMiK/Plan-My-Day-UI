@@ -19,7 +19,7 @@ export const useTaskLogic = (tasks: Task[], setTasks: (tasks: Task[]) => void) =
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Функция для обрезки длинных названий задач
+  // Function for trimming long named tasks
   const truncateTitle = (title: string, maxLength: number = 30): string => {
     if (title.length <= maxLength) return title
     return title.slice(0, maxLength - 3) + '...'

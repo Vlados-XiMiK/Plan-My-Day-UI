@@ -16,7 +16,7 @@ export function useCategories() {
   const [tempCategory, setTempCategory] = useState('');
   const { addNotification } = useNotification();
 
-  // Функция для обрезки длинных названий категорий
+  // Function for trimming long named categories
   const truncateName = (name: string, maxLength: number = 30): string => {
     if (name.length <= maxLength) return name;
     return name.slice(0, maxLength - 3) + '...';
@@ -39,7 +39,7 @@ export function useCategories() {
   }, [addNotification, t]);
 
   const isValidCategoryName = (name: string) => {
-    // Разрешаем латинские и кириллические буквы, цифры и пробелы; запрещаем специальные символы
+    // We resolve Latin and Cyrillic letters, numbers and spaces; special characters are prohibited
     const isValid = /^[a-zA-Zа-яА-Я0-9\s]+$/.test(name) && name.trim().length > 0;
     if (!isValid) {
       console.log('Invalid category name:', name, 'Characters:', name.split('').map(c => c.charCodeAt(0)));
