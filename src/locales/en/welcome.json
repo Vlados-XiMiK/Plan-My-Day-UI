@@ -1,0 +1,53 @@
+{
+  "header": {
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
+  },
+  "main": {
+    "title": "Organize Your Day Effectively",
+    "description": "Plan, track, and accomplish more with our intuitive task management solution. Experience the future of productivity.",
+    "getStartedFree": "Get Started Free",
+    "learnMore": "Learn More"
+  },
+  "footer": {
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "allRightsReserved": "All rights reserved."
+  },
+  "features": {
+    "title": "Discover Our Powerful Features",
+    "subtitle": "Plan My Day offers a comprehensive set of tools to boost your productivity and streamline your workflow.",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
+    "smartCalendar": {
+      "title": "Task Calendar",
+      "description": "Convenient calendar with task display and sorting capabilities.",
+      "details": "Our calendar allows you to view all tasks in a convenient format, sort them by priority, date, etc., and quickly add new tasks directly from the calendar."
+    },
+    "taskManagement": {
+      "title": "Task Management",
+      "description": "Complete set of features for creating, editing, deleting, and organizing tasks.",
+      "details": "The task management system includes the ability to create detailed tasks with descriptions, set deadlines, priorities, track progress, and mark tasks as completed."
+    },
+    "categoryManagement": {
+      "title": "Category Management",
+      "description": "Create, edit, and organize categories for effective task grouping.",
+      "details": "The category management feature allows you to create custom categories for grouping tasks, for better work organization."
+    },
+    "teamCollaboration": {
+      "title": "Team Collaboration",
+      "description": "Create projects and invite team members for collaborative work on tasks.",
+      "details": "The team collaboration feature allows you to create projects, add participants, assign tasks to specific team members, and track the overall team progress."
+    },
+    "smartNotifications": {
+      "title": "Notifications and Reminders",
+      "description": "Receive notifications about system actions and reminders about task deadlines.",
+      "details": "The notification system informs you about all important events: changes in tasks, approaching deadlines, comments from team members, and other important updates."
+    },
+    "statistics": {
+      "title": "Performance Statistics",
+      "description": "Analyze work efficiency with detailed task completion statistics.",
+      "details": "The statistics feature provides detailed reports on completed tasks, productivity, deadline compliance, and other performance indicators to help optimize your workflow."
+    }
+  }
+}

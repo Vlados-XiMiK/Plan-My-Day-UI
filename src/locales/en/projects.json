@@ -1,0 +1,108 @@
+{
+  "page": {
+    "title": "Projects",
+    "description": "Manage your tasks and collaborate with your team"
+  },
+  "project_card": {
+    "created": "Created",
+    "of": "of",
+    "tasksCompleted": "tasks completed",
+    "noTasks": "No tasks yet",
+    "noEditPermission": "You can view but not modify project settings",
+    "buttons": {
+      "settings": "Project settings",
+      "settingsTitle": "{{title}}",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "addTask": "Add task",
+      "add": "Add",
+      "deleteProject": "Delete project",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Are you sure?",
+      "description": "This will permanently delete the project \"{{title}}\" and all its tasks. This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    }
+  },
+  "project_manage": {
+    "title": "Manage Project",
+    "description": {
+      "edit": "Update project details or manage team members.",
+      "view": "View project details and team members."
+    },
+    "tabs": {
+      "details": "Project Details",
+      "members": "Team Members"
+    },
+    "labels": {
+      "title": "Project Title",
+      "description": "Description",
+      "inviteMembers": "Invite Team Members",
+      "inviteViaLink": "Invite via Link",
+      "usageLimit": "Usage Limit",
+      "expiresOn": "Expires On",
+      "inviteLink": "Invite Link"
+    },
+    "placeholders": {
+      "email": "Enter member's email",
+      "usageLimit": "Number of Uses",
+      "selectDate": "Select Date",
+      "inviteLink": "Generate a link to invite team members"
+    },
+    "buttons": {
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "saveRoles": "Save Roles",
+      "removeMember": "Remove Member",
+      "add": "Add",
+      "generateLink": "Generate Link",
+      "copyLink": "Copy Link",
+      "deleteLink": "Delete Link",
+      "leaveProject": "Leave Project"
+    },
+    "createdOn": "Created on",
+    "creator": "(Creator)",
+    "roles": {
+      "full_access": "Full Access",
+      "read_only": "Read Only",
+      "complete_only": "Complete Tasks Only"
+    },
+    "linkInfo": "This link can be used {{usageLimit}} time{{plural}} and expires on {{expirationDate}}",
+    "linkWarning": "Link settings cannot be modified after creation."
+  },
+  "projects_list": {
+    "title": "PROJECTS",
+    "noProjects": "No projects yet",
+    "noProjectsDescription": "Create your first project to start organizing your tasks and collaborating with your team.",
+    "buttons": {
+      "newProject": "New Project",
+      "createFirstProject": "Create Your First Project"
+    },
+    "tooltips": {
+      "listView": "List view",
+      "gridView": "Grid view"
+    }
+  },
+  "task_item": {
+    "priorities": {
+      "low": "Low priority",
+      "medium": "Medium priority",
+      "high": "High priority"
+    },
+    "buttons": {
+      "edit": "Edit task",
+      "delete": "Delete task"
+    },
+    "created": "Created {{time}}",
+    "due": "Due on {{date}} at {{time}}",
+    "completedBy": "Completed by",
+    "completed": "Completed {{time}}"
+  },
+  "custom_calendar": {
+    "today": "Today",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
+  }
+}

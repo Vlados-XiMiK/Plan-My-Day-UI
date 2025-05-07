@@ -1,10 +1,13 @@
 'use client'
 
 import { motion, AnimatePresence, MotionProps } from 'framer-motion'
-import { useState, useRef } from 'react'
+import Image from "next/image";
+import { useState, useRef, useEffect } from 'react'
 import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
+import { useUser } from '@/contexts/UserContext'
 import { InputHTMLAttributes, HTMLAttributes, ButtonHTMLAttributes } from 'react'
+import { useTranslation } from 'react-i18next'
 
 // type for motion.input
 type MotionInputProps = MotionProps & InputHTMLAttributes<HTMLInputElement>
@@ -24,6 +27,8 @@ interface EditProfilePopupProps {
 }
 
 export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupProps) {
+  const { t } = useTranslation(['popups', 'notifications'])
+  const { user, updateUser } = useUser()
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -37,31 +42,58 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
 
+  // Initialize the form with user data when opening the popup
+  useEffect(() => {
+    if (isOpen && user) {
+      setFormData({
+        username: user.name || '',
+        email: user.email || '',
+        age: user.age?.toString() || '',
+        placeOfWork: user.workplace || '',
+        phoneNumber: user.phone || ''
+      })
+      setImage(user.avatar || null) // If the user has an avatar
+    }
+  }, [isOpen, user])
+
+  // Check if changes have been made
+  const hasChanges = () => {
+    if (!user) return false;
+    return (
+      formData.username !== (user.name || '') ||
+      formData.email !== (user.email || '') ||
+      formData.age !== (user.age?.toString() || '') ||
+      formData.placeOfWork !== (user.workplace || '') ||
+      formData.phoneNumber !== (user.phone || '') ||
+      image !== (user.avatar || null)
+    )
+  }
+
   const validateField = (name: string, value: string) => {
     let error = ''
     const containsCyrillic = /[а-яА-ЯёЁ]/.test(value)
 
     if (containsCyrillic) {
-      error = 'Only Latin characters are allowed.'
+      error = t('popups:edit_profile_popup.validation.noCyrillic')
     } else {
       switch (name) {
         case 'username':
-          if (!value.trim()) error = 'Username is required.'
+          if (!value.trim()) error = t('popups:edit_profile_popup.validation.usernameRequired')
           break
         case 'email':
-          if (!value.trim()) error = 'Email is required.'
-          else if (!/\S+@\S+\.\S+/.test(value)) error = 'Invalid email format.'
+          if (!value.trim()) error = t('popups:edit_profile_popup.validation.emailRequired')
+          else if (!/\S+@\S+\.\S+/.test(value)) error = t('popups:edit_profile_popup.validation.invalidEmail')
           break
         case 'age':
           if (value.trim() && (isNaN(Number(value)) || Number(value) <= 0)) {
-            error = 'Age must be a positive number.'
+            error = t('popups:edit_profile_popup.validation.invalidAge')
           }
           break
         case 'phoneNumber':
           if (value.trim() && (!/^\+?[0-9\s-]{0,15}$/.test(value))) {
-            error = 'Phone number must contain only digits, spaces, "+" or "-".'
+            error = t('popups:edit_profile_popup.validation.invalidPhoneFormat')
           } else if (value.trim() && value.replace(/[^0-9]/g, '').length > 15) {
-            error = 'Invalid phone number (max 15 digits).'
+            error = t('popups:edit_profile_popup.validation.invalidPhoneLength')
           }
           break
       }
@@ -93,7 +125,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     setErrors((prev) => ({ ...prev, [name]: error }))
 
     if (error && !notificationShown) {
-      addNotification('error', error)
+      addNotification('error', t('popups:edit_profile_popup.validation.errorTitle'), error)
       setNotificationShown(true)
     } else if (!error) {
       setNotificationShown(false)
@@ -114,17 +146,30 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) {
-      addNotification('error', 'Please fix validation errors.')
+      addNotification('error', t('popups:edit_profile_popup.validation.errorTitle'), t('popups:edit_profile_popup.validation.errorMessage'))
+      return
+    }
+
+    // Check if there were any changes
+    if (!hasChanges()) {
+      addNotification('info', t('notifications:noChanges.title'), t('notifications:noChanges.message'))
       return
     }
 
     try {
-      addNotification('info', 'Updating profile...')
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      addNotification('success', 'Profile updated successfully!')
+      // Update user data via context
+      await updateUser({
+        name: formData.username,
+        email: formData.email,
+        age: formData.age ? parseInt(formData.age) : undefined,
+        workplace: formData.placeOfWork,
+        phone: formData.phoneNumber,
+        avatar: image || undefined
+      })
+      addNotification('success', t('notifications:profileUpdated.title'), t('notifications:profileUpdated.message', { username: formData.username }))
       onClose()
     } catch {
-      addNotification('error', 'Failed to update profile. Please try again.')
+      addNotification('error', t('notifications:profileUpdateFailed.title'), t('notifications:profileUpdateFailed.message'))
     }
   }
 
@@ -139,7 +184,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50"
           onClick={onClose}
           {...({} as MotionDivProps)}
         >
@@ -148,26 +193,26 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="bg-white rounded-xl shadow-2xl p-3 sm:p-4 w-full max-w-xl relative overflow-hidden"
+            className="bg-white dark:bg-[#2a2a3e] rounded-xl shadow-2xl p-3 sm:p-4 w-full max-w-xl relative overflow-hidden"
             onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
             {...({} as MotionDivProps)}
           >
             <div className="relative">
               <div className="flex justify-between items-center mb-6">
                 <motion.h2
-                  className="text-2xl font-semibold text-gray-800"
+                  className="text-2xl font-semibold text-gray-800 dark:text-gray-100"
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}
                   {...({} as MotionH2Props)}
                 >
-                  Update Profile
+                  {t('popups:edit_profile_popup.title')}
                 </motion.h2>
                 <motion.button
                   whileHover={{ scale: 1.1, rotate: 90 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   {...({} as MotionButtonProps)}
                 >
                   <X className="h-6 w-6" />
@@ -176,53 +221,57 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
 
               <form onSubmit={handleSubmit} className="space-y-3" noValidate>
                 {[
-                  { icon: User, label: 'Username', name: 'username', type: 'text', placeholder: 'Enter username' },
-                  { icon: Mail, label: 'Email', name: 'email', type: 'email', placeholder: 'Enter email' },
-                  { icon: Cake, label: 'Age', name: 'age', type: 'number', placeholder: 'Enter age' },
-                  { icon: Building2, label: 'Place of Work', name: 'placeOfWork', type: 'text', placeholder: 'Enter workplace' },
-                  { icon: Phone, label: 'Phone Number', name: 'phoneNumber', type: 'text', placeholder: 'Enter phone number' }
-                ].map(({ icon: Icon, label, name, type, placeholder }) => (
+                  { icon: User, name: 'username', type: 'text', optional: false },
+                  { icon: Mail, name: 'email', type: 'email', optional: false },
+                  { icon: Cake, name: 'age', type: 'number', optional: true },
+                  { icon: Building2, name: 'placeOfWork', type: 'text', optional: true },
+                  { icon: Phone, name: 'phoneNumber', type: 'text', optional: true }
+                ].map(({ icon: Icon, name, type, optional }) => (
                   <div key={name} className="relative">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">{label}</label>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">
+                      {t(`popups:edit_profile_popup.labels.${name}`)}
+                    </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10">
-                        <Icon className="h-5 w-5 bg-white p-0.5 rounded-full" />
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 z-10">
+                        <Icon className="h-5 w-5 bg-white dark:bg-[#2a2a3e] p-0.5 rounded-full" />
                       </div>
                       <motion.input
                         type={type}
                         name={name}
                         value={formData[name as keyof typeof formData]}
                         onChange={handleChange}
-                        placeholder={placeholder}
+                        placeholder={t(`popups:edit_profile_popup.placeholders.${name}${optional ? 'Optional' : ''}`)}
                         whileFocus="focus"
                         variants={inputVariants}
                         maxLength={name === 'phoneNumber' ? 15 : undefined}
-                        className={`w-full pl-10 pr-4 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all duration-300 text-gray-800 bg-white ${
-                          errors[name] ? 'border-red-500' : 'border-gray-200'
+                        className={`w-full pl-10 pr-4 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all duration-300 text-gray-800 dark:text-gray-200 bg-white dark:bg-[#3a3a5e] placeholder-gray-400 dark:placeholder-gray-500 ${
+                          errors[name] ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-[#4a4a7e]'
                         }`}
                         {...({} as MotionInputProps)}
                       />
                     </div>
-                    {errors[name] && <span className="text-red-500 text-xs mt-1 block">{errors[name]}</span>}
+                    {errors[name] && <span className="text-red-500 dark:text-red-400 text-xs mt-1 block">{errors[name]}</span>}
                   </div>
                 ))}
 
                 <div className="relative">
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">Profile Picture (Optional)</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">
+                    {t('popups:edit_profile_popup.labels.avatar')}
+                  </label>
                   <div className="mt-1 flex items-center gap-4">
                     {image ? (
                       <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                        <img src={image} alt="Profile" className="w-full h-full object-cover" />
+                        <Image src={image} alt="Profile" fill className="object-cover" />
                         <button
                           type="button"
                           onClick={() => setImage(null)}
-                          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white"
+                          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white dark:text-gray-200"
                         >
                           <X className="h-4 w-4" />
                         </button>
                       </div>
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-[#3a3a5e] flex items-center justify-center text-gray-400 dark:text-gray-500">
                         <ImageIcon className="h-6 w-6" />
                       </div>
                     )}
@@ -231,11 +280,11 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      className="px-3 py-1.5 border border-gray-300 dark:border-[#4a4a7e] rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-[#3a3a5e] hover:bg-gray-50 dark:hover:bg-[#4a4a7e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                       {...({} as MotionButtonProps)}
                     >
                       <Upload className="h-4 w-4 inline-block mr-2" />
-                      Upload
+                      {t('popups:edit_profile_popup.buttons.upload')}
                     </motion.button>
                     <input
                       type="file"
@@ -253,10 +302,10 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     onClick={onClose}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-4 py-1.5 text-sm rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors duration-300 w-full sm:w-auto"
+                    className="px-4 py-1.5 text-sm rounded-lg text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-[#3a3a5e] hover:bg-gray-200 dark:hover:bg-[#4a4a7e] transition-colors duration-300 w-full sm:w-auto"
                     {...({} as MotionButtonProps)}
                   >
-                    Cancel
+                    {t('popups:edit_profile_popup.buttons.cancel')}
                   </motion.button>
                   <motion.button
                     type="submit"
@@ -265,7 +314,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     className="px-4 py-1.5 text-sm rounded-lg text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-300 w-full sm:w-auto"
                     {...({} as MotionButtonProps)}
                   >
-                    Update Profile
+                    {t('popups:edit_profile_popup.buttons.updateProfile')}
                   </motion.button>
                 </div>
               </form>

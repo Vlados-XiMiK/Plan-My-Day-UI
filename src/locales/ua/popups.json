@@ -1,0 +1,188 @@
+{
+  "language": "ua",
+  "calendar_popup": {
+    "addTask": "Додати завдання на {{date}}",
+    "taskTitle": "Назва завдання",
+    "date": "Дата",
+    "time": "Час",
+    "descriptionOptional": "Опис (необов’язково)",
+    "category": "Категорія",
+    "priorityLabel": "Пріоритет",
+    "priority": {
+      "high": "Високий",
+      "medium": "Середній",
+      "low": "Низький"
+    },
+    "placeholder": {
+      "taskTitle": "Введіть назву завдання",
+      "description": "Додайте деталі про це завдання",
+      "category": "Оберіть категорію"
+    },
+    "cancel": "Скасувати",
+    "addTaskButton": "Додати завдання",
+    "validation": {
+      "pastDate": "Неможливо створювати завдання в минулому. Виберіть майбутню дату та час.",
+      "taskTitleRequired": "Назва завдання є обов’язковою."
+    },
+    "defaultCategory": "Робота"
+  },
+  "task_creation_popup": {
+    "title": "Створити нове завдання",
+    "labels": {
+      "title": "Назва",
+      "description": "Опис",
+      "category": "Категорія",
+      "priority": "Пріоритет",
+      "dueDateTime": "Дата та час виконання"
+    },
+    "placeholders": {
+      "title": "Введіть назву завдання",
+      "description": "Введіть опис завдання",
+      "category": "Оберіть категорію"
+    },
+    "buttons": {
+      "cancel": "Скасувати",
+      "createTask": "Створити завдання"
+    },
+    "validation": {
+      "titleRequired": "Назва обов’язкова",
+      "descriptionRequired": "Опис обов’язковий",
+      "dueDateRequired": "Дата виконання обов’язкова",
+      "dueTimeRequired": "Час виконання обов’язковий",
+      "pastDateTime": "Дата та час не можуть бути в минулому"
+    },
+    "priority": {
+      "low": "Низький",
+      "medium": "Середній",
+      "high": "Високий"
+    }
+  },
+  "task_edit_popup": {
+    "title": "Редагувати завдання",
+    "labels": {
+      "title": "Назва завдання",
+      "description": "Опис",
+      "category": "Категорія",
+      "priority": "Пріоритет",
+      "dueDateTime": "Дата та час виконання"
+    },
+    "placeholders": {
+      "title": "Введіть назву завдання",
+      "description": "Введіть опис завдання",
+      "category": "Виберіть категорію"
+    },
+    "priority": {
+      "low": "Низький",
+      "medium": "Середній",
+      "high": "Високий"
+    },
+    "buttons": {
+      "cancel": "Скасувати",
+      "updateTask": "Оновити завдання"
+    },
+    "validation": {
+      "titleRequired": "Назва завдання обов'язкова",
+      "descriptionRequired": "Опис обов'язковий",
+      "dueDateRequired": "Дата виконання обов'язкова",
+      "dueTimeRequired": "Час виконання обов'язковий",
+      "pastDateTime": "Дата та час виконання не можуть бути в минулому",
+      "errorTitle": "Помилка валідації",
+      "errorMessage": "Будь ласка, виправте помилки у формі"
+    }
+  },
+  "edit_profile_popup": {
+    "title": "Оновити профіль",
+    "labels": {
+      "username": "Ім'я користувача",
+      "email": "Електронна пошта",
+      "age": "Вік",
+      "placeOfWork": "Місце роботи",
+      "phoneNumber": "Номер телефону",
+      "avatar": "Фотографія профілю (необов'язково)"
+    },
+    "placeholders": {
+      "username": "Введіть ім'я користувача",
+      "email": "Введіть електронну пошту",
+      "ageOptional": "Введіть вік (необов'язково)",
+      "placeOfWorkOptional": "Введіть місце роботи (необов'язково)",
+      "phoneNumberOptional": "Введіть номер телефону (необов'язково)"
+    },
+    "buttons": {
+      "cancel": "Скасувати",
+      "updateProfile": "Оновити профіль",
+      "upload": "Завантажити"
+    },
+    "validation": {
+      "noCyrillic": "Дозволені лише латинські символи",
+      "usernameRequired": "Ім'я користувача обов'язкове",
+      "emailRequired": "Електронна пошта обов'язкова",
+      "invalidEmail": "Недійсний формат електронної пошти",
+      "invalidAge": "Вік має бути позитивним числом",
+      "invalidPhoneFormat": "Номер телефону може містити лише цифри, пробіли, '+' або '-'",
+      "invalidPhoneLength": "Недійсний номер телефону (максимум 15 цифр)",
+      "errorTitle": "Помилка валідації",
+      "errorMessage": "Будь ласка, виправте помилки у формі"
+    }
+  },
+  "create_project": {
+    "title": "Створити новий проєкт",
+    "description": "Додайте новий проєкт для організації ваших завдань.",
+    "labels": {
+      "title": "Назва проєкту",
+      "description": "Опис",
+      "teamMembers": "Учасники команди"
+    },
+    "placeholders": {
+      "title": "Введіть назву проєкту",
+      "description": "Опишіть ваш проєкт",
+      "search": "Шукати за ім'ям або email"
+    },
+    "buttons": {
+      "cancel": "Скасувати",
+      "create": "Створити проєкт",
+      "addMember": "Додати учасника",
+      "add": "Додати",
+      "remove": "Видалити {{name}}"
+    },
+    "currentUser": "(ви)",
+    "noUsersFound": "Користувачів не знайдено"
+  },
+  "task_dialog": {
+    "title": {
+      "create": "Створити нове завдання",
+      "edit": "Редагувати завдання"
+    },
+    "description": {
+      "create": "Додайте нове завдання до вашого проєкту.",
+      "edit": "Оновіть деталі вашого завдання."
+    },
+    "labels": {
+      "title": "Назва завдання",
+      "description": "Опис",
+      "priority": "Пріоритет",
+      "category": "Категорія",
+      "dueDate": "Дата виконання"
+    },
+    "placeholders": {
+      "title": "Введіть назву завдання",
+      "description": "Опишіть ваше завдання",
+      "priority": "Оберіть пріоритет",
+      "category": "Оберіть категорію",
+      "date": "Оберіть дату"
+    },
+    "priorities": {
+      "low": "Низький",
+      "medium": "Середній",
+      "high": "Високий"
+    },
+    "buttons": {
+      "cancel": "Скасувати",
+      "create": "Створити завдання",
+      "save": "Зберегти зміни",
+      "clearDate": "Очистити дату"
+    },
+    "dueDateText": "Завдання має бути виконано до {{date}}, {{time}}",
+    "dueDateInvalid": "Дата виконання не може бути в минулому",
+    "noDueDate": "Дату виконання не встановлено"
+  }
+}

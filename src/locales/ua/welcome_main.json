@@ -1,0 +1,28 @@
+{
+  "language": "ua",
+  "myDay": "Мій день",
+  "profile": "Профіль",
+  "settings": {
+    "title": "Налаштування",
+    "theme": "Тема",
+    "lightTheme": "Світла",
+    "darkTheme": "Темна",
+    "language": "Мова",
+    "languageEnglish": "Англійська",
+    "languageUkrainian": "Українська",
+    "deadlineReminders": "Нагадування про терміни",
+    "close": "Закрити"
+  },
+  "signOut": "Вийти",
+  "unknownUser": "Невідомий користувач",
+  "expandSidebar": "Розгорнути бічну панель",
+  "collapseSidebar": "Згорнути бічну панель",
+  "toggleSidebar": "Перемкнути бічну панель",
+  "stats": "Статистика",
+  "allTasks": "Усі завдання",
+  "calendar": "Календар",
+  "project": "Проєкти",
+  "myCategories": "Мої категорії",
+  "logoAlt": "Логотип",
+  "appName": "Плануй мій день"
+}

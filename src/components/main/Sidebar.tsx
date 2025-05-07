@@ -1,204 +1,201 @@
-'use client'
+"use client"
 
-import { useRouter, usePathname } from 'next/navigation'
-import { useState } from 'react'
-import Image from 'next/image'
-import { BarChart, ListTodo, Calendar, Plus, Trash2 } from 'lucide-react'
-import { useNotification } from '@/contexts/notification-context'
+import { useRouter, usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { BarChart3, List, CalendarDays, PlusCircle, Trash, Folder } from "lucide-react"
+import { useTheme } from "next-themes"
+import { useCategories } from "@/lib/useCategories"
+import { useTranslation } from "react-i18next"
 
 interface SidebarProps {
-  isVisible: boolean;
-  isCollapsed: boolean;
+  isVisible: boolean
+  isCollapsed: boolean
 }
 
-export default function Sidebar({ isVisible, isCollapsed}: SidebarProps) {
+export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
+  const { t } = useTranslation("welcome_main")
   const router = useRouter()
   const pathname = usePathname()
-  const [categories, setCategories] = useState(['Work', 'Personal', 'Shopping']);
-  const [newCategory, setNewCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [tempCategory, setTempCategory] = useState('');
-  const { addNotification } = useNotification();
+  const { theme } = useTheme()
+  const [isDarkTheme, setIsDarkTheme] = useState(false)
 
-  const isValidCategoryName = (name: string) => {
-    const isLatin = /^[a-zA-Z\s]+$/.test(name);
-    return isLatin && name.trim().length > 0;
-  };
+  const {
+    categories,
+    isLoading,
+    newCategory,
+    setNewCategory,
+    newCategoryName,
+    setNewCategoryName,
+    editingIndex,
+    tempCategory,
+    setTempCategory,
+    addCategory,
+    deleteCategory,
+    startEditing,
+    saveEditing,
+  } = useCategories()
 
-  const addCategory = () => {
-    if (!isValidCategoryName(newCategoryName)) {
-      addNotification('error', 'Category name must contain only Latin letters and cannot be empty.');
-      setNewCategory(false); // Close the input field
-      return;
+  useEffect(() => {
+    const updateTheme = () => {
+      const savedTheme = localStorage.getItem("theme") || theme
+      setIsDarkTheme(savedTheme === "dark")
     }
-    if (categories.includes(newCategoryName.trim())) {
-      addNotification('error', 'This category already exists.');
-      setNewCategory(false); // Close the input field
-      return;
+    updateTheme()
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "theme") updateTheme()
     }
-    setCategories([...categories, newCategoryName.trim()]);
-    addNotification('success', `Category "${newCategoryName.trim()}" added.`);
-    setNewCategory(false);
-    setNewCategoryName('');
-  };
-
-  const deleteCategory = (index: number) => {
-    const categoryToDelete = categories[index];
-    setCategories(categories.filter((_, i) => i !== index));
-    addNotification('info', `Category "${categoryToDelete}" deleted.`);
-  };
-
-  const startEditing = (index: number) => {
-    setEditingIndex(index);
-    setTempCategory(categories[index]);
-  };
-
-  const saveEditing = (index: number) => {
-    if (!isValidCategoryName(tempCategory)) {
-      addNotification('error', 'Category name must contain only Latin letters and cannot be empty.');
-      setEditingIndex(null); // Close the input field
-      return;
-    }
-    if (categories[index] === tempCategory.trim()) {
-      addNotification('info', 'No changes were made.');
-      setEditingIndex(null); // Close the input field
-      return;
-    }
-    if (categories.includes(tempCategory.trim())) {
-      addNotification('error', 'This category already exists.');
-      setEditingIndex(null); // Close the input field
-      return;
-    }
-    const updatedCategories = [...categories];
-    updatedCategories[index] = tempCategory.trim();
-    setCategories(updatedCategories);
-    addNotification('success', `Category "${tempCategory.trim()}" updated.`);
-    setEditingIndex(null);
-  };
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [theme])
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 flex h-full flex-col bg-gradient-to-b from-[#e9e7e4] to-[#cdccc8] transition-all duration-300 ease-in-out
-        ${isVisible ? 'translate-x-0' : '-translate-x-full'} 
-        ${isCollapsed ? 'w-16' : 'w-64'}
-        md:relative md:translate-x-0`}
+      className={`fixed inset-y-0 left-0 z-30 flex h-full flex-col transition-all duration-300 ease-out
+        ${isVisible ? "translate-x-0" : "-translate-x-full"} 
+        ${isCollapsed ? "w-20" : "w-72"}
+        md:relative md:translate-x-0
+        ${isDarkTheme 
+          ? "bg-gradient-to-b from-purple-950 to-gray-900 text-gray-100" 
+          : "bg-gradient-to-b from-gray-100 to-gray-200 sm:bg-gradient-to-b sm:from-gray-50 sm:to-beige-100 text-gray-900 sm:text-gray-800"}
+        border-r ${isDarkTheme ? "border-purple-900" : "border-gray-300 sm:border-gray-200"}`}
     >
-      <div className="flex h-16 shrink-0 items-center justify-center border-b border-gray-200 px-4">
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-start w-full'}`}>
-          <div className="h-15 w-20 overflow-hidden rounded-full">
-            <Image src="/logo.png?height=100&width=100" alt="Logo" width={80} height={80} />
+      <div className={`flex h-16 shrink-0 items-center justify-center backdrop-blur-sm border-b px-4 ${isDarkTheme ? "border-purple-900" : "border-gray-300 sm:border-gray-200"}`}>
+        <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-start w-full"}`}>
+          <div className="h-16 w-16 overflow-hidden">
+            <Image 
+              src="/logo.png" 
+              alt={t("logoAlt")} 
+              width={200} 
+              height={200} 
+              className="object-cover w-full h-full" 
+              onClick={() => router.push("/dashboard")}
+            />
           </div>
-          {!isCollapsed && <h1 className="ml-3 text-xl font-bold">Plan My Day</h1>}
+          {!isCollapsed && (
+            <h1 className={`font-bold ml-3 text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500 dark:from-purple-400 dark:to-blue-400`}>
+              Plan My Day
+            </h1>
+          )}
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+      <nav className="flex-1 space-y-2 overflow-y-auto p-4">
         <button
-          onClick={() => router.push('/dashboard/stats')}
-          className={`flex w-full items-center rounded-md p-2 text-gray-700 hover:bg-white/50 transition-colors duration-200
-            ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/stats' ? 'bg-purple-100 text-purple-700' : ''}`}
+          onClick={() => router.push("/dashboard/stats")}
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? "hover:bg-purple-800/50 text-gray-100" : "hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-800 sm:text-gray-700"} transition-all duration-200
+            ${isCollapsed ? "justify-center" : ""} 
+            ${pathname === "/dashboard/stats" ? `${isDarkTheme ? "bg-purple-700" : "bg-amber-200 sm:bg-amber-100"} text-${isDarkTheme ? "white" : "amber-900 sm:amber-800"}` : ""}`}
         >
-          <BarChart className={isCollapsed ? 'h-6 w-6' : 'mr-3 h-6 w-6'} />
-          {!isCollapsed && <span>Stats</span>}
+          <BarChart3 className={`${isCollapsed ? "h-7 w-7" : "mr-3 h-7 w-7"}`} />
+          {!isCollapsed && <span className="font-medium">{t("stats")}</span>}
         </button>
         <button
-          onClick={() => router.push('/dashboard/tasks')}
-          className={`flex w-full items-center rounded-md p-2 text-gray-700 hover:bg-white/50 transition-colors duration-200
-            ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/tasks' ? 'bg-purple-100 text-purple-700' : ''}`}
+          onClick={() => router.push("/dashboard/tasks")}
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? "hover:bg-purple-800/50 text-gray-100" : "hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-800 sm:text-gray-700"} transition-all duration-200
+            ${isCollapsed ? "justify-center" : ""} 
+            ${pathname === "/dashboard/tasks" ? `${isDarkTheme ? "bg-purple-700" : "bg-emerald-200 sm:bg-emerald-100"} text-${isDarkTheme ? "white" : "emerald-900 sm:emerald-800"}` : ""}`}
         >
-          <ListTodo className={isCollapsed ? 'h-6 w-6' : 'mr-3 h-6 w-6'} />
-          {!isCollapsed && <span>All Tasks</span>}
+          <List className={`${isCollapsed ? "h-7 w-7" : "mr-3 h-7 w-7"}`} />
+          {!isCollapsed && <span className="font-medium">{t("allTasks")}</span>}
         </button>
         <button
-          onClick={() => router.push('/dashboard/calendar')}
-          className={`flex w-full items-center rounded-md p-2 text-gray-700 hover:bg-white/50 transition-colors duration-200
-            ${isCollapsed ? 'justify-center' : ''} 
-            ${pathname === '/dashboard/calendar' ? 'bg-purple-100 text-purple-700' : ''}`}
+          onClick={() => router.push("/dashboard/calendar")}
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? "hover:bg-purple-800/50 text-gray-100" : "hover:bg-gray-300/50 sm:hover:bg-gray-200/50 text-gray-800 sm:text-gray-700"} transition-all duration-200
+            ${isCollapsed ? "justify-center" : ""} 
+            ${pathname === "/dashboard/calendar" ? `${isDarkTheme ? "bg-purple-700" : "bg-indigo-200 sm:bg-indigo-100"} text-${isDarkTheme ? "white" : "indigo-900 sm:indigo-800"}` : ""}`}
         >
-          <Calendar className={isCollapsed ? 'h-6 w-6' : 'mr-3 h-6 w-6'} />
-          {!isCollapsed && <span>Calendar</span>}
+          <CalendarDays className={`${isCollapsed ? "h-7 w-7" : "mr-3 h-7 w-7"}`} />
+          {!isCollapsed && <span className="font-medium">{t("calendar")}</span>}
+        </button>
+        <button
+          onClick={() => router.push("/dashboard/projects")}
+          className={`flex w-full items-center rounded-lg p-3 ${isDarkTheme ? "hover:bg-blue-800/50 text-gray-100" : "hover:bg-blue-300/50 sm:hover:bg-blue-200/50 text-gray-800 sm:text-gray-700"} transition-all duration-200
+            ${isCollapsed ? "justify-center" : ""} 
+            ${pathname === "/dashboard/projects" ? `${isDarkTheme ? "bg-blue-700" : "bg-blue-200 sm:bg-blue-100"} text-${isDarkTheme ? "white" : "blue-900 sm:blue-800"}` : ""}`}
+        >
+          <Folder className={`${isCollapsed ? "h-7 w-7" : "mr-3 h-7 w-7"}`} />
+          {!isCollapsed && <span className="font-medium">{t("project")}</span>}
         </button>
       </nav>
+
       {!isCollapsed && (
         <div className="flex-1 p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">My Calendar Categories</h2>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className={`text-lg font-semibold ${isDarkTheme ? "text-purple-200" : "text-gray-900 sm:text-gray-800"}`}>
+              {t("myCategories")}
+            </h2>
             <button
               onClick={() => setNewCategory(true)}
-              className="text-purple-600 hover:text-purple-800 transition-colors duration-200"
+              className={`${isDarkTheme ? "text-purple-300 hover:text-purple-200" : "text-indigo-600 sm:text-indigo-500 hover:text-indigo-500 sm:hover:text-indigo-400"} transition-colors duration-200`}
             >
-              <Plus className="h-5 w-5" />
+              <PlusCircle className="h-6 w-6" />
             </button>
           </div>
 
-          <div className="max-h-64 overflow-y-auto">
-            <ul className="space-y-1">
-              {categories.map((category, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between rounded p-2 hover:bg-white/50 transition-colors duration-200"
-                >
-                  <div className="flex items-center flex-1">
-                    <div className="h-4 w-4 rounded bg-purple-500"></div>
-                    {editingIndex === index ? (
-                      <input
-                        type="text"
-                        value={tempCategory}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (/^[a-zA-Z\s]*$/.test(value)) {
-                            setTempCategory(value);
-                          }
-                        }}
-                        onKeyDown={(e) => e.key === 'Enter' && saveEditing(index)}
-                        onBlur={() => saveEditing(index)}
-                        className="ml-2 flex-1 rounded border border-gray-300 px-2 py-1"
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        onDoubleClick={() => startEditing(index)}
-                        className="ml-2 cursor-pointer"
-                      >
-                        {category}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => deleteCategory(index)}
-                    className="text-gray-500 hover:text-red-500 transition-colors duration-200"
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <div className="max-h-64 overflow-y-auto">
+              <ul className="space-y-2">
+                {categories.map((category, index) => (
+                  <li
+                    key={category.name}
+                    className={`flex items-center justify-between rounded-lg p-3 ${isDarkTheme ? "bg-purple-900/30 hover:bg-purple-800/50" : "bg-gray-50 sm:bg-white/50 hover:bg-gray-200 sm:hover:bg-gray-100"} transition-all duration-200`}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
-              {newCategory && (
-                <li className="flex items-center rounded p-2 hover:bg-white/50 transition-colors duration-200">
-                  <div className="h-4 w-4 rounded bg-purple-500"></div>
-                  <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^[a-zA-Z\s]*$/.test(value)) {
-                        setNewCategoryName(value);
-                      }
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && addCategory()}
-                    onBlur={addCategory}
-                    className="ml-2 flex-1 rounded border border-gray-300 px-2 py-1"
-                    autoFocus
-                  />
-                </li>
-              )}
-            </ul>
-          </div>
+                    <div className="flex items-center flex-1">
+                      <div
+                        className="h-4 w-4 rounded-full"
+                        style={{ backgroundColor: category.color }}
+                      ></div>
+                      {editingIndex === index ? (
+                        <input
+                          type="text"
+                          value={tempCategory}
+                          onChange={(e) => setTempCategory(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && saveEditing(index)}
+                          onBlur={() => saveEditing(index)}
+                          className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? "bg-purple-900/50 text-white placeholder-purple-300" : "bg-gray-200 sm:bg-gray-100 text-gray-900 sm:text-gray-800 placeholder-gray-500 sm:placeholder-gray-400"} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? "focus:ring-purple-400" : "focus:ring-indigo-400 sm:focus:ring-indigo-300"}`}
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={() => startEditing(index)}
+                          className={`ml-2 cursor-pointer ${isDarkTheme ? "text-gray-100" : "text-gray-900 sm:text-gray-700"} font-medium`}
+                        >
+                          {category.name}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => deleteCategory(index)}
+                      className={`${isDarkTheme ? "text-red-400 hover:text-red-300" : "text-red-600 sm:text-red-500 hover:text-red-500 sm:hover:text-red-400"} transition-colors duration-200`}
+                    >
+                      <Trash className="h-5 w-5" />
+                    </button>
+                  </li>
+                ))}
+                {newCategory && (
+                  <li className={`flex items-center rounded-lg p-3 ${isDarkTheme ? "bg-purple-900/30 hover:bg-purple-800/50" : "bg-gray-50 sm:bg-white/50 hover:bg-gray-200 sm:hover:bg-gray-100"} transition-all duration-200`}>
+                    <div className="h-4 w-4 rounded-full bg-gray-500"></div>
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && addCategory()}
+                      onBlur={addCategory}
+                      className={`ml-2 flex-1 rounded-lg ${isDarkTheme ? "bg-purple-900/50 text-white placeholder-purple-300" : "bg-gray-200 sm:bg-gray-100 text-gray-900 sm:text-gray-800 placeholder-gray-500 sm:placeholder-gray-400"} border-none px-2 py-1 focus:ring-2 ${isDarkTheme ? "focus:ring-purple-400" : "focus:ring-indigo-400 sm:focus:ring-indigo-300"}`}
+                      autoFocus
+                    />
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
       )}
-      
     </aside>
-  );
+  )
 }

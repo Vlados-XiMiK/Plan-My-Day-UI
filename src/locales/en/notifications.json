@@ -1,0 +1,187 @@
+{
+  "welcome": "Welcome!",
+  "loginSuccess": "You have successfully logged in.",
+  "registerSuccess": "You have successfully registered.",
+  "taskReopened": {
+    "title": "Task Reopened",
+    "message": "The task \"{{title}}\" has been reopened and is now active again."
+  },
+  "taskCompleted": {
+    "title": "Task Completed",
+    "message": "You have successfully marked the task \"{{title}}\" as completed."
+  },
+  "taskSnoozed": {
+    "title": "Task Snoozed",
+    "message": "Task \"{{title}}\" has been snoozed for 2 hours."
+  },
+  "addedToFavorites": {
+    "title": "Added to Favorites",
+    "message": "The task \"{{title}}\" has been added to your favorites list."
+  },
+  "removedFromFavorites": {
+    "title": "Removed from Favorites",
+    "message": "The task \"{{title}}\" has been removed from your favorites list."
+  },
+  "validationError": {
+    "title": "Error validation",
+    "message": "Please fix the errors in the form."
+  },
+  "taskEditCancelled": {
+    "title": "Edit cancelled",
+    "message": "Task editing has been cancelled."
+  },
+  "taskCreated": {
+    "title": "Task Created",
+    "message": "The task \"{{title}}\" has been successfully created."
+  },
+  "taskUpdated": {
+    "title": "Task Updated",
+    "message": "The task \"{{title}}\" has been successfully updated."
+  },
+  "taskDeleted": {
+    "title": "Task Deleted",
+    "message": "The task \"{{title}}\" has been successfully removed."
+  },
+  "noChanges": {
+    "title": "No Changes",
+    "message": "No changes were made."
+  },
+  "invalidInput": {
+    "title": "Invalid input",
+    "message": "Please check the fields and try again.",
+    "taskDueDate": "Please select a task due date.",
+    "invalidExpirationDate": "Expiration date cannot be in the past"
+  },
+  "profileUpdated": {
+    "title": "Profile Updated",
+    "message": "The profile for \"{{username}}\" has been successfully updated."
+  },
+  "profileUpdateFailed": {
+    "title": "Profile Update Failed",
+    "message": "Failed to update profile. Please try again."
+  },
+  "profileEditCancelled": {
+    "title": "Profile Edit Cancelled",
+    "message": "Editing of profile for \"{{username}}\" was cancelled."
+  },
+  "categories": {
+    "loadFailed": {
+      "title": "Load Failed",
+      "message": "Failed to load categories."
+    },
+    "invalidName": {
+      "title": "Invalid Name",
+      "message": "Category name must contain only letters, numbers, and spaces and cannot be empty."
+    },
+    "duplicateCategory": {
+      "title": "Duplicate Category",
+      "message": "This category already exists."
+    },
+    "categoryAdded": {
+      "title": "Category Added",
+      "message": "Category \"{{name}}\" added."
+    },
+    "addFailed": {
+      "title": "Add Failed",
+      "message": "An error occurred while adding the category."
+    },
+    "categoryDeleted": {
+      "title": "Category Deleted",
+      "message": "Category \"{{name}}\" deleted."
+    },
+    "deletionFailed": {
+      "title": "Deletion Failed",
+      "message": "An error occurred while deleting the category."
+    },
+    "noChanges": {
+      "title": "No Changes",
+      "message": "No changes were made."
+    },
+    "categoryUpdated": {
+      "title": "Category Updated",
+      "message": "Category \"{{name}}\" updated."
+    },
+    "updateFailed": {
+      "title": "Update Failed",
+      "message": "An error occurred while updating the category."
+    }
+  },
+  "projectCreated": {
+    "title": "Project Created",
+    "message": "Successfully created project: {{title}}"
+  },
+  "projectCreationFailed": {
+    "title": "Creation Failed",
+    "message": "Failed to create project. Please try again."
+  },
+  "dateCleared": {
+    "title": "Date cleared",
+    "message": "The date has been successfully cleared."
+  },
+  "taskEditInitiated": {
+    "title": "Editing started",
+    "message": "You can now edit the task details."
+  },
+  "projectUpdated": {
+    "title": "Project updated",
+    "message": "The project \"{{title}}\" has been successfully updated."
+  },
+  "projectDeleted": {
+    "title": "Project Deleted",
+    "message": "Project \"{{title}}\" has been deleted"
+  },
+  "projectDeletionFailed": {
+    "title": "Deletion Failed",
+    "message": "Failed to delete project. Please try again."
+  },
+  "roleChangePending": {
+    "title": "Role Change Pending",
+    "message": "Role for {{name}} set to {{role}}"
+  },
+  "rolesUpdated": {
+    "title": "Roles Updated",
+    "message": "Team member roles have been updated"
+  },
+  "roleChangesCancelled": {
+    "title": "Changes Cancelled",
+    "message": "Pending role changes have been cancelled"
+  },
+  "inviteLinkGenerated": {
+    "title": "Invite Link Generated",
+    "message": "The invite link has been successfully created."
+  },
+  "linkCopied": {
+    "title": "Link Copied",
+    "message": "Invite link copied to clipboard."
+  },
+  "linkDeleted": {
+    "title": "Link Deleted",
+    "message": "The invite link has been successfully revoked."
+  },
+  "leftProject": {
+    "title": "Left Project",
+    "message": "You have successfully left the project."
+  },
+  "permissionDenied": {
+    "title": "Permission Denied",
+    "updateProject": "You do not have permission to update this project",
+    "addMember": "You do not have permission to add members",
+    "removeMember": "You do not have permission to remove members"
+  },
+  "projectUpdateFailed": {
+    "title": "Update Failed",
+    "message": "Failed to update project. Please try again."
+  },
+  "memberAdditionFailed": {
+    "title": "Addition Failed",
+    "message": "Failed to add member. Please try again."
+  },
+  "memberRemovalFailed": {
+    "title": "Removal Failed",
+    "message": "Failed to remove member. Please try again."
+  },
+  "roleUpdateFailed": {
+    "title": "Update Failed",
+    "message": "Failed to update member roles. Please try again."
+  }
+}

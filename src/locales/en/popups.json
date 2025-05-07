@@ -1,0 +1,188 @@
+{
+  "language": "en",
+  "calendar_popup": {
+    "addTask": "Add Task for {{date}}",
+    "taskTitle": "Task Title",
+    "date": "Date",
+    "time": "Time",
+    "descriptionOptional": "Description (Optional)",
+    "category": "Category",
+    "priorityLabel": "Priority",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "placeholder": {
+      "taskTitle": "Enter task title",
+      "description": "Add details about this task",
+      "category": "Select a category"
+    },
+    "cancel": "Cancel",
+    "addTaskButton": "Add Task",
+    "validation": {
+      "pastDate": "Cannot create tasks in the past. Please select a future date and time.",
+      "taskTitleRequired": "Task title is required."
+    },
+    "defaultCategory": "Work"
+  },
+  "task_creation_popup": {
+    "title": "Create New Task",
+    "labels": {
+      "title": "Title",
+      "description": "Description",
+      "category": "Category",
+      "priority": "Priority",
+      "dueDateTime": "Due Date and Time"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Enter task description",
+      "category": "Select a category"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "createTask": "Create Task"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "descriptionRequired": "Description is required",
+      "dueDateRequired": "Due date is required",
+      "dueTimeRequired": "Due time is required",
+      "pastDateTime": "Date and time cannot be in the past"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
+  },
+  "task_edit_popup": {
+    "title": "Edit Task",
+    "labels": {
+      "title": "Task Title",
+      "description": "Description",
+      "category": "Category",
+      "priority": "Priority",
+      "dueDateTime": "Due Date and Time"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Enter task description",
+      "category": "Select a category"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "updateTask": "Update Task"
+    },
+    "validation": {
+      "titleRequired": "Task title is required",
+      "descriptionRequired": "Description is required",
+      "dueDateRequired": "Due date is required",
+      "dueTimeRequired": "Due time is required",
+      "pastDateTime": "Due date and time cannot be in the past",
+      "errorTitle": "Validation Error",
+      "errorMessage": "Please fix the errors in the form"
+    }
+  },
+  "edit_profile_popup": {
+    "title": "Update Profile",
+    "labels": {
+      "username": "Username",
+      "email": "Email",
+      "age": "Age",
+      "placeOfWork": "Place of Work",
+      "phoneNumber": "Phone Number",
+      "avatar": "Profile Picture (Optional)"
+    },
+    "placeholders": {
+      "username": "Enter username",
+      "email": "Enter email",
+      "ageOptional": "Enter age (optional)",
+      "placeOfWorkOptional": "Enter place of work (optional)",
+      "phoneNumberOptional": "Enter phone number (optional)"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "updateProfile": "Update Profile",
+      "upload": "Upload"
+    },
+    "validation": {
+      "noCyrillic": "Only Latin characters are allowed",
+      "usernameRequired": "Username is required",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email format",
+      "invalidAge": "Age must be a positive number",
+      "invalidPhoneFormat": "Phone number must contain only digits, spaces, '+' or '-'",
+      "invalidPhoneLength": "Invalid phone number (max 15 digits)",
+      "errorTitle": "Validation Error",
+      "errorMessage": "Please fix the errors in the form"
+    }
+  },
+  "create_project": {
+    "title": "Create new project",
+    "description": "Add a new project to organize your tasks.",
+    "labels": {
+      "title": "Project title",
+      "description": "Description",
+      "teamMembers": "Team members"
+    },
+    "placeholders": {
+      "title": "Enter project title",
+      "description": "Describe your project",
+      "search": "Search by name or email"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create project",
+      "addMember": "Add member",
+      "add": "Add",
+      "remove": "Remove {{name}}"
+    },
+    "currentUser": "(you)",
+    "noUsersFound": "No users found"
+  },
+  "task_dialog": {
+    "title": {
+      "create": "Create new task",
+      "edit": "Edit task"
+    },
+    "description": {
+      "create": "Add a new task to your project.",
+      "edit": "Update the details of your task."
+    },
+    "labels": {
+      "title": "Task title",
+      "description": "Description",
+      "priority": "Priority",
+      "category": "Category",
+      "dueDate": "Due date"
+    },
+    "placeholders": {
+      "title": "Enter task title",
+      "description": "Describe your task",
+      "priority": "Select priority",
+      "category": "Select category",
+      "date": "Select a date"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create task",
+      "save": "Save changes",
+      "clearDate": "Clear date"
+    },
+    "dueDateText": "Task will be due on {{date}} at {{time}}",
+    "dueDateInvalid": "Due date cannot be in the past",
+    "noDueDate": "No due date set"
+  }
+}
