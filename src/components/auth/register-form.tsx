@@ -14,6 +14,8 @@ import type React from "react"
 import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
 
+import { registerUser } from "@/api/auth"
+
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -22,16 +24,12 @@ type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
 
 interface FormData {
   email: string
-  name: string
-  username: string
   password: string
   confirmPassword: string
 }
 
 interface FormErrors {
   email?: string
-  name?: string
-  username?: string
   password?: string
   confirmPassword?: string
 }
@@ -40,10 +38,6 @@ const steps = [
   {
     title: "Account Details",
     fields: ["email"],
-  },
-  {
-    title: "Personal Information",
-    fields: ["name", "username"],
   },
   {
     title: "Security",
@@ -62,8 +56,6 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     email: "",
-    name: "",
-    username: "",
     password: "",
     confirmPassword: "",
   })
@@ -84,28 +76,6 @@ export default function RegisterForm() {
             newErrors.email = tAuth("register.emailTooLong")
           } else if (!/^[a-zA-Z0-9@._-]+$/.test(formData.email)) {
             newErrors.email = tAuth("register.invalidEmail")
-          }
-          break
-        case "name":
-          if (!formData.name) {
-            newErrors.name = `${tAuth("register.name")} ${tAuth("register.required")}`
-          } else if (formData.name.length < 2) {
-            newErrors.name = tAuth("register.nameTooShort")
-          } else if (formData.name.length > 50) {
-            newErrors.name = tAuth("register.nameTooLong")
-          } else if (!/^[a-zA-Z\s]*$/.test(formData.name)) {
-            newErrors.name = tAuth("register.nameInvalid")
-          }
-          break
-        case "username":
-          if (!formData.username) {
-            newErrors.username = `${tAuth("register.username")} ${tAuth("register.required")}`
-          } else if (formData.username.length < 3) {
-            newErrors.username = tAuth("register.usernameTooShort")
-          } else if (formData.username.length > 30) {
-            newErrors.username = tAuth("register.usernameTooLong")
-          } else if (!/^[a-zA-Z0-9_]*$/.test(formData.username)) {
-            newErrors.username = tAuth("register.usernameInvalid")
           }
           break
         case "password":
@@ -142,29 +112,47 @@ export default function RegisterForm() {
   }
 
   const onSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    if (!validateStep()) {
-      return
-    }
+    event.preventDefault();
+    if (!validateStep()) return;
 
     if (step < steps.length - 1) {
-      setStep(step + 1)
-      return
+      setStep(step + 1);
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      addNotification("success", tNotifications("welcome"), tNotifications("registerSuccess"), 3000)
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Registration failed:", error)
-      setErrors({ password: tAuth("register.registrationFailed") })
+      await registerUser({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      addNotification("success", tNotifications("welcome"), tNotifications("registerSuccess"), 3000);
+      router.push("/auth/login");
+    } catch (error: any) {
+      const fieldErrors: FormErrors = {};
+
+      const errorField = error.cause?.field;
+      const errorMessage = error.message;
+
+      if (errorField === "email") {
+        fieldErrors.email = errorMessage.includes("unique") ? tAuth("register.emailExists") : errorMessage;
+        setStep(0);
+        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.email || '', 4000);
+      } else if (errorField === "password") {
+        fieldErrors.password = errorMessage;
+        setStep(1);
+        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.password || '', 4000);
+      } else {
+        addNotification("error", tNotifications("invalidInput.title"), errorMessage, 4000);
+      }
+
+      setErrors(fieldErrors);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -237,61 +225,6 @@ export default function RegisterForm() {
           )}
 
           {step === 1 && (
-            <div className="space-y-2">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm text-gray-700 dark:text-gray-200">
-                  {tAuth("register.name")}
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder={"John Doe"}
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  className="bg-gray-50 dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm"
-                />
-                {errors.name && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
-                    {...({} as MotionPProps)}
-                  >
-                    {errors.name}
-                  </motion.p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm text-gray-700 dark:text-gray-200">
-                  {tAuth("register.username")}
-                </Label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  placeholder={"johndoe"}
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  className="bg-gray-50 dark:bg-[#1a1a2e] border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm"
-                />
-                {errors.username && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-xs text-rose-500 mt-1 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/50 rounded-md p-2"
-                    {...({} as MotionPProps)}
-                  >
-                    {errors.username}
-                  </motion.p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
             <div className="space-y-2">
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm text-gray-700 dark:text-gray-200">
