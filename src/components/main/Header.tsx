@@ -74,7 +74,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const userName = user?.name || t("unknownUser")
+  const userName = user?.username || t("unknownUser")
 
   const handleLogout = async () => {
     try {

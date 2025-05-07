@@ -1,82 +1,83 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { User, ProfileStats, UserContextType } from "@/types";
+import { User, UserContextType } from "@/types";
+import { getUserProfile, updateUserProfile } from "@/api/profile";
+import { isAuthenticated } from "@/api/auth";
+import Cookies from "js-cookie";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState<ProfileStats>({
-    completedTasks: 0,
-    ongoingTasks: 0,
-    totalTasks: 0,
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Function to update user data
   const updateUser = async (data: Partial<User>) => {
-    setUser((prev) => (prev ? { ...prev, ...data } : prev));
-    // Later you can add an API call here to save the data.
-    /*
     try {
-      const response = await fetch('/api/user', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to update user');
-      const updatedUser = await response.json();
+      const updatedUser = await updateUserProfile(data);
       setUser(updatedUser);
     } catch (error) {
-      console.error('Failed to update user:', error);
+      console.error("Failed to update user:", error);
       throw error;
     }
-    */
   };
 
   useEffect(() => {
-    // Setting up static user data
-    const staticUser: User = {
-      name: "Alex Smith",
-      email: "alex.smith@example.com",
-      phone: "+1234567890",
-      workplace: "Tech Corp",
-      age: 30,
-    };
-    setUser(staticUser);
+    const controller = new AbortController();
+    let isMounted = true;
 
-    // Setting up static data for task statistics
-    const staticStats: ProfileStats = {
-      completedTasks: 15,
-      ongoingTasks: 5,
-      totalTasks: 20,
-    };
-    setStats(staticStats);
-
-    // Later you can add fetch to the database here
-    /*
-    const fetchUserAndStats = async () => {
+    const fetchUser = async () => {
       try {
-        const userResponse = await fetch("/api/user?email=guest@example.com");
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
+        setIsLoading(true);
+        console.log("Checking authentication...");
+
+        const authenticated = await isAuthenticated();
+        console.log("Is authenticated:", authenticated);
+        if (!authenticated) {
+          console.log("Not authenticated, redirecting to login");
+          Cookies.remove("access_token");
+          Cookies.remove("refresh_token");
+          if (isMounted) {
+            window.location.href = "/auth/login";
+          }
+          return;
+        }
+
+        const userData = await getUserProfile();
+        console.log("User data fetched:", userData);
+        if (isMounted) {
           setUser(userData);
         }
-        const statsResponse = await fetch("/api/stats?email=guest@example.com");
-        if (statsResponse.ok) {
-          const statsData = await statsResponse.json();
-          setStats(statsData);
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          console.log("Fetch user aborted");
+          return;
         }
-      } catch (error) {
-        console.error("Failed to fetch user or stats:", error);
+        console.error("Failed to fetch user:", error);
+        Cookies.remove("access_token");
+        Cookies.remove("refresh_token");
+        if (isMounted) {
+          window.location.href = "/auth/login";
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+          console.log("Loading complete, isLoading:", false);
+        }
       }
     };
-    fetchUserAndStats();
-    */
+
+    fetchUser();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, stats, setUser, setStats, updateUser }}>
+    <UserContext.Provider value={{ user, setUser, updateUser, isLoading }}>
       {children}
     </UserContext.Provider>
   );

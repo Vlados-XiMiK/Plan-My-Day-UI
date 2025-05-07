@@ -11,13 +11,60 @@ const axiosClient = axios.create({
   withCredentials: false, // cookies manually
 });
 
-// if access token expired
+// Функция для получения нового access_token с помощью refresh_token
+async function refreshAccessToken() {
+  const refresh = Cookies.get("refresh_token");
+  if (!refresh) {
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    window.location.href = "/auth/login";
+    throw new Error("No refresh token available");
+  }
+
+  try {
+    const response = await axios.post(`${API_URL}auth/token/refresh/`, { refresh });
+    const newAccess = response.data.access;
+    Cookies.set("access_token", newAccess, { expires: 1, secure: true });
+    return newAccess;
+  } catch (error) {
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    window.location.href = "/auth/login";
+    throw error;
+  }
+}
+
+// Интерцептор запросов: добавляем access_token или обновляем его
+axiosClient.interceptors.request.use(async (config) => {
+  let accessToken = Cookies.get("access_token");
+  const refreshToken = Cookies.get("refresh_token");
+
+  // Если есть access_token, но нет refresh_token, перенаправляем на логин
+  if (accessToken && !refreshToken) {
+    Cookies.remove("access_token");
+    window.location.href = "/auth/login";
+    throw new Error("No refresh token available");
+  }
+
+  // Если access_token нет, но есть refresh_token, пытаемся обновить
+  if (!accessToken && refreshToken) {
+    accessToken = await refreshAccessToken();
+  }
+
+  // Если access_token есть, добавляем его в заголовки
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
+}, (error) => Promise.reject(error));
+
+// Интерцептор ответов: обрабатываем 401 (истекший токен)
 axiosClient.interceptors.response.use(
-  (response) => response, // everything is fine - we give it as is
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If the token has expired and this is not a refresh request
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
@@ -25,34 +72,11 @@ axiosClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      const refresh = Cookies.get("refresh_token");
-      if (!refresh) {
-        // refresh no — logout
-        Cookies.remove("access_token");
-        Cookies.remove("refresh_token");
-        window.location.href = "/auth/login";
-        return Promise.reject(error);
-      }
-
       try {
-        // try to get a new access token
-        const response = await axios.post(`${API_URL}auth/token/refresh/`, {
-          refresh,
-        });
-
-        const newAccess = response.data.access;
-
-        // save new access in cookie
-        Cookies.set("access_token", newAccess, { expires: 1, secure: true });
-
-        // repeat the original request with a new token
-        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+        const newAccessToken = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosClient(originalRequest);
       } catch (refreshError) {
-        // refresh also expired - delete cookies, redirect
-        Cookies.remove("access_token");
-        Cookies.remove("refresh_token");
-        window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
     }
@@ -60,14 +84,5 @@ axiosClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Add an access token to each request
-axiosClient.interceptors.request.use((config) => {
-  const accessToken = Cookies.get("access_token");
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
-});
 
 export default axiosClient;

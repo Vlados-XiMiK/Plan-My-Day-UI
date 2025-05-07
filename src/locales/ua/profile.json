@@ -17,5 +17,7 @@
   "recentActivity": "Остання активність",
   "lastLogin": "Останній вхід",
   "profileEdited": "Профіль відредаговано",
-  "lastTaskCompleted": "Останнє завдання завершено"
+  "lastTaskCompleted": "Останнє завдання завершено",
+  "notSet": "Не вказано",
+  "never": "Ніколи"
 }

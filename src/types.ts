@@ -53,26 +53,27 @@ export interface Category {
 // PROFILE
 
 export interface User {
-  name: string;
+  username: string;
   email: string;
-  phone: string;
-  workplace: string;
-  age: number;
-  avatar?: string;
+  age: number | null;
+  place_of_work: string;
+  phone_number: string;
+  last_login_at: string | null;
+  last_profile_edit_at: string | null;
+  last_task_completed_at: string | null;
+}
+
+export interface UserContextType {
+  user: User | null;
+  setUser: (user: User | null) => void;
+  updateUser: (data: Partial<User>) => Promise<void>;
+  isLoading: boolean;
 }
 
 export interface ProfileStats {
   completedTasks: number;
   ongoingTasks: number;
   totalTasks: number;
-}
-
-export interface UserContextType {
-  user: User | null;
-  stats: ProfileStats;
-  setUser: (user: User | null) => void;
-  setStats: (stats: ProfileStats) => void;
-  updateUser: (data: Partial<User>) => Promise<void>;
 }
 
 export interface AvatarProps {

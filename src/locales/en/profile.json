@@ -17,5 +17,7 @@
   "recentActivity": "Recent Activity",
   "lastLogin": "Last login",
   "profileEdited": "Profile edited",
-  "lastTaskCompleted": "Last task completed"
+  "lastTaskCompleted": "Last task completed",
+  "notSet": "Not specified",
+  "never": "Never"
 }

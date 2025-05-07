@@ -46,13 +46,12 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   useEffect(() => {
     if (isOpen && user) {
       setFormData({
-        username: user.name || '',
+        username: user.username || '',
         email: user.email || '',
         age: user.age?.toString() || '',
-        placeOfWork: user.workplace || '',
-        phoneNumber: user.phone || ''
+        placeOfWork: user.place_of_work || '',
+        phoneNumber: user.phone_number || ''
       })
-      setImage(user.avatar || null) // If the user has an avatar
     }
   }, [isOpen, user])
 
@@ -60,46 +59,70 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   const hasChanges = () => {
     if (!user) return false;
     return (
-      formData.username !== (user.name || '') ||
+      formData.username !== (user.username || '') ||
       formData.email !== (user.email || '') ||
       formData.age !== (user.age?.toString() || '') ||
-      formData.placeOfWork !== (user.workplace || '') ||
-      formData.phoneNumber !== (user.phone || '') ||
-      image !== (user.avatar || null)
+      formData.placeOfWork !== (user.place_of_work || '') ||
+      formData.phoneNumber !== (user.phone_number || '')
     )
   }
 
   const validateField = (name: string, value: string) => {
-    let error = ''
-    const containsCyrillic = /[а-яА-ЯёЁ]/.test(value)
+    let error = '';
 
-    if (containsCyrillic) {
-      error = t('popups:edit_profile_popup.validation.noCyrillic')
-    } else {
-      switch (name) {
-        case 'username':
-          if (!value.trim()) error = t('popups:edit_profile_popup.validation.usernameRequired')
-          break
-        case 'email':
-          if (!value.trim()) error = t('popups:edit_profile_popup.validation.emailRequired')
-          else if (!/\S+@\S+\.\S+/.test(value)) error = t('popups:edit_profile_popup.validation.invalidEmail')
-          break
-        case 'age':
-          if (value.trim() && (isNaN(Number(value)) || Number(value) <= 0)) {
-            error = t('popups:edit_profile_popup.validation.invalidAge')
-          }
-          break
-        case 'phoneNumber':
-          if (value.trim() && (!/^\+?[0-9\s-]{0,15}$/.test(value))) {
-            error = t('popups:edit_profile_popup.validation.invalidPhoneFormat')
-          } else if (value.trim() && value.replace(/[^0-9]/g, '').length > 15) {
-            error = t('popups:edit_profile_popup.validation.invalidPhoneLength')
-          }
-          break
-      }
+    // Проверка на опасные символы для всех полей (кроме placeOfWork, где отдельная логика)
+    const dangerousSymbols = /[<>"';`\\&%#|]/;
+    if (name !== 'placeOfWork' && dangerousSymbols.test(value)) {
+      return t('popups:edit_profile_popup.validation.dangerousSymbols');
     }
 
-    return error
+    // Проверка на кириллицу (запрещена для всех полей, кроме placeOfWork)
+    const containsCyrillic = /[а-яА-ЯёЁ]/;
+    if (name !== 'placeOfWork' && containsCyrillic.test(value)) {
+      return t('popups:edit_profile_popup.validation.noCyrillic');
+    }
+
+    switch (name) {
+      case 'username':
+        if (!value.trim()) error = t('popups:edit_profile_popup.validation.usernameRequired');
+        break;
+      case 'email':
+        if (!value.trim()) error = t('popups:edit_profile_popup.validation.emailRequired');
+        else if (!/\S+@\S+\.\S+/.test(value)) error = t('popups:edit_profile_popup.validation.invalidEmail');
+        break;
+      case 'age':
+        if (value.trim()) {
+          const ageNum = Number(value);
+          if (isNaN(ageNum) || !Number.isInteger(ageNum)) {
+            error = t('popups:edit_profile_popup.validation.invalidAge');
+          } else if (ageNum < 8) {
+            error = t('popups:edit_profile_popup.validation.ageTooLow');
+          } else if (ageNum > 120) {
+            error = t('popups:edit_profile_popup.validation.ageTooHigh');
+          }
+        }
+        break;
+      case 'placeOfWork':
+        // Разрешены: латиница, кириллица, цифры, пробелы, дефисы, точки, запятые
+        // Запрещены: опасные символы для SQL-инъекций и XSS
+        const allowedPlaceOfWork = /^[a-zA-Zа-яА-ЯёЁ0-9\s.,-]*$/;
+        const forbiddenSymbols = /[<>";'`\\\/*&#%|=]/;
+        if (value.trim() && !allowedPlaceOfWork.test(value)) {
+          error = t('popups:edit_profile_popup.validation.invalidPlaceOfWorkChars');
+        } else if (value.trim() && forbiddenSymbols.test(value)) {
+          error = t('popups:edit_profile_popup.validation.dangerousSymbols');
+        }
+        break;
+      case 'phoneNumber':
+        if (value.trim() && !/^\+?[0-9\s-]{0,15}$/.test(value)) {
+          error = t('popups:edit_profile_popup.validation.invalidPhoneFormat');
+        } else if (value.trim() && value.replace(/[^0-9]/g, '').length > 15) {
+          error = t('popups:edit_profile_popup.validation.invalidPhoneLength');
+        }
+        break;
+    }
+
+    return error;
   }
 
   const validateForm = () => {
@@ -159,12 +182,11 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     try {
       // Update user data via context
       await updateUser({
-        name: formData.username,
+        username: formData.username,
         email: formData.email,
         age: formData.age ? parseInt(formData.age) : undefined,
-        workplace: formData.placeOfWork,
-        phone: formData.phoneNumber,
-        avatar: image || undefined
+        place_of_work: formData.placeOfWork,
+        phone_number: formData.phoneNumber,
       })
       addNotification('success', t('notifications:profileUpdated.title'), t('notifications:profileUpdated.message', { username: formData.username }))
       onClose()
@@ -254,6 +276,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                   </div>
                 ))}
 
+                {/* Add Image to Avatar
                 <div className="relative">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 block">
                     {t('popups:edit_profile_popup.labels.avatar')}
@@ -295,7 +318,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
                     />
                   </div>
                 </div>
-
+                */}
                 <div className="flex flex-col sm:flex-row sm:justify-end gap-3 mt-6">
                   <motion.button
                     type="button"
