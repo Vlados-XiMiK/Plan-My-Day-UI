@@ -15,6 +15,8 @@ import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
 import Cookies from "js-cookie"
 import { loginUser, isAuthenticated } from "@/api/auth"
+import { AxiosError } from "axios" // Импортируем AxiosError
+import axios from "axios" // Импортируем axios для isAxiosError
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
@@ -24,7 +26,10 @@ interface FormErrors {
   password?: string
 }
 
-
+// Интерфейс для структуры ответа об ошибке
+interface ErrorResponse {
+  detail?: string
+}
 
 export default function LoginForm() {
   const { t: tAuth } = useTranslation("auth")
@@ -47,15 +52,15 @@ export default function LoginForm() {
         router.replace("/dashboard")
       }
     }
-  
+
     checkIfAuth()
-  
+
     const registeredEmail = Cookies.get("registeredEmail")
     if (registeredEmail && /^\S+@\S+\.\S+$/.test(registeredEmail)) {
       setFormData((prev) => ({ ...prev, email: registeredEmail }))
       Cookies.remove("registeredEmail")
     }
-  }, [])
+  }, [router]) // Добавляем router в зависимости
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -89,16 +94,22 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const data = await loginUser({
+      await loginUser({ // Убираем неиспользуемую переменную data
         email: formData.email,
         password: formData.password,
       })
 
       addNotification("success", tNotifications("welcome"), tNotifications("loginSuccess"), 3000)
       router.push("/dashboard")
-    } catch (error: any) {
-      console.error("Login error:", error)
-      setErrors({ password: tAuth("login.invalidCredentials") })
+    } catch (error: unknown) { // Используем unknown вместо any
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ErrorResponse>
+        console.error("Login error:", axiosError.response?.data || axiosError.message)
+        setErrors({ password: tAuth("login.invalidCredentials") })
+      } else {
+        console.error("Login error:", error)
+        setErrors({ password: tAuth("login.invalidCredentials") })
+      }
     } finally {
       setIsLoading(false)
     }

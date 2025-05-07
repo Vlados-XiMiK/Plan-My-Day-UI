@@ -12,12 +12,19 @@ import SettingsPopup from "@/components/main/pop-up/SettingsPopup"
 import Avatar from "@/components/ui/Avatar"
 import { logoutUser } from "@/api/auth"
 import { useNotification } from "@/contexts/notification-context"
+import { AxiosError } from "axios" // Добавляем импорт AxiosError
+import axios from "axios" // Добавляем импорт axios
 
 interface HeaderProps {
   toggleSidebar: () => void
   toggleCollapse: () => void
   isCollapsed: boolean
   onProfileClick?: () => void
+}
+
+// Интерфейс для структуры ответа об ошибке (опционально)
+interface ErrorResponse {
+  detail?: string
 }
 
 export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onProfileClick }: HeaderProps) {
@@ -81,9 +88,15 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       await logoutUser()
       addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
       router.replace('/auth/login')
-    } catch (error: any) {
-      console.error('Logout error:', error)
-      addNotification('error', t('notifications:logoutErrorTitle'), error.message || t('notifications:logoutErrorMessage'))
+    } catch (error: unknown) { // Заменяем any на unknown
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ErrorResponse>
+        console.error('Logout error:', axiosError.response?.data || axiosError.message)
+        addNotification('error', t('notifications:logoutErrorTitle'), axiosError.response?.data?.detail || t('notifications:logoutErrorMessage'))
+      } else {
+        console.error('Logout error:', error)
+        addNotification('error', t('notifications:logoutErrorTitle'), t('notifications:logoutErrorMessage'))
+      }
       router.replace('/auth/login')
     }
     setShowDropdown(false)

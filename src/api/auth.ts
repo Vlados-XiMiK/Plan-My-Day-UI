@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import Cookies from "js-cookie";
 import axiosClient from "@/api/axiosClient";
 
@@ -14,27 +14,41 @@ export interface LoginPayload {
   password: string;
 }
 
+// Интерфейс для структуры ответа об ошибке
+interface ErrorResponse {
+  email?: string[];
+  password?: string[];
+  detail?: string;
+}
+
 export async function registerUser(payload: RegisterPayload) {
   try {
     const response = await axiosClient.post(`auth/users/register/`, payload);
     return response.data;
-  } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.email?.[0] ||
-      error.response?.data?.password?.[0] ||
-      error.response?.data?.detail ||
-      "Registration failed";
+  } catch (error: unknown) { // Используем unknown вместо AxiosError
+    // Проверяем, является ли ошибка экземпляром AxiosError
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      const errorMessage =
+        axiosError.response?.data?.email?.[0] ||
+        axiosError.response?.data?.password?.[0] ||
+        axiosError.response?.data?.detail ||
+        "Registration failed";
 
-    throw new Error(errorMessage, {
-      cause: {
-        field: error.response?.data?.email
-          ? "email"
-          : error.response?.data?.password
-          ? "password"
-          : null,
-        detail: error.response?.data,
-      },
-    });
+      throw new Error(errorMessage, {
+        cause: {
+          field: axiosError.response?.data?.email
+            ? "email"
+            : axiosError.response?.data?.password
+            ? "password"
+            : null,
+          detail: axiosError.response?.data,
+        },
+      });
+    } else {
+      // Если ошибка не от Axios, выбрасываем общую ошибку
+      throw new Error("Registration failed");
+    }
   }
 }
 
@@ -53,13 +67,18 @@ export async function loginUser(payload: LoginPayload) {
     Cookies.set("refresh_token", refresh, { expires: 7, sameSite: "strict" });
 
     return response.data;
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.detail || "Login failed";
-    throw new Error(errorMessage, {
-      cause: {
-        detail: error.response?.data,
-      },
-    });
+  } catch (error: unknown) { // Используем unknown вместо AxiosError
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<{ detail?: string }>;
+      const errorMessage = axiosError.response?.data?.detail || "Login failed";
+      throw new Error(errorMessage, {
+        cause: {
+          detail: axiosError.response?.data,
+        },
+      });
+    } else {
+      throw new Error("Login failed");
+    }
   }
 }
 
@@ -72,20 +91,25 @@ export async function isAuthenticated(): Promise<boolean> {
   return !!(accessToken || refreshToken);
 }
 
-
-  export async function logoutUser() {
-    try {
+export async function logoutUser() {
+  try {
     const refresh = Cookies.get("refresh_token");
-  
-      const response = await axiosClient.post("auth/users/logout/", {
-        refresh, 
-      });
-  
-      Cookies.remove("access_token");
-      Cookies.remove("refresh_token");
-      return response.data;
-    } catch (error: any) {
-      console.error("Logout failed:", error.response?.data || error);
+
+    const response = await axiosClient.post("auth/users/logout/", {
+      refresh,
+    });
+
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    return response.data;
+  } catch (error: unknown) { // Используем unknown вместо AxiosError
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      console.error("Logout failed:", axiosError.response?.data || axiosError);
+      throw new Error("Logout failed");
+    } else {
+      console.error("Logout failed:", error);
       throw new Error("Logout failed");
     }
   }
+}

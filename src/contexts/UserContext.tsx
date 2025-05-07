@@ -49,8 +49,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (isMounted) {
           setUser(userData);
         }
-      } catch (error: any) {
-        if (error.name === "AbortError") {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === "AbortError") {
           console.log("Fetch user aborted");
           return;
         }

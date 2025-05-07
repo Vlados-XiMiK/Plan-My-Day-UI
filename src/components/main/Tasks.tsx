@@ -20,7 +20,6 @@ export default function Tasks() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false)
   const [isAuth, setIsAuth] = useState(false) // Для статуса авторизации
-  const [authLoading, setAuthLoading] = useState(true) // Для проверки авторизации
 
 
   // Проверка авторизации
@@ -28,7 +27,6 @@ export default function Tasks() {
     async function checkAuth() {
       const auth = await isAuthenticated()
       setIsAuth(auth)
-      setAuthLoading(false)
 
       if (!auth) {
         router.replace('/auth/login') // Перенаправление на логин, если не авторизован

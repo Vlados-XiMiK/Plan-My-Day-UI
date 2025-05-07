@@ -1,9 +1,9 @@
 'use client'
 
 import { motion, AnimatePresence, MotionProps } from 'framer-motion'
-import Image from "next/image";
-import { useState, useRef, useEffect } from 'react'
-import { X, User, Mail, Cake, Building2, Phone, ImageIcon, Upload } from 'lucide-react'
+// import Image from "next/image";
+import { useState, /* useRef, */ useEffect } from 'react'
+import { X, User, Mail, Cake, Building2, Phone, /* ImageIcon, Upload */ } from 'lucide-react'
 import { useNotification } from '@/contexts/notification-context'
 import { useUser } from '@/contexts/UserContext'
 import { InputHTMLAttributes, HTMLAttributes, ButtonHTMLAttributes } from 'react'
@@ -38,8 +38,8 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [notificationShown, setNotificationShown] = useState(false)
-  const [image, setImage] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  // const [image, setImage] = useState<string | null>(null)
+  // const fileInputRef = useRef<HTMLInputElement>(null)
   const { addNotification } = useNotification()
 
   // Initialize the form with user data when opening the popup
@@ -155,6 +155,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
     }
   }
 
+  {/* 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -165,7 +166,7 @@ export default function EditProfilePopup({ isOpen, onClose }: EditProfilePopupPr
       reader.readAsDataURL(file)
     }
   }
-
+*/}
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) {

@@ -70,7 +70,7 @@ export default function RegisterForm() {
     }
   
     checkIfAuth()
-  }, [])
+  }, [router])
 
   const validateStep = (): boolean => {
     const newErrors: FormErrors = {}
@@ -104,7 +104,7 @@ export default function RegisterForm() {
           if (!formData.confirmPassword) {
             newErrors.confirmPassword = `${tAuth("register.confirmPassword")} ${tAuth("register.required")}`
           } else if (formData.confirmPassword !== formData.password) {
-            newErrors.confirmPassword = tAuth("register.passwordsMismatch")
+            newErrors.confirmPassword = tAuth("register.password celiacMismatch")
           }
           break
       }
@@ -141,20 +141,27 @@ export default function RegisterForm() {
       Cookies.set("registeredEmail", response.email, { expires: 1 / 24, sameSite: "strict" })
       addNotification("success", tNotifications("welcome"), tNotifications("registerSuccess"), 3000)
       router.push("/auth/login")
-    } catch (error: any) {
+    } catch (error: unknown) { // Changed from 'any' to 'unknown'
       const fieldErrors: FormErrors = {}
-      const errorField = error.cause?.field
-      const errorMessage = error.message
+      // Type guard to safely access error properties
+      if (error instanceof Error && 'cause' in error && error.cause && typeof error.cause === 'object' && 'field' in error.cause) {
+        const errorField = (error.cause as { field?: string }).field
+        const errorMessage = error.message
 
-      if (errorField === "email") {
-        fieldErrors.email = errorMessage.includes("unique") ? tAuth("register.emailExists") : errorMessage
-        setStep(0)
-        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.email || "", 4000)
-      } else if (errorField === "password") {
-        fieldErrors.password = errorMessage
-        setStep(1)
-        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.password || "", 4000)
+        if (errorField === "email") {
+          fieldErrors.email = errorMessage.includes("unique") ? tAuth("register.emailExists") : errorMessage
+          setStep(0)
+          addNotification("error", tNotifications("invalidInput.title"), fieldErrors.email || "", 4000)
+        } else if (errorField === "password") {
+          fieldErrors.password = errorMessage
+          setStep(1)
+          addNotification("error", tNotifications("invalidInput.title"), fieldErrors.password || "", 4000)
+        } else {
+          addNotification("error", tNotifications("invalidInput.title"), errorMessage, 4000)
+        }
       } else {
+        // Fallback for unexpected error types
+        const errorMessage = error instanceof Error ? error.message : tNotifications("genericError")
         addNotification("error", tNotifications("invalidInput.title"), errorMessage, 4000)
       }
 

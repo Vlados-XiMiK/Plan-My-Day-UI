@@ -62,9 +62,11 @@ export default function Profile() {
       await logoutUser()
       addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
       router.replace('/auth/login')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Logout error:', error)
-      addNotification('error', t('notifications:logoutErrorTitle'), error.message || t('notifications:logoutErrorMessage'))
+      // Safely handle the error, assuming it might be an Error instance
+      const errorMessage = error instanceof Error ? error.message : t('notifications:logoutErrorMessage')
+      addNotification('error', t('notifications:logoutErrorTitle'), errorMessage)
       router.replace('/auth/login')
     }
   }
