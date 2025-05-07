@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next"
 import type React from "react"
 import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
-
+import Cookies from "js-cookie"
 import { registerUser } from "@/api/auth"
 
 // type for motion.div
@@ -112,47 +112,46 @@ export default function RegisterForm() {
   }
 
   const onSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!validateStep()) return;
+    event.preventDefault()
+    if (!validateStep()) return
 
     if (step < steps.length - 1) {
-      setStep(step + 1);
-      return;
+      setStep(step + 1)
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     try {
-      await registerUser({
+      const response = await registerUser({
         email: formData.email,
         password: formData.password,
-      });
-
-      addNotification("success", tNotifications("welcome"), tNotifications("registerSuccess"), 3000);
-      router.push("/auth/login");
+      })
+      Cookies.set("registeredEmail", response.email, { expires: 1 / 24, sameSite: "strict" })
+      addNotification("success", tNotifications("welcome"), tNotifications("registerSuccess"), 3000)
+      router.push("/auth/login")
     } catch (error: any) {
-      const fieldErrors: FormErrors = {};
-
-      const errorField = error.cause?.field;
-      const errorMessage = error.message;
+      const fieldErrors: FormErrors = {}
+      const errorField = error.cause?.field
+      const errorMessage = error.message
 
       if (errorField === "email") {
-        fieldErrors.email = errorMessage.includes("unique") ? tAuth("register.emailExists") : errorMessage;
-        setStep(0);
-        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.email || '', 4000);
+        fieldErrors.email = errorMessage.includes("unique") ? tAuth("register.emailExists") : errorMessage
+        setStep(0)
+        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.email || "", 4000)
       } else if (errorField === "password") {
-        fieldErrors.password = errorMessage;
-        setStep(1);
-        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.password || '', 4000);
+        fieldErrors.password = errorMessage
+        setStep(1)
+        addNotification("error", tNotifications("invalidInput.title"), fieldErrors.password || "", 4000)
       } else {
-        addNotification("error", tNotifications("invalidInput.title"), errorMessage, 4000);
+        addNotification("error", tNotifications("invalidInput.title"), errorMessage, 4000)
       }
 
-      setErrors(fieldErrors);
+      setErrors(fieldErrors)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -329,8 +328,7 @@ export default function RegisterForm() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-gray-300 dark:border-gray-700" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-              </div>
+              <div className="relative flex justify-center text-xs uppercase"></div>
             </div>
           </div>
           <div className="mt-4 text-center text-xs text-gray-600 dark:text-gray-400">
