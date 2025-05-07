@@ -10,6 +10,8 @@ import { useTheme } from "next-themes"
 import { useTranslation } from "react-i18next"
 import SettingsPopup from "@/components/main/pop-up/SettingsPopup"
 import Avatar from "@/components/ui/Avatar"
+import { logoutUser } from "@/api/auth"
+import { useNotification } from "@/contexts/notification-context"
 
 interface HeaderProps {
   toggleSidebar: () => void
@@ -19,7 +21,7 @@ interface HeaderProps {
 }
 
 export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onProfileClick }: HeaderProps) {
-  const { t } = useTranslation("welcome_main")
+  const { t } = useTranslation(["welcome_main", "notification"])
   const router = useRouter()
   const [showDropdown, setShowDropdown] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -27,6 +29,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { user } = useUser()
+  const { addNotification } = useNotification()
   const [isDarkTheme, setIsDarkTheme] = useState(false)
 
   const locale = t("language") === "ua" ? uk : enUS
@@ -72,6 +75,19 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   }, [])
 
   const userName = user?.name || t("unknownUser")
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser()
+      addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
+      router.replace('/auth/login')
+    } catch (error: any) {
+      console.error('Logout error:', error)
+      addNotification('error', t('notifications:logoutErrorTitle'), error.message || t('notifications:logoutErrorMessage'))
+      router.replace('/auth/login')
+    }
+    setShowDropdown(false)
+  }
 
   return (
     <header
@@ -143,7 +159,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
               {t("settings.title")}
             </button>
             <button
-              onClick={() => router.push("/login")}
+              onClick={handleLogout}
               className={`flex items-center gap-2 w-full px-4 py-2 text-sm
                 ${isDarkTheme ? "hover:bg-purple-800/50" : "hover:bg-gray-200 sm:hover:bg-gray-100"}`}
             >

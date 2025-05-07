@@ -25,11 +25,11 @@ axiosClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      const refresh = Cookies.get("refreshToken");
+      const refresh = Cookies.get("refresh_token");
       if (!refresh) {
         // refresh no — logout
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
+        Cookies.remove("access_token");
+        Cookies.remove("refresh_token");
         window.location.href = "/auth/login";
         return Promise.reject(error);
       }
@@ -43,15 +43,15 @@ axiosClient.interceptors.response.use(
         const newAccess = response.data.access;
 
         // save new access in cookie
-        Cookies.set("accessToken", newAccess, { expires: 1, secure: true });
+        Cookies.set("access_token", newAccess, { expires: 1, secure: true });
 
         // repeat the original request with a new token
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
         return axiosClient(originalRequest);
       } catch (refreshError) {
         // refresh also expired - delete cookies, redirect
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
+        Cookies.remove("access_token");
+        Cookies.remove("refresh_token");
         window.location.href = "/auth/login";
         return Promise.reject(refreshError);
       }
@@ -63,7 +63,7 @@ axiosClient.interceptors.response.use(
 
 // Add an access token to each request
 axiosClient.interceptors.request.use((config) => {
-  const accessToken = Cookies.get("accessToken");
+  const accessToken = Cookies.get("access_token");
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }

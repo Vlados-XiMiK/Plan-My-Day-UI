@@ -71,3 +71,21 @@ export async function isAuthenticated(): Promise<boolean> {
   // Actual token validity will be checked by axiosClient interceptor on API calls
   return !!(accessToken || refreshToken);
 }
+
+
+  export async function logoutUser() {
+    try {
+    const refresh = Cookies.get("refresh_token");
+  
+      const response = await axiosClient.post("auth/users/logout/", {
+        refresh, 
+      });
+  
+      Cookies.remove("access_token");
+      Cookies.remove("refresh_token");
+      return response.data;
+    } catch (error: any) {
+      console.error("Logout failed:", error.response?.data || error);
+      throw new Error("Logout failed");
+    }
+  }

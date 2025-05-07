@@ -183,5 +183,9 @@
   "roleUpdateFailed": {
     "title": "Update Failed",
     "message": "Failed to update member roles. Please try again."
-  }
+  },
+  "logoutSuccessTitle": "Logout Successful",
+  "logoutSuccessMessage": "You have been logged out successfully.",
+  "logoutErrorTitle": "Logout Failed",
+  "logoutErrorMessage": "Something went wrong during logout. Please try again."
 }
