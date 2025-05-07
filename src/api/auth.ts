@@ -1,8 +1,8 @@
 import axios from "axios";
-import Cookies from "js-cookie"
+import Cookies from "js-cookie";
+import axiosClient from "@/api/axiosClient";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 
 export interface RegisterPayload {
   email: string;
@@ -10,18 +10,13 @@ export interface RegisterPayload {
 }
 
 export interface LoginPayload {
-    email: string;
-    password: string;
-  }
+  email: string;
+  password: string;
+}
 
 export async function registerUser(payload: RegisterPayload) {
   try {
-    const response = await axios.post(`${API_URL}auth/users/register/`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    
+    const response = await axiosClient.post(`auth/users/register/`, payload); // use axiosClient
 
     return response.data;
   } catch (error: any) {
@@ -33,7 +28,11 @@ export async function registerUser(payload: RegisterPayload) {
 
     throw new Error(errorMessage, {
       cause: {
-        field: error.response?.data?.email ? "email" : error.response?.data?.password ? "password" : null,
+        field: error.response?.data?.email
+          ? "email"
+          : error.response?.data?.password
+          ? "password"
+          : null,
         detail: error.response?.data,
       },
     });
@@ -46,7 +45,9 @@ export async function loginUser(payload: LoginPayload) {
       headers: {
         "Content-Type": "application/json",
       },
+      withCredentials: true, // if backend works with cookies
     });
+
     const { access, refresh } = response.data;
 
     Cookies.set("access_token", access, { expires: 1 / 24, sameSite: "strict" });
@@ -62,4 +63,3 @@ export async function loginUser(payload: LoginPayload) {
     });
   }
 }
-
