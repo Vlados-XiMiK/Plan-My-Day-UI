@@ -14,7 +14,7 @@ import type React from "react"
 import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
 import Cookies from "js-cookie"
-import { loginUser } from "@/api/auth"
+import { loginUser, isAuthenticated } from "@/api/auth"
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
@@ -23,6 +23,8 @@ interface FormErrors {
   email?: string
   password?: string
 }
+
+
 
 export default function LoginForm() {
   const { t: tAuth } = useTranslation("auth")
@@ -39,6 +41,15 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<FormErrors>({})
 
   useEffect(() => {
+    const checkIfAuth = async () => {
+      const auth = await isAuthenticated()
+      if (auth) {
+        router.replace("/dashboard")
+      }
+    }
+  
+    checkIfAuth()
+  
     const registeredEmail = Cookies.get("registeredEmail")
     if (registeredEmail && /^\S+@\S+\.\S+$/.test(registeredEmail)) {
       setFormData((prev) => ({ ...prev, email: registeredEmail }))

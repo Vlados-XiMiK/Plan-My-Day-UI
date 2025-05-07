@@ -1,11 +1,42 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import ProjectsList from '@/components/main/projects/projects-list'
+import { useRouter } from 'next/navigation'
 import { Folder } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { isAuthenticated } from '@/api/auth'
+import Loader from '@/components/ui/preloader'
 
 export default function Project() {
   const { t } = useTranslation('projects')
+  const router = useRouter()
+  const [isAuth, setIsAuth] = useState(false) // Для статуса авторизации
+  const [authLoading, setAuthLoading] = useState(true) // Для проверки авторизации
+
+  // Проверка авторизации
+  useEffect(() => {
+    async function checkAuth() {
+      const auth = await isAuthenticated()
+      setIsAuth(auth)
+      setAuthLoading(false)
+
+      if (!auth) {
+        router.replace('/auth/login') // Перенаправление на логин, если не авторизован
+      }
+    }
+    checkAuth()
+  }, [router])
+
+  // Показываем лоадер во время проверки авторизации
+  if (authLoading) {
+    return <Loader />
+  }
+
+  // Если не авторизован, ничего не рендерим (редирект уже выполнен)
+  if (!isAuth) {
+    return null
+  }
 
   return (
     <main className="container py-6 h-full overflow-y-auto">

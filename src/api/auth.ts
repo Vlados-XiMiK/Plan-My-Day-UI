@@ -16,8 +16,7 @@ export interface LoginPayload {
 
 export async function registerUser(payload: RegisterPayload) {
   try {
-    const response = await axiosClient.post(`auth/users/register/`, payload); // use axiosClient
-
+    const response = await axiosClient.post(`auth/users/register/`, payload);
     return response.data;
   } catch (error: any) {
     const errorMessage =
@@ -45,7 +44,7 @@ export async function loginUser(payload: LoginPayload) {
       headers: {
         "Content-Type": "application/json",
       },
-      withCredentials: true, // if backend works with cookies
+      withCredentials: true,
     });
 
     const { access, refresh } = response.data;
@@ -62,4 +61,13 @@ export async function loginUser(payload: LoginPayload) {
       },
     });
   }
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  const accessToken = Cookies.get("access_token");
+  const refreshToken = Cookies.get("refresh_token");
+
+  // If access_token or refresh_token exists, assume user is authenticated
+  // Actual token validity will be checked by axiosClient interceptor on API calls
+  return !!(accessToken || refreshToken);
 }

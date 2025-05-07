@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { useMobile } from '@/hooks/use-mobile'
 import TaskDetailModal from './task-detail-modal'
@@ -12,18 +13,38 @@ import CalendarToolbar from './calendar-toolbar'
 import MonthView from './calendar-views/month-view'
 import ListView from './calendar-views/list-view'
 import { useTranslation } from 'react-i18next'
+import { isAuthenticated } from '@/api/auth'
+import Loader from '@/components/ui/preloader'
 
 export default function Calendar() {
   const { t } = useTranslation('calendar')
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const [isAuth, setIsAuth] = useState(false) // Для статуса авторизации
+  const [authLoading, setAuthLoading] = useState(true) // Для проверки авторизации
   const isMobile = useMobile()
 
   // Get all calendar functionality from the custom hook
   const calendar = useCalendar()
 
+  // Проверка авторизации
+  useEffect(() => {
+    async function checkAuth() {
+      const auth = await isAuthenticated()
+      setIsAuth(auth)
+      setAuthLoading(false)
+
+      if (!auth) {
+        router.replace('/auth/login') // Перенаправление на логин, если не авторизован
+      }
+    }
+    checkAuth()
+  }, [router])
+
   // Fetch tasks and categories on component mount
   useEffect(() => {
     const loadData = async () => {
+      if (!isAuth) return // Не загружаем данные, если не авторизован
       setIsLoading(true)
       try {
         const [tasksData, categoriesData] = await Promise.all([fetchTasks(), fetchCategories()])
@@ -36,9 +57,11 @@ export default function Calendar() {
       }
     }
 
-    loadData()
+    if (isAuth) {
+      loadData()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isAuth])
 
   // Get day names from translations
   const dayNames = [
@@ -61,12 +84,18 @@ export default function Calendar() {
     t('shortDayNames.6'),
   ]
 
+  // Показываем лоадер во время проверки авторизации
+  if (authLoading) {
+    return <Loader />
+  }
+
+  // Если не авторизован, ничего не рендерим (редирект уже выполнен)
+  if (!isAuth) {
+    return null
+  }
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    )
+    return <Loader />
   }
 
   return (

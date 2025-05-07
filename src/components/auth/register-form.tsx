@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, MotionProps } from "framer-motion"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -14,7 +14,7 @@ import type React from "react"
 import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
 import Cookies from "js-cookie"
-import { registerUser } from "@/api/auth"
+import { registerUser, isAuthenticated } from "@/api/auth"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -60,6 +60,17 @@ export default function RegisterForm() {
     confirmPassword: "",
   })
   const [errors, setErrors] = useState<FormErrors>({})
+
+  useEffect(() => {
+    const checkIfAuth = async () => {
+      const auth = await isAuthenticated()
+      if (auth) {
+        router.replace("/dashboard")
+      }
+    }
+  
+    checkIfAuth()
+  }, [])
 
   const validateStep = (): boolean => {
     const newErrors: FormErrors = {}
