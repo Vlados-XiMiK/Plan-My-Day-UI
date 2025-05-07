@@ -1,27 +1,27 @@
 {
-    "language": "en",
-    "title": "Statistics",
-    "subtitle": "Overview of your task management",
-    "tasksCompleted": "Tasks Completed",
-    "last7Days": "Last 7 days",
-    "productivityScore": "Productivity Score",
-    "productivity": {
-      "label": "Productivity",
-      "lastWeek": "Last Week",
-      "thisWeek": "This Week"
-    },
-    "productivityChange": "from last week",
-    "productivityMessage": "Great job! You’re on your way to 100%!",
-    "productivityDecline": "Keep going! You can improve next week!",
-    "taskDistribution": {
-      "title": "Task Distribution"
-    },
-    "noTasks": "No tasks available",
-    "retry": "Retry",
-    "noTasksThisWeek": "No tasks this week",
-    "loadingData": "Loading data...",
-    "error": {
-      "loadFailed": "Failed to load statistics data.",
-      "loadFailedTitle": "Load Failed"
-    }
+  "language": "en",
+  "title": "Statistics",
+  "subtitle": "Overview of your task management",
+  "tasksCompleted": "Tasks Completed",
+  "last7Days": "Last 7 days",
+  "productivityScore": "Productivity Score",
+  "productivity": {
+    "label": "Productivity",
+    "lastWeek": "Last Week",
+    "thisWeek": "This Week"
+  },
+  "productivityChange": "from last week",
+  "productivityMessage": "Great job! You’re on your way to 100%!",
+  "productivityDecline": "Keep going! You can improve next week!",
+  "taskDistribution": {
+    "title": "Task Distribution"
+  },
+  "noTasks": "No tasks available",
+  "retry": "Retry",
+  "noTasksThisWeek": "No tasks this week",
+  "loadingData": "Loading data...",
+  "error": {
+    "loadFailed": "Failed to load statistics data.",
+    "loadFailedTitle": "Load Failed"
   }
+}

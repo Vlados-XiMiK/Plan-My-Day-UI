@@ -1,68 +1,60 @@
 {
-    "language": "en",
-    "dayNames": [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday"
-    ],
-    "shortDayNames": [
-      "Sun",
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat"
-    ],
-    "monthNames": [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    ],
-    "shortMonthNames": [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
-    ],
-    "today": "Today",
-    "searchPlaceholder": "Search tasks...",
-    "categories": "Categories",
-    "clearFilters": "Clear filters ({{count}})",
-    "showCompleted": "Show completed",
-    "hideCompleted": "Hide completed",
-    "priority": {
-      "high": "High priority",
-      "medium": "Medium priority",
-      "low": "Low priority"
-    },
-    "status": {
-      "overdue": "Overdue",
-      "dueSoon": "Due soon",
-      "completed": "Completed"
-    },
-    "starred": "Starred",
-    "noDescription": "No description provided.",
-    "created": "Created:"
-  }
+  "language": "en",
+  "dayNames": [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ],
+  "shortDayNames": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  "monthNames": [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ],
+  "shortMonthNames": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ],
+  "today": "Today",
+  "searchPlaceholder": "Search tasks...",
+  "categories": "Categories",
+  "clearFilters": "Clear filters ({{count}})",
+  "showCompleted": "Show completed",
+  "hideCompleted": "Hide completed",
+  "priority": {
+    "high": "High priority",
+    "medium": "Medium priority",
+    "low": "Low priority"
+  },
+  "status": {
+    "overdue": "Overdue",
+    "dueSoon": "Due soon",
+    "completed": "Completed"
+  },
+  "starred": "Starred",
+  "noDescription": "No description provided.",
+  "created": "Created:"
+}

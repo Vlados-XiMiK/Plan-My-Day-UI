@@ -1,27 +1,27 @@
 {
-    "language": "en",
-    "myDay": "My Day",
-    "profile": "Profile",
-    "settings": {
-      "title": "Settings",
-      "theme": "Theme",
-      "lightTheme": "Light",
-      "darkTheme": "Dark",
-      "language": "Language",
-      "languageEnglish": "English",
-      "languageUkrainian": "Ukraine",
-      "deadlineReminders": "Deadline Reminders",
-      "close": "Close"
-    },
-    "signOut": "Sign Out",
-    "unknownUser": "Unknown User",
-    "expandSidebar": "Expand sidebar",
-    "collapseSidebar": "Collapse sidebar",
-    "toggleSidebar": "Toggle sidebar",
-    "stats": "Stats",
-    "allTasks": "All Tasks",
-    "calendar": "Calendar",
-    "project": "Projects",
-    "myCategories": "My Categories",
-    "logoAlt": "Logo"
-  }
+  "language": "en",
+  "myDay": "My Day",
+  "profile": "Profile",
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark",
+    "language": "Language",
+    "languageEnglish": "English",
+    "languageUkrainian": "Ukraine",
+    "deadlineReminders": "Deadline Reminders",
+    "close": "Close"
+  },
+  "signOut": "Sign Out",
+  "unknownUser": "Unknown User",
+  "expandSidebar": "Expand sidebar",
+  "collapseSidebar": "Collapse sidebar",
+  "toggleSidebar": "Toggle sidebar",
+  "stats": "Stats",
+  "allTasks": "All Tasks",
+  "calendar": "Calendar",
+  "project": "Projects",
+  "myCategories": "My Categories",
+  "logoAlt": "Logo"
+}

@@ -1,52 +1,52 @@
 {
-    "language": "en",
-    "filtersAndSearch": "Filters and Search",
-    "searchPlaceholder": "Search (e.g., 'high priority work this week')",
-    "status": {
-      "all": "All Status",
-      "completed": "Completed",
-      "incomplete": "Incomplete"
-    },
-    "priority": {
-      "all": "All Priority",
-      "high": "High",
-      "medium": "Medium",
-      "low": "Low",
-      "label": "Priority"
-    },
-    "sort": {
-      "createdDate": "Created Date",
-      "lastModified": "Last Modified",
-      "dueDate": "Due Date"
-    },
-    "clearFilters": "Clear Filters",
-    "createTask": "Create Task",
-    "loadMore": "Load More",
-    "editTask": "Edit task",
-    "addToFavorites": "Add to favorites",
-    "removeFromFavorites": "Remove from favorites",
-    "deleteTask": "Delete task",
-    "created": "Created",
-    "due": "Due",
-    "timeRemaining": {
-      "completed": "Completed",
-      "overdue": "Overdue",
-      "dueInDays": "Due in {{days}} {{dayPlural}} {{hours}}h {{minutes}}m",
-      "dueInHours": "Due in {{hours}} {{hourPlural}} {{minutes}} {{minutePlural}}",
-      "day": "day",
-      "days": "days",
-      "hour": "hour",
-      "hours": "hours",
-      "minute": "minute",
-      "minutes": "minutes"
-    },
-    "deadlineReminder": {
-      "upcomingDeadlines": "Upcoming Deadlines",
-      "tasksCount": "{{count}} tasks",
-      "noUrgentTasks": "No urgent tasks",
-      "hide": "Hide",
-      "snooze": "Snooze",
-      "complete": "Complete",
-      "remaining": "Remaining"
-    }
+  "language": "en",
+  "filtersAndSearch": "Filters and Search",
+  "searchPlaceholder": "Search (e.g., 'high priority work this week')",
+  "status": {
+    "all": "All Status",
+    "completed": "Completed",
+    "incomplete": "Incomplete"
+  },
+  "priority": {
+    "all": "All Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "label": "Priority"
+  },
+  "sort": {
+    "createdDate": "Created Date",
+    "lastModified": "Last Modified",
+    "dueDate": "Due Date"
+  },
+  "clearFilters": "Clear Filters",
+  "createTask": "Create Task",
+  "loadMore": "Load More",
+  "editTask": "Edit task",
+  "addToFavorites": "Add to favorites",
+  "removeFromFavorites": "Remove from favorites",
+  "deleteTask": "Delete task",
+  "created": "Created",
+  "due": "Due",
+  "timeRemaining": {
+    "completed": "Completed",
+    "overdue": "Overdue",
+    "dueInDays": "Due in {{days}} {{dayPlural}} {{hours}}h {{minutes}}m",
+    "dueInHours": "Due in {{hours}} {{hourPlural}} {{minutes}} {{minutePlural}}",
+    "day": "day",
+    "days": "days",
+    "hour": "hour",
+    "hours": "hours",
+    "minute": "minute",
+    "minutes": "minutes"
+  },
+  "deadlineReminder": {
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "tasksCount": "{{count}} tasks",
+    "noUrgentTasks": "No urgent tasks",
+    "hide": "Hide",
+    "snooze": "Snooze",
+    "complete": "Complete",
+    "remaining": "Remaining"
   }
+}
