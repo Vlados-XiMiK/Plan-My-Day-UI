@@ -1,13 +1,15 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, MotionProps, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { HTMLAttributes } from 'react'
+import { useTranslation } from "react-i18next"
+import { format } from "date-fns"
+import { enUS, uk } from "date-fns/locale"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -19,12 +21,25 @@ interface CustomCalendarProps {
 }
 
 export default function CustomCalendar({ selectedDate, onDateSelect, className }: CustomCalendarProps) {
+  const { t, i18n } = useTranslation('projects')
   const [currentMonth, setCurrentMonth] = useState<Date>(selectedDate || new Date())
   const [calendarDays, setCalendarDays] = useState<Array<Date | null>>([])
   const [animationDirection, setAnimationDirection] = useState<"left" | "right">("right")
 
-  // Day names for the header
-  const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
+  // Generate day names for the header based on locale
+  const getDayNames = () => {
+    const locale = i18n.language === 'ua' ? uk : enUS
+    const days: string[] = []
+    const baseDate = new Date(2025, 0, 5) // Start from Sunday, Jan 5, 2025
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(baseDate)
+      date.setDate(baseDate.getDate() + i)
+      days.push(format(date, 'EEEEEE', { locale }))
+    }
+    return days
+  }
+
+  const dayNames = getDayNames()
 
   // Generate calendar days for the current month
   useEffect(() => {
@@ -73,8 +88,6 @@ export default function CustomCalendar({ selectedDate, onDateSelect, className }
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
   }
 
-  // Navigate to current month and select today
-
   // Check if a date is today
   const isToday = (date: Date) => {
     const today = new Date()
@@ -95,24 +108,25 @@ export default function CustomCalendar({ selectedDate, onDateSelect, className }
     )
   }
 
-  // Format month and year for display
+  // Format month and year for display with locale
   const formatMonthYear = (date: Date) => {
-    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    const locale = i18n.language === 'ua' ? uk : enUS
+    return format(date, 'MMMM yyyy', { locale })
   }
 
   return (
     <div className={cn("p-3 bg-white dark:bg-gray-950 rounded-lg shadow-md", className)}>
       <div className="flex items-center justify-between mb-4">
         <Button
-    type="button"
-    variant="ghost"
-    size="icon"
-    onClick={goToPreviousMonth}
-    className="h-8 w-8 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/20"
-  >
-    <ChevronLeft className="h-4 w-4" />
-    <span className="sr-only">Previous month</span>
-  </Button>
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={goToPreviousMonth}
+          className="h-8 w-8 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/20"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span className="sr-only">{t('custom_calendar.previousMonth')}</span>
+        </Button>
 
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium">{formatMonthYear(currentMonth)}</h3>
@@ -133,20 +147,20 @@ export default function CustomCalendar({ selectedDate, onDateSelect, className }
             }}
             className="h-6 text-xs px-2 hover:bg-purple-100 dark:hover:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300"
           >
-            Today
+            {t('custom_calendar.today')}
           </Button>
         </div>
 
         <Button
-  type="button"
-  variant="ghost"
-  size="icon"
-  onClick={goToNextMonth}
-  className="h-8 w-8 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/20"
->
-  <ChevronRight className="h-4 w-4" />
-  <span className="sr-only">Next month</span>
-</Button>
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={goToNextMonth}
+          className="h-8 w-8 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/20"
+        >
+          <ChevronRight className="h-4 w-4" />
+          <span className="sr-only">{t('custom_calendar.nextMonth')}</span>
+        </Button>
       </div>
 
       <div className="grid grid-cols-7 gap-1 mb-2">

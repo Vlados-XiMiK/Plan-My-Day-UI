@@ -99,5 +99,10 @@
     "due": "Due on {{date}} at {{time}}",
     "completedBy": "Completed by",
     "completed": "Completed {{time}}"
+  },
+  "custom_calendar": {
+    "today": "Today",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   }
 }

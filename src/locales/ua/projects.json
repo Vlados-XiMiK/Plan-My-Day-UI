@@ -99,5 +99,10 @@
     "due": "Виконати до {{date}}, {{time}}",
     "completedBy": "Виконано",
     "completed": "Виконано {{time}}"
+  },
+  "custom_calendar": {
+    "today": "Сьогодні",
+    "previousMonth": "Попередній місяць",
+    "nextMonth": "Наступний місяць"
   }
 }
