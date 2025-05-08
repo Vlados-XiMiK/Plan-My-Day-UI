@@ -12,8 +12,8 @@ import SettingsPopup from "@/components/main/pop-up/SettingsPopup"
 import Avatar from "@/components/ui/Avatar"
 import { logoutUser } from "@/api/auth"
 import { useNotification } from "@/contexts/notification-context"
-import { AxiosError } from "axios" // Добавляем импорт AxiosError
-import axios from "axios" // Добавляем импорт axios
+import { AxiosError } from "axios"
+import axios from "axios"
 
 interface HeaderProps {
   toggleSidebar: () => void
@@ -22,7 +22,6 @@ interface HeaderProps {
   onProfileClick?: () => void
 }
 
-// Интерфейс для структуры ответа об ошибке (опционально)
 interface ErrorResponse {
   detail?: string
 }
@@ -88,7 +87,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
       await logoutUser()
       addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
       router.replace('/auth/login')
-    } catch (error: unknown) { // Заменяем any на unknown
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>
         console.error('Logout error:', axiosError.response?.data || axiosError.message)
@@ -137,7 +136,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
             ${isDarkTheme ? "bg-purple-900/50 hover:bg-purple-800/50 text-gray-100" : "bg-gray-50 sm:bg-white/50 hover:bg-gray-200 sm:hover:bg-gray-100 text-gray-900 sm:text-gray-800"}`}
         >
           <Avatar name={userName} size="small" />
-          <span className="font-medium hidden sm:inline">{userName}</span>
+          <span className="font-medium hidden sm:inline truncate max-w-[120px]">{userName}</span>
           <ChevronDown
             className={`h-4 w-4 ${isDarkTheme ? "text-gray-300" : "text-gray-700 sm:text-gray-600"} ${showDropdown ? "rotate-180" : ""}`}
           />

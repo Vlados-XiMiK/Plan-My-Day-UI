@@ -98,6 +98,9 @@ export default function Profile() {
       : `${formattedDate} at ${formattedTime}`
   }
 
+  // Truncate username if longer than 20 characters
+  const displayedUsername = user.username.length > 20 ? `${user.username.slice(0, 20)}...` : user.username
+
   return (
     <div className="mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 min-h-screen relative pb-24 md:pb-32 h-full overflow-y-auto">
       <div className="relative z-20">
@@ -116,9 +119,9 @@ export default function Profile() {
           <div className="flex flex-col items-center sm:flex-row gap-4 sm:gap-6">
             <Avatar name={user.username} surname="" />
 
-            <div className="flex-1 space-y-4 text-center sm:text-left">
+            <div className="flex-1 space-y-4 text-center sm:text-left max-w-full">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">{user.username}</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 max-w-full">{displayedUsername}</h2>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
                   <button
                     onClick={() => setIsEditing(true)}

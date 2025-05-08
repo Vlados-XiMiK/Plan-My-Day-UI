@@ -117,13 +117,20 @@
       "usernameRequired": "Username is required",
       "emailRequired": "Email is required",
       "invalidEmail": "Invalid email format",
+      "emailTaken": "This email is already taken.",
+      "onlyDigits": "Only digits are allowed.",
       "invalidAge": "Age must be a positive number",
       "invalidPhoneFormat": "Phone number must contain only digits, spaces, '+' or '-'",
       "invalidPhoneLength": "Invalid phone number (max 15 digits)",
       "errorTitle": "Validation Error",
       "errorMessage": "Please fix the errors in the form",
       "ageTooLow": "Age is too low",
-      "ageTooHigh": "Age is too high"
+      "ageTooHigh": "Age is too high",
+      "invalidPlaceOfWorkChars": "Place of work contains invalid characters.",
+      "phoneTooShort": "Phone number must contain at least 7 digits.",
+      "phoneTooLong": "Phone number must contain no more than 15 digits.",
+      "phoneMaxLength": "Phone number with country code must not exceed 15 characters.",
+      "usernameTooLong": "Username must be no longer than 80 characters"
     }
   },
   "create_project": {
