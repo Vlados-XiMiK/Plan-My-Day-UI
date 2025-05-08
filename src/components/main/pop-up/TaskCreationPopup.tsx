@@ -1,122 +1,128 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucide-react'
-import { motion, AnimatePresence, MotionProps } from 'framer-motion'
-import { useNotification } from '@/contexts/notification-context'
-import { HTMLAttributes } from 'react'
-import { useTheme } from 'next-themes'
-import { useTranslation } from 'react-i18next'
+import { useState, useEffect } from 'react';
+import { X, CalendarIcon, Clock, Tag, BarChart, FileText, ListTodo } from 'lucide-react';
+import { motion, AnimatePresence, MotionProps } from 'framer-motion';
+import { useNotification } from '@/contexts/notification-context';
+import { HTMLAttributes } from 'react';
+import { useTheme } from 'next-themes';
+import { useTranslation } from 'react-i18next';
+import type { Task } from '@/types';
 
-import type { Task } from '@/types'
-
-type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
 interface TaskCreationPopupProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (task: Task) => void
-  categories: string[]
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (task: Partial<Task>) => void;
+  categories: string[];
+  isCreating?: boolean;
 }
 
-export default function TaskCreationPopup({ isOpen, onClose, onSave, categories }: TaskCreationPopupProps) {
-  const { t } = useTranslation(['popups', 'notifications'])
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<string | undefined>(undefined)
-  const [dueDate, setDueDate] = useState('')
-  const [dueTime, setDueTime] = useState('23:59')
-  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const { addNotification } = useNotification()
-  const { theme } = useTheme()
-  const [isDarkTheme, setIsDarkTheme] = useState(false)
+export default function TaskCreationPopup({ isOpen, onClose, onSave, categories, isCreating = false }: TaskCreationPopupProps) {
+  const { t } = useTranslation(['popups', 'notifications']);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('23:59');
+  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { addNotification } = useNotification();
+  const { theme } = useTheme();
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || theme
-    setIsDarkTheme(savedTheme === 'dark')
+    const savedTheme = localStorage.getItem('theme') || theme;
+    setIsDarkTheme(savedTheme === 'dark');
 
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'theme') {
-        setIsDarkTheme(e.newValue === 'dark')
+        setIsDarkTheme(e.newValue === 'dark');
       }
-    }
+    };
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [theme])
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [theme]);
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    const currentDate = new Date()
-    const selectedDate = new Date(`${dueDate}T${dueTime}`)
+    const currentDate = new Date();
+    const selectedDate = new Date(`${dueDate}T${dueTime}`);
 
     if (!title.trim()) {
-      newErrors.title = t('popups:task_creation_popup.validation.titleRequired')
+      newErrors.title = t('popups:task_creation_popup.validation.titleRequired');
     }
     if (!description.trim()) {
-      newErrors.description = t('popups:task_creation_popup.validation.descriptionRequired')
+      newErrors.description = t('popups:task_creation_popup.validation.descriptionRequired');
     }
     if (!dueDate) {
-      newErrors.dueDate = t('popups:task_creation_popup.validation.dueDateRequired')
+      newErrors.dueDate = t('popups:task_creation_popup.validation.dueDateRequired');
     }
     if (!dueTime) {
-      newErrors.dueTime = t('popups:task_creation_popup.validation.dueTimeRequired')
+      newErrors.dueTime = t('popups:task_creation_popup.validation.dueTimeRequired');
     } else if (selectedDate < currentDate) {
-      newErrors.dueDate = t('popups:task_creation_popup.validation.pastDateTime')
-      newErrors.dueTime = t('popups:task_creation_popup.validation.pastDateTime')
+      newErrors.dueDate = t('popups:task_creation_popup.validation.pastDateTime');
+      newErrors.dueTime = t('popups:task_creation_popup.validation.pastDateTime');
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!validateForm()) {
-      const form = document.getElementById('task-form')
-      form?.classList.add('animate-shake')
+      const form = document.getElementById('task-form');
+      form?.classList.add('animate-shake');
       setTimeout(() => {
-        form?.classList.remove('animate-shake')
-      }, 500)
-      addNotification('error', t('popups:task_creation_popup.validation.errorTitle'), t('popups:task_creation_popup.validation.errorMessage'))
-      return
+        form?.classList.remove('animate-shake');
+      }, 500);
+      addNotification(
+        'error',
+        t('popups:task_creation_popup.validation.errorTitle'),
+        t('popups:task_creation_popup.validation.errorMessage')
+      );
+      return;
     }
 
-    onSave({
-      id: 0,
+    const task: Partial<Task> = {
       title,
       description,
-      createdAt: new Date().toISOString(),
-      dueDate: `${dueDate}T${dueTime}`,
-      category,
+      dueDate: `${dueDate} ${dueTime}:00`, // Формат: YYYY-MM-DD HH:mm:ss
+      category: category || undefined,
       priority,
       completed: false,
-      starred: false
-    })
+      starred: false,
+    };
 
-    setTitle('')
-    setDescription('')
-    setCategory(undefined)
-    setDueDate('')
-    setDueTime('23:59')
-    setPriority('medium')
-    setErrors({})
-    onClose()
-  }
+    console.log('Task payload:', task); // Логирование для отладки
+
+    onSave(task);
+
+    setTitle('');
+    setDescription('');
+    setCategory(undefined);
+    setDueDate('');
+    setDueTime('23:59');
+    setPriority('medium');
+    setErrors({});
+    onClose();
+  };
 
   return (
     <AnimatePresence>
@@ -176,6 +182,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                         errors.title ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       placeholder={t('popups:task_creation_popup.placeholders.title')}
+                      disabled={isCreating}
                     />
                   </div>
                   {errors.title && <p className={`${isDarkTheme ? 'text-red-400' : 'text-red-500'} text-sm`}>{errors.title}</p>}
@@ -193,6 +200,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                         errors.description ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       placeholder={t('popups:task_creation_popup.placeholders.description')}
+                      disabled={isCreating}
                     />
                   </div>
                   {errors.description && <p className={`${isDarkTheme ? 'text-red-400' : 'text-red-500'} text-sm mt-1`}>{errors.description}</p>}
@@ -206,6 +214,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                       value={category ?? ''}
                       onChange={(e) => setCategory(e.target.value === '' ? undefined : e.target.value)}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
+                      disabled={isCreating}
                     >
                       <option value="" className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
                         {t('popups:task_creation_popup.placeholders.category')}
@@ -227,6 +236,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                       value={priority}
                       onChange={(e) => setPriority(e.target.value as 'high' | 'medium' | 'low')}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
+                      disabled={isCreating}
                     >
                       <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
                         {t('popups:task_creation_popup.priority.low')}
@@ -253,6 +263,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                         className={`rounded-lg border ${
                           errors.dueDate ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                         } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
+                        disabled={isCreating}
                       />
                       <div className="flex items-center space-x-2">
                         <Clock className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
@@ -263,6 +274,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                           className={`flex-grow rounded-lg border ${
                             errors.dueTime ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                           } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
+                          disabled={isCreating}
                         />
                       </div>
                     </div>
@@ -277,12 +289,16 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
                     type="button"
                     onClick={onClose}
                     className={`px-4 py-2 ${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors duration-200`}
+                    disabled={isCreating}
                   >
                     {t('popups:task_creation_popup.buttons.cancel')}
                   </button>
                   <button
                     type="submit"
-                    className={`px-4 py-2 ${isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'} rounded-lg transition-colors duration-200`}
+                    className={`px-4 py-2 ${
+                      isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'
+                    } rounded-lg transition-colors duration-200 ${isCreating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isCreating}
                   >
                     {t('popups:task_creation_popup.buttons.createTask')}
                   </button>
@@ -293,5 +309,5 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories 
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
