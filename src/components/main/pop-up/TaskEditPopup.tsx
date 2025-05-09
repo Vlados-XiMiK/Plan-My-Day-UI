@@ -7,8 +7,7 @@ import { useNotification } from '@/contexts/notification-context'
 import { HTMLAttributes } from 'react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
-
-import type { Task } from '@/types'
+import type { Task, Category } from '@/types'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -16,15 +15,16 @@ interface TaskEditPopupProps {
   isOpen: boolean
   onClose: () => void
   onSave: (task: Task) => void
-  categories: string[]
+  categories: Category[]
   task: Task
+  isUpdating?: boolean
 }
 
-export default function TaskEditPopup({ isOpen, onClose, onSave, categories, task }: TaskEditPopupProps) {
+export default function TaskEditPopup({ isOpen, onClose, onSave, categories, task, isUpdating = false }: TaskEditPopupProps) {
   const { t } = useTranslation(['popups', 'notifications'])
   const [title, setTitle] = useState(task.title || '')
   const [description, setDescription] = useState(task.description || '')
-  const [category, setCategory] = useState<string | undefined>(task.category ?? undefined)
+  const [categoryId, setCategoryId] = useState<number | null>(task.category ?? null)
   const [dueDate, setDueDate] = useState('')
   const [dueTime, setDueTime] = useState('23:59')
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>(task.priority || 'medium')
@@ -36,12 +36,34 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
   useEffect(() => {
     setTitle(task.title || '')
     setDescription(task.description || '')
-    setCategory(task.category ?? undefined)
+    setCategoryId(task.category ?? null)
     setPriority(task.priority || 'medium')
+    
+    // Parse dueDate safely
     if (task.dueDate) {
-      const [date, time] = task.dueDate.split('T')
-      setDueDate(date || '')
-      setDueTime(time?.substring(0, 5) || '23:59')
+      try {
+        // Handle formats like "2025-05-10 23:59:00" or "2025-05-10T23:59:00"
+        const dateTime = task.dueDate.replace('T', ' ')
+        const [datePart, timePart] = dateTime.split(' ')
+        if (datePart) {
+          // Ensure date is in YYYY-MM-DD format
+          setDueDate(datePart)
+        }
+        if (timePart) {
+          // Extract HH:mm from HH:mm:ss or HH:mm
+          const [hours, minutes] = timePart.split(':')
+          setDueTime(`${hours}:${minutes}`)
+        } else {
+          setDueTime('23:59')
+        }
+      } catch (error) {
+        console.error('Error parsing dueDate:', task.dueDate, error)
+        setDueDate('')
+        setDueTime('23:59')
+      }
+    } else {
+      setDueDate('')
+      setDueTime('23:59')
     }
   }, [task])
 
@@ -73,7 +95,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     const currentDate = new Date()
-    const selectedDate = new Date(`${dueDate}T${dueTime}`)
+    const selectedDate = dueDate && dueTime ? new Date(`${dueDate}T${dueTime}`) : null
 
     if (!title.trim()) {
       newErrors.title = t('popups:task_edit_popup.validation.titleRequired')
@@ -86,7 +108,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
     }
     if (!dueTime) {
       newErrors.dueTime = t('popups:task_edit_popup.validation.dueTimeRequired')
-    } else if (selectedDate < currentDate) {
+    } else if (selectedDate && selectedDate < currentDate) {
       newErrors.dueDate = t('popups:task_edit_popup.validation.pastDateTime')
       newErrors.dueTime = t('popups:task_edit_popup.validation.pastDateTime')
     }
@@ -114,12 +136,15 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
       return
     }
 
+    console.log('Categories at submit:', categories)
+    console.log('Selected categoryId:', categoryId)
+
     onSave({
       ...task,
       title,
       description,
-      category,
-      dueDate: `${dueDate}T${dueTime}`,
+      category: categoryId,
+      dueDate: `${dueDate} ${dueTime}:00`,
       priority,
     })
 
@@ -128,12 +153,16 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
   }
 
   const handleClose = () => {
-    if (title.trim() || description.trim() || category || dueDate || dueTime !== '23:59' || priority !== task.priority) {
+    if (title.trim() || description.trim() || categoryId !== null || dueDate || dueTime !== '23:59' || priority !== task.priority) {
       addNotification('info', t('notifications:taskEditCancelled.title'), t('notifications:taskEditCancelled.message', { title: title || 'Untitled' }))
     }
     setErrors({})
     onClose()
   }
+
+  const uniqueCategories = Array.isArray(categories)
+    ? Array.from(new Map(categories.map(cat => [cat.id, cat])).values())
+    : []
 
   return (
     <AnimatePresence>
@@ -174,6 +203,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
               <button
                 onClick={handleClose}
                 className={`absolute top-4 right-4 ${isDarkTheme ? 'text-gray-300 hover:text-gray-100' : 'text-gray-600 hover:text-gray-800'} transition-colors duration-200`}
+                disabled={isUpdating}
               >
                 <X className="w-6 h-6" />
               </button>
@@ -193,6 +223,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                         errors.title ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       placeholder={t('popups:task_edit_popup.placeholders.title')}
+                      disabled={isUpdating}
                     />
                   </div>
                   {errors.title && <p className={`${isDarkTheme ? 'text-red-400' : 'text-red-500'} text-sm`}>{errors.title}</p>}
@@ -210,6 +241,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                         errors.description ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                       } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white placeholder-gray-500' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
                       placeholder={t('popups:task_edit_popup.placeholders.description')}
+                      disabled={isUpdating}
                     />
                   </div>
                   {errors.description && <p className={`${isDarkTheme ? 'text-red-400' : 'text-red-500'} text-sm mt-1`}>{errors.description}</p>}
@@ -220,18 +252,25 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                   <div className="flex items-center space-x-2">
                     <Tag className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <select
-                      value={category ?? ''}
-                      onChange={(e) => setCategory(e.target.value === '' ? undefined : e.target.value)}
+                      value={categoryId ?? ''}
+                      onChange={(e) => setCategoryId(e.target.value === '' ? null : Number(e.target.value))}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
+                      disabled={isUpdating}
                     >
                       <option value="" className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
                         {t('popups:task_edit_popup.placeholders.category')}
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat} className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
-                          {cat}
+                      {uniqueCategories.length > 0 ? (
+                        uniqueCategories.map((cat) => (
+                          <option key={cat.id} value={cat.id} className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                            {cat.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
+                          {t('popups:task_edit_popup.noCategories')}
                         </option>
-                      ))}
+                      )}
                     </select>
                   </div>
                 </div>
@@ -244,6 +283,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                       value={priority}
                       onChange={(e) => handlePriorityChange(e.target.value)}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
+                      disabled={isUpdating}
                     >
                       <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
                         {t('popups:task_edit_popup.priority.low')}
@@ -270,6 +310,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                         className={`rounded-lg border ${
                           errors.dueDate ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                         } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
+                        disabled={isUpdating}
                       />
                       <div className="flex items-center space-x-2">
                         <Clock className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
@@ -280,6 +321,7 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                           className={`flex-grow rounded-lg border ${
                             errors.dueTime ? 'border-red-500' : isDarkTheme ? 'border-gray-600' : 'border-gray-300'
                           } px-3 py-2 ${isDarkTheme ? 'bg-gray-800 bg-opacity-70 text-white' : 'bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} transition-colors duration-200`}
+                          disabled={isUpdating}
                         />
                       </div>
                     </div>
@@ -294,12 +336,16 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
                     type="button"
                     onClick={handleClose}
                     className={`px-4 py-2 ${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors duration-200`}
+                    disabled={isUpdating}
                   >
                     {t('popups:task_edit_popup.buttons.cancel')}
                   </button>
                   <button
                     type="submit"
-                    className={`px-4 py-2 ${isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'} rounded-lg transition-colors duration-200`}
+                    className={`px-4 py-2 ${
+                      isDarkTheme ? 'bg-purple-700 text-white hover:bg-purple-600' : 'bg-purple-600 text-white hover:bg-purple-700'
+                    } rounded-lg transition-colors duration-200 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isUpdating}
                   >
                     {t('popups:task_edit_popup.buttons.updateTask')}
                   </button>

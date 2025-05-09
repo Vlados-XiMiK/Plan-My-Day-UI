@@ -7,7 +7,7 @@ import { useNotification } from '@/contexts/notification-context';
 import { HTMLAttributes } from 'react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
-import type { Task } from '@/types';
+import type { Task, Category } from '@/types';
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
@@ -15,7 +15,7 @@ interface TaskCreationPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (task: Partial<Task>) => void;
-  categories: string[];
+  categories: Category[];
   isCreating?: boolean;
 }
 
@@ -23,7 +23,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories,
   const { t } = useTranslation(['popups', 'notifications']);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState('');
   const [dueTime, setDueTime] = useState('23:59');
   const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
@@ -100,29 +100,38 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories,
       return;
     }
 
+    console.log('Categories at submit:', categories);
+    console.log('Selected categoryId:', categoryId);
+
     const task: Partial<Task> = {
       title,
       description,
-      dueDate: `${dueDate} ${dueTime}:00`, // Формат: YYYY-MM-DD HH:mm:ss
-      category: category || undefined,
+      dueDate: `${dueDate} ${dueTime}:00`,
+      category: categoryId,
       priority,
       completed: false,
       starred: false,
     };
 
-    console.log('Task payload:', task); // Логирование для отладки
+    console.log('Task payload:', task);
 
     onSave(task);
-
-    setTitle('');
-    setDescription('');
-    setCategory(undefined);
-    setDueDate('');
-    setDueTime('23:59');
-    setPriority('medium');
-    setErrors({});
     onClose();
+
+    setTimeout(() => {
+      setTitle('');
+      setDescription('');
+      setCategoryId(null);
+      setDueDate('');
+      setDueTime('23:59');
+      setPriority('medium');
+      setErrors({});
+    }, 0);
   };
+
+  const uniqueCategories = Array.isArray(categories)
+    ? Array.from(new Map(categories.map(cat => [cat.id, cat])).values())
+    : [];
 
   return (
     <AnimatePresence>
@@ -211,19 +220,25 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories,
                   <div className="flex items-center space-x-2">
                     <Tag className={`w-5 h-5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-400'}`} />
                     <select
-                      value={category ?? ''}
-                      onChange={(e) => setCategory(e.target.value === '' ? undefined : e.target.value)}
+                      value={categoryId ?? ''}
+                      onChange={(e) => setCategoryId(e.target.value === '' ? null : Number(e.target.value))}
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                       disabled={isCreating}
                     >
-                      <option value="" className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
+                      <option key="placeholder" value="" className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
                         {t('popups:task_creation_popup.placeholders.category')}
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat} className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
-                          {cat}
+                      {uniqueCategories.length > 0 ? (
+                        uniqueCategories.map((cat) => (
+                          <option key={cat.id} value={cat.id} className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                            {cat.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option key="no-categories" value="" disabled className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
+                          {t('popups:task_creation_popup.noCategories')}
                         </option>
-                      ))}
+                      )}
                     </select>
                   </div>
                 </div>
@@ -238,13 +253,13 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories,
                       className={`flex-grow rounded-lg border ${isDarkTheme ? 'border-gray-600 bg-gray-800 bg-opacity-70 text-white' : 'border-gray-300 bg-white bg-opacity-70 focus:outline-none focus:ring-2 focus:ring-purple-500'} px-3 py-2 transition-colors duration-200`}
                       disabled={isCreating}
                     >
-                      <option value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                      <option key="low" value="low" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
                         {t('popups:task_creation_popup.priority.low')}
                       </option>
-                      <option value="medium" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                      <option key="medium" value="medium" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
                         {t('popups:task_creation_popup.priority.medium')}
                       </option>
-                      <option value="high" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
+                      <option key="high" value="high" className={isDarkTheme ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}>
                         {t('popups:task_creation_popup.priority.high')}
                       </option>
                     </select>

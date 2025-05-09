@@ -35,11 +35,23 @@ export interface Task {
   description: string;
   createdAt: string;
   dueDate: string;
-  category?: string;
+  category?: number | null;
   priority: "high" | "medium" | "low";
   completed: boolean;
   starred: boolean;
   date?: string;
+}
+
+export interface APITask {
+  id: number;
+  title?: string;
+  description?: string;
+  created_at?: string;
+  due_date?: string;
+  category?: number | null;
+  priority: "H" | "M" | "L";
+  completed?: boolean;
+  is_favorite?: boolean;
 }
 
 export interface Category {

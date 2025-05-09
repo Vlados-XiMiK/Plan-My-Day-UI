@@ -5,7 +5,8 @@ import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchTasks, createTask, updateTask, deleteTask as deleteTaskApi } from '@/api/tasks';
-import type { Task } from '@/types';
+import { fetchCategories } from '@/lib/tasks-data';
+import type { Task, Category } from '@/types';
 import { useTranslation } from 'react-i18next';
 
 interface TimeRemaining {
@@ -18,6 +19,7 @@ export const useTaskLogic = () => {
   const { t } = useTranslation(['tasks', 'notifications']);
   const { addNotification } = useNotification();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -27,21 +29,23 @@ export const useTaskLogic = () => {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load tasks on mount
+  // Load tasks and categories on mount
   useEffect(() => {
-    async function loadTasks() {
+    async function loadData() {
       try {
-        const loadedTasks = await fetchTasks();
+        const [loadedTasks, loadedCategories] = await Promise.all([fetchTasks(), fetchCategories()]);
         console.log('Loaded tasks:', loadedTasks);
+        console.log('Loaded categories:', loadedCategories);
         setTasks(loadedTasks);
+        setCategories(loadedCategories);
       } catch (error) {
-        console.error('Error loading tasks:', error);
+        console.error('Error loading data:', error);
         addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
       } finally {
         setIsLoading(false);
       }
     }
-    loadTasks();
+    loadData();
   }, [addNotification, t]);
 
   // Function for trimming long named tasks
@@ -69,6 +73,7 @@ export const useTaskLogic = () => {
         due_date: task.dueDate.replace('T', ' ').slice(0, 19),
         priority: { high: 'H', medium: 'M', low: 'L' }[task.priority] || 'M',
         is_favorite: task.starred,
+        category: task.category,
       };
       await updateTask(id, updatedTask);
       const updatedTasks = await fetchTasks();
@@ -110,6 +115,7 @@ export const useTaskLogic = () => {
         due_date: newDueDate.toISOString().replace('T', ' ').slice(0, 19),
         priority: { high: 'H', medium: 'M', low: 'L' }[task.priority] || 'M',
         is_favorite: task.starred,
+        category: task.category,
       };
       await updateTask(id, updatedTask);
       const updatedTasks = await fetchTasks();
@@ -146,6 +152,7 @@ export const useTaskLogic = () => {
         is_favorite: !task.starred,
         due_date: task.dueDate.replace('T', ' ').slice(0, 19),
         priority: { high: 'H', medium: 'M', low: 'L' }[task.priority] || 'M',
+        category: task.category,
       };
       console.log('Sending update for starred task:', updatedTask);
       await updateTask(id, updatedTask);
@@ -183,7 +190,7 @@ export const useTaskLogic = () => {
         title: task.title.trim(),
         description: task.description || '',
         due_date: task.dueDate || now.toISOString().replace('T', ' ').slice(0, 19),
-        category: task.category || undefined,
+        category: task.category ?? null,
         priority: task.priority ? { high: 'H', medium: 'M', low: 'L' }[task.priority] : 'M',
         completed: false,
         is_favorite: false,
@@ -227,6 +234,7 @@ export const useTaskLogic = () => {
         due_date: updatedTask.dueDate.replace('T', ' ').slice(0, 19),
         priority: { high: 'H', medium: 'M', low: 'L' }[updatedTask.priority] || 'M',
         is_favorite: updatedTask.starred,
+        category: updatedTask.category ?? null,
       };
       await updateTask(updatedTask.id, taskToSend);
       const updatedTasks = await fetchTasks();
@@ -379,19 +387,24 @@ export const useTaskLogic = () => {
   const filterTasks = useMemo(() => {
     return tasks.filter((task) => {
       const query = searchQuery.toLowerCase();
+      const categoryName = task.category
+        ? categories.find(cat => cat.id === task.category)?.name.toLowerCase() || ''
+        : '';
       return (
         task.title.toLowerCase().includes(query) ||
         task.description.toLowerCase().includes(query) ||
-        (task.category && task.category.toLowerCase().includes(query)) ||
+        categoryName.includes(query) ||
         task.priority.toLowerCase().includes(query) ||
         formatDate(task.createdAt).toLowerCase().includes(query) ||
         formatDate(task.dueDate).toLowerCase().includes(query)
       );
     });
-  }, [tasks, searchQuery, formatDate]);
+  }, [tasks, searchQuery, formatDate, categories]);
 
   return {
     tasks,
+    setTasks,
+    categories,
     isLoading,
     isCreating,
     isUpdating,

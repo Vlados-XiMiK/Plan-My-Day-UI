@@ -7,56 +7,32 @@ import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup'
 import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup'
 import FloatingDeadlineReminder from '@/components/ui/deadline-notification/floating-deadline-reminder'
 import { useTaskLogic } from '@/lib/useTaskLogic'
-import { fetchTasks, fetchCategories } from '@/lib/tasks-data'
-import { Task } from '@/types'
+import { Task} from '@/types'
 import { useTranslation } from 'react-i18next'
 import { isAuthenticated } from '@/api/auth'
 
 export default function Tasks() {
   const { t } = useTranslation('tasks')
   const router = useRouter()
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [categories, setCategories] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false)
-  const [isAuth, setIsAuth] = useState(false) // Для статуса авторизации
-
+  const [isAuth, setIsAuth] = useState(false)
 
   // Проверка авторизации
   useEffect(() => {
     async function checkAuth() {
       const auth = await isAuthenticated()
       setIsAuth(auth)
-
       if (!auth) {
-        router.replace('/auth/login') // Перенаправление на логин, если не авторизован
+        router.replace('/auth/login')
       }
     }
     checkAuth()
   }, [router])
 
-  // Loading tasks and categories
-  useEffect(() => {
-    async function loadData() {
-      if (!isAuth) return // Не загружаем данные, если не авторизован
-      setIsLoading(true)
-      try {
-        const [loadedTasks, loadedCategories] = await Promise.all([fetchTasks(), fetchCategories()])
-        setTasks(loadedTasks)
-        setCategories(loadedCategories.map((c) => c.name))
-      } catch (error) {
-        console.error('Error loading data:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    if (isAuth) {
-      loadData()
-    }
-  }, [isAuth])
-  
-
   const {
+    tasks,
+    categories,
+    isLoading,
     isCreationPopupOpen,
     setCreationPopupOpen,
     isEditPopupOpen,
@@ -75,11 +51,16 @@ export default function Tasks() {
     formatDate,
     getTimeRemaining,
     filterTasks,
-  } = useTaskLogic(tasks, setTasks)
+  } = useTaskLogic()
 
   const TaskItem = ({ task }: { task: Task }) => {
     const [isExpanded, setIsExpanded] = useState(false)
     const descriptionLengthLimit = 100
+
+    // Находим имя категории по category
+    const categoryName = typeof task.category === 'number'
+      ? categories.find(cat => cat.id === task.category)?.name || 'No Category'
+      : 'No Category'
 
     return (
       <li
@@ -189,7 +170,7 @@ export default function Tasks() {
             </div>
             <div className="flex items-center">
               <div className="mr-1 h-3 w-3 rounded-full bg-[#9d75b5]" />
-              <span>{task.category}</span>
+              <span>{categoryName}</span>
             </div>
             <div
               className={`flex items-center rounded-full px-2 py-1 text-white ${getPriorityColor(
