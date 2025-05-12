@@ -54,6 +54,17 @@ export interface APITask {
   is_favorite?: boolean;
 }
 
+export interface CreateTaskPayload {
+  title: string;
+  description?: string;
+  due_date?: string;
+  category?: number | null;
+  priority?: "H" | "M" | "L";
+  completed?: boolean;
+  is_favorite?: boolean;
+}
+
+
 export interface Category {
   id: number;
   name: string;

@@ -4,10 +4,17 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
-import { fetchTasks, createTask, updateTask, deleteTask as deleteTaskApi } from '@/api/tasks';
+import { fetchTasks, createTask, updateTask, deleteTask as deleteTaskApi, mapClientPriorityToApi } from '@/api/tasks';
 import { useCategories } from '@/lib/useCategories';
-import type { Task, Category } from '@/types';
+import type { Task, CreateTaskPayload } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { AxiosError } from 'axios';
+
+// Define interface for API error response data
+interface ApiErrorResponse {
+  due_date?: string[];
+  priority?: string[];
+}
 
 interface TimeRemaining {
   text: string;
@@ -18,11 +25,7 @@ interface TimeRemaining {
 export const useTaskLogic = () => {
   const { t } = useTranslation(['tasks', 'notifications']);
   const { addNotification } = useNotification();
-  const {
-    categories,
-    isLoading: categoriesLoading,
-    refreshCategories,
-  } = useCategories();
+  const { categories, refreshCategories } = useCategories();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -32,18 +35,18 @@ export const useTaskLogic = () => {
   const [isEditPopupOpen, setEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1); // Текущая страница
-  const [hasMore, setHasMore] = useState(true); // Есть ли еще задачи
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   // Load initial tasks on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const response = await fetchTasks(1); // Загружаем первую страницу
+        const response = await fetchTasks(1);
         console.log('Loaded tasks:', response.results);
         setTasks(response.results);
-        setHasMore(response.next !== null); // Проверяем наличие следующей страницы
-      } catch (error) {
+        setHasMore(response.next !== null);
+      } catch (error: unknown) {
         console.error('Error loading tasks:', error);
         addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
       } finally {
@@ -68,10 +71,10 @@ export const useTaskLogic = () => {
       const nextPage = page + 1;
       const response = await fetchTasks(nextPage);
       console.log('Loaded more tasks for page', nextPage, ':', response.results);
-      setTasks((prevTasks) => [...prevTasks, ...response.results]); // Добавляем новые задачи
+      setTasks((prevTasks) => [...prevTasks, ...response.results]);
       setPage(nextPage);
-      setHasMore(response.next !== null); // Обновляем hasMore
-    } catch (error) {
+      setHasMore(response.next !== null);
+    } catch (error: unknown) {
       console.error('Error loading more tasks:', error);
       addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
     }
@@ -111,16 +114,17 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
-      const updatedTask = {
-        ...task,
-        completed: !task.completed,
+      const updatedTask: CreateTaskPayload = {
+        title: task.title,
+        description: task.description,
         due_date: task.dueDate.replace('T', ' ').slice(0, 19),
-        priority: { high: 'H', medium: 'M', low: 'L' }[task.priority] || 'M',
+        priority: mapClientPriorityToApi(task.priority),
+        completed: !task.completed,
         is_favorite: task.starred,
         category: task.category,
       };
       await updateTask(id, updatedTask);
-      const response = await fetchTasks(1); // Перезагружаем первую страницу
+      const response = await fetchTasks(1);
       setTasks(response.results);
       setPage(1);
       setHasMore(response.next !== null);
@@ -132,7 +136,7 @@ export const useTaskLogic = () => {
           ? t('notifications:taskReopened.message', { title: truncatedTitle })
           : t('notifications:taskCompleted.message', { title: truncatedTitle })
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to toggle task completion:', error);
       addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
     } finally {
@@ -156,10 +160,12 @@ export const useTaskLogic = () => {
       const now = new Date();
       const currentDueDate = new Date(task.dueDate);
       const newDueDate = isPast(currentDueDate) ? addHours(now, 2) : addHours(currentDueDate, 2);
-      const updatedTask = {
-        ...task,
+      const updatedTask: CreateTaskPayload = {
+        title: task.title,
+        description: task.description,
         due_date: newDueDate.toISOString().replace('T', ' ').slice(0, 19),
-        priority: { high: 'H', medium: 'M', low: 'L' }[task.priority] || 'M',
+        priority: mapClientPriorityToApi(task.priority),
+        completed: task.completed,
         is_favorite: task.starred,
         category: task.category,
       };
@@ -174,7 +180,7 @@ export const useTaskLogic = () => {
         t('notifications:taskSnoozed.title'),
         t('notifications:taskSnoozed.message', { title: truncatedTitle })
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to snooze task:', error);
       addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
     } finally {
@@ -195,14 +201,15 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
-      const updatedTask = {
-        ...task,
-        is_favorite: !task.starred,
+      const updatedTask: CreateTaskPayload = {
+        title: task.title,
+        description: task.description,
         due_date: task.dueDate.replace('T', ' ').slice(0, 19),
-        priority: { high: 'H', medium: 'M', low: 'L' }[task.priority] || 'M',
+        priority: mapClientPriorityToApi(task.priority),
+        completed: task.completed,
+        is_favorite: !task.starred,
         category: task.category,
       };
-      console.log('Sending update for starred task:', updatedTask);
       await updateTask(id, updatedTask);
       const response = await fetchTasks(1);
       setTasks(response.results);
@@ -216,7 +223,7 @@ export const useTaskLogic = () => {
           ? t('notifications:removedFromFavorites.message', { title: truncatedTitle })
           : t('notifications:addedToFavorites.message', { title: truncatedTitle })
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to toggle task starred:', error);
       addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
     } finally {
@@ -236,16 +243,15 @@ export const useTaskLogic = () => {
     setIsCreating(true);
     try {
       const now = new Date();
-      const newTask = {
+      const newTask: CreateTaskPayload = {
         title: task.title.trim(),
         description: task.description || '',
         due_date: task.dueDate || now.toISOString().replace('T', ' ').slice(0, 19),
         category: task.category ?? null,
-        priority: task.priority ? { high: 'H', medium: 'M', low: 'L' }[task.priority] : 'M',
+        priority: task.priority ? mapClientPriorityToApi(task.priority) : 'M',
         completed: false,
         is_favorite: false,
       };
-      console.log('Sending task to API:', newTask);
       await createTask(newTask);
       const response = await fetchTasks(1);
       await refreshCategories();
@@ -259,11 +265,12 @@ export const useTaskLogic = () => {
         t('notifications:taskCreated.title'),
         t('notifications:taskCreated.message', { title: truncatedTitle })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create task:', error);
+      const axiosError = error as AxiosError<ApiErrorResponse>;
       const errorMessage =
-        error.response?.data?.due_date?.[0] ||
-        error.response?.data?.priority?.[0] ||
+        axiosError.response?.data?.due_date?.[0] ||
+        axiosError.response?.data?.priority?.[0] ||
         t('notifications:tasks.addFailed.message');
       addNotification('error', t('notifications:tasks.addFailed.title'), errorMessage);
     } finally {
@@ -282,10 +289,12 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
-      const taskToSend = {
-        ...updatedTask,
+      const taskToSend: CreateTaskPayload = {
+        title: updatedTask.title,
+        description: updatedTask.description,
         due_date: updatedTask.dueDate.replace('T', ' ').slice(0, 19),
-        priority: { high: 'H', medium: 'M', low: 'L' }[updatedTask.priority] || 'M',
+        priority: mapClientPriorityToApi(updatedTask.priority),
+        completed: updatedTask.completed,
         is_favorite: updatedTask.starred,
         category: updatedTask.category ?? null,
       };
@@ -303,7 +312,7 @@ export const useTaskLogic = () => {
         t('notifications:taskUpdated.title'),
         t('notifications:taskUpdated.message', { title: truncatedTitle })
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to update task:', error);
       addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
     } finally {
@@ -335,7 +344,7 @@ export const useTaskLogic = () => {
         t('notifications:taskDeleted.title'),
         t('notifications:taskDeleted.message', { title: truncatedTitle })
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to delete task:', error);
       addNotification('error', t('notifications:tasks.deletionFailed.title'), t('notifications:tasks.deletionFailed.message'));
     } finally {

@@ -166,7 +166,7 @@ export default function StatsView() {
   const taskDistribution = categories
     .map((category) => ({
       name: category.name,
-      count: tasks.filter((task) => task.category === category.name).length,
+      count: tasks.filter((task) => task.category === category.id).length,
       color: category.color, // Note: This color is no longer used for the chart
     }))
     .filter((item) => item.count > 0);

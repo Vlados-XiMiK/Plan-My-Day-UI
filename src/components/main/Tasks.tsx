@@ -15,13 +15,11 @@ export default function Tasks() {
   const { t } = useTranslation('tasks');
   const router = useRouter();
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
-  const [isAuth, setIsAuth] = useState(false);
 
   // Проверка авторизации
   useEffect(() => {
     async function checkAuth() {
       const auth = await isAuthenticated();
-      setIsAuth(auth);
       if (!auth) {
         router.replace('/auth/login');
       }
