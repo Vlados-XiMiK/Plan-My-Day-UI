@@ -51,6 +51,8 @@ export default function Tasks() {
     formatDate,
     getTimeRemaining,
     filterTasks,
+    loadMoreTasks,
+    hasMore,
   } = useTaskLogic();
 
   // Отладка категорий
@@ -259,7 +261,7 @@ export default function Tasks() {
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <select
-                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
+                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] button text-gray-800 dark:text-gray-100"
                   >
                     <option>{t('priority.all')}</option>
                     <option>{t('priority.high')}</option>
@@ -313,13 +315,16 @@ export default function Tasks() {
                 <TaskItem key={task.id} task={task} />
               ))}
             </ul>
-            <div className="mt-4 flex justify-center">
-              <button
-                className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
-              >
-                {t('loadMore')}
-              </button>
-            </div>
+            {hasMore && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={loadMoreTasks}
+                  className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-md transition-transform transform hover:scale-105 active:scale-95 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+                >
+                  {t('loadMore')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

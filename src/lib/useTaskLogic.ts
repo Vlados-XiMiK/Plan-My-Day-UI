@@ -5,7 +5,7 @@ import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchTasks, createTask, updateTask, deleteTask as deleteTaskApi } from '@/api/tasks';
-import { useCategories } from '@/lib/useCategories'; // Импортируем useCategories
+import { useCategories } from '@/lib/useCategories';
 import type { Task, Category } from '@/types';
 import { useTranslation } from 'react-i18next';
 
@@ -21,8 +21,8 @@ export const useTaskLogic = () => {
   const {
     categories,
     isLoading: categoriesLoading,
-    refreshCategories, // Используем refreshCategories из useCategories
-  } = useCategories(); // Используем useCategories вместо fetchCategories
+    refreshCategories,
+  } = useCategories();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -32,15 +32,17 @@ export const useTaskLogic = () => {
   const [isEditPopupOpen, setEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [page, setPage] = useState(1); // Текущая страница
+  const [hasMore, setHasMore] = useState(true); // Есть ли еще задачи
 
-  // Load tasks on mount
+  // Load initial tasks on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const loadedTasks = await fetchTasks();
-        console.log('Loaded tasks:', loadedTasks);
-        setTasks(loadedTasks);
+        const response = await fetchTasks(1); // Загружаем первую страницу
+        console.log('Loaded tasks:', response.results);
+        setTasks(response.results);
+        setHasMore(response.next !== null); // Проверяем наличие следующей страницы
       } catch (error) {
         console.error('Error loading tasks:', error);
         addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
@@ -56,12 +58,38 @@ export const useTaskLogic = () => {
     console.log('Categories in useTaskLogic:', categories);
   }, [categories]);
 
+  // Функция для подгрузки дополнительных задач
+  const loadMoreTasks = async () => {
+    if (!hasMore) {
+      console.warn('No more tasks to load');
+      return;
+    }
+    try {
+      const nextPage = page + 1;
+      const response = await fetchTasks(nextPage);
+      console.log('Loaded more tasks for page', nextPage, ':', response.results);
+      setTasks((prevTasks) => [...prevTasks, ...response.results]); // Добавляем новые задачи
+      setPage(nextPage);
+      setHasMore(response.next !== null); // Обновляем hasMore
+    } catch (error) {
+      console.error('Error loading more tasks:', error);
+      addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
+    }
+  };
+
   // Переопределяем setCreationPopupOpen для рефетча категорий
   const setCreationPopupOpenWithRefresh = async (open: boolean) => {
     if (open) {
-      await refreshCategories(); // Рефетч категорий перед открытием поп-апа
+      await refreshCategories();
     }
     setCreationPopupOpen(open);
+  };
+
+  // Переопределяем openEditPopup для рефетча категорий
+  const openEditPopup = async (task: Task) => {
+    await refreshCategories();
+    setTaskToEdit(task);
+    setEditPopupOpen(true);
   };
 
   // Function for trimming long named tasks
@@ -92,8 +120,10 @@ export const useTaskLogic = () => {
         category: task.category,
       };
       await updateTask(id, updatedTask);
-      const updatedTasks = await fetchTasks();
-      setTasks(updatedTasks);
+      const response = await fetchTasks(1); // Перезагружаем первую страницу
+      setTasks(response.results);
+      setPage(1);
+      setHasMore(response.next !== null);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'info',
@@ -134,8 +164,10 @@ export const useTaskLogic = () => {
         category: task.category,
       };
       await updateTask(id, updatedTask);
-      const updatedTasks = await fetchTasks();
-      setTasks(updatedTasks);
+      const response = await fetchTasks(1);
+      setTasks(response.results);
+      setPage(1);
+      setHasMore(response.next !== null);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'info',
@@ -172,8 +204,10 @@ export const useTaskLogic = () => {
       };
       console.log('Sending update for starred task:', updatedTask);
       await updateTask(id, updatedTask);
-      const updatedTasks = await fetchTasks();
-      setTasks(updatedTasks);
+      const response = await fetchTasks(1);
+      setTasks(response.results);
+      setPage(1);
+      setHasMore(response.next !== null);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'success',
@@ -213,9 +247,11 @@ export const useTaskLogic = () => {
       };
       console.log('Sending task to API:', newTask);
       await createTask(newTask);
-      const updatedTasks = await fetchTasks();
-      await refreshCategories(); // Рефетч категорий после создания задачи
-      setTasks(updatedTasks);
+      const response = await fetchTasks(1);
+      await refreshCategories();
+      setTasks(response.results);
+      setPage(1);
+      setHasMore(response.next !== null);
       setCreationPopupOpen(false);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
@@ -254,9 +290,11 @@ export const useTaskLogic = () => {
         category: updatedTask.category ?? null,
       };
       await updateTask(updatedTask.id, taskToSend);
-      const updatedTasks = await fetchTasks();
-      await refreshCategories(); // Рефетч категорий после редактирования задачи
-      setTasks(updatedTasks);
+      const response = await fetchTasks(1);
+      await refreshCategories();
+      setTasks(response.results);
+      setPage(1);
+      setHasMore(response.next !== null);
       setEditPopupOpen(false);
       setTaskToEdit(null);
       const truncatedTitle = truncateTitle(updatedTask.title);
@@ -273,12 +311,6 @@ export const useTaskLogic = () => {
     }
   };
 
-  const openEditPopup = async (task: Task) => {
-    await refreshCategories(); // Рефетч категорий перед открытием поп-апа
-    setTaskToEdit(task);
-    setEditPopupOpen(true);
-  };
-
   const handleDeleteTask = async (id: number) => {
     if (isDeleting) {
       console.warn('handleDeleteTask skipped: deletion already in progress');
@@ -293,8 +325,10 @@ export const useTaskLogic = () => {
     setIsDeleting(true);
     try {
       await deleteTaskApi(id);
-      const updatedTasks = await fetchTasks();
-      setTasks(updatedTasks);
+      const response = await fetchTasks(1);
+      setTasks(response.results);
+      setPage(1);
+      setHasMore(response.next !== null);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'success',
@@ -424,7 +458,7 @@ export const useTaskLogic = () => {
     tasks,
     setTasks,
     categories,
-    isLoading: isInitialLoading,// Учитываем загрузку категорий
+    isLoading: isInitialLoading,
     isCreating,
     isUpdating,
     isDeleting,
@@ -447,5 +481,7 @@ export const useTaskLogic = () => {
     getTimeRemaining,
     filterTasks,
     refreshCategories,
+    loadMoreTasks,
+    hasMore,
   };
 };

@@ -1,3 +1,4 @@
+// @/api/tasks.ts
 import { AxiosError } from "axios";
 import axiosClient from "@/api/axiosClient";
 import { Task } from "@/types";
@@ -13,7 +14,7 @@ interface PaginatedResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: any[];
+  results: Task[];
 }
 
 // Преобразование приоритета API в клиентский формат
@@ -31,9 +32,11 @@ const mapPriorityToString = (priority: string): "high" | "medium" | "low" => {
 };
 
 // Получение списка задач
-export async function fetchTasks(): Promise<Task[]> {
+export async function fetchTasks(page: number = 1): Promise<PaginatedResponse> {
   try {
-    const response = await axiosClient.get("/tasks/");
+    const response = await axiosClient.get("/tasks/", {
+      params: { page, page_size: 10 }, // Добавляем параметры пагинации
+    });
     const data: PaginatedResponse = response.data;
     console.log("Tasks API response:", data);
 
@@ -42,7 +45,7 @@ export async function fetchTasks(): Promise<Task[]> {
       console.warn("No tasks found in response:", data);
     }
 
-    return tasks.map((task: any) => ({
+    const transformedTasks = tasks.map((task: any) => ({
       id: task.id,
       title: task.title || "",
       description: task.description || "",
@@ -54,6 +57,13 @@ export async function fetchTasks(): Promise<Task[]> {
       starred: task.is_favorite || false,
       date: task.due_date ? task.due_date.split(" ")[0] : new Date().toISOString().split("T")[0],
     }));
+
+    return {
+      count: data.count,
+      next: data.next,
+      previous: data.previous,
+      results: transformedTasks,
+    };
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       const axiosError = error as AxiosError<ErrorResponse>;
