@@ -1,15 +1,37 @@
-// data/tasks-data.ts
+// @/lib/tasks-data.ts
 import { Task, Category } from "@/types";
 import { fetchTasks as fetchTasksFromApi } from "@/api/tasks";
 import { fetchCategories as fetchCategoriesFromApi } from "@/api/categories";
 
-// Получение списка задач
+// Получение списка задач (с пагинацией, для других компонентов)
 export async function fetchTasks(): Promise<Task[]> {
   try {
     const paginatedResponse = await fetchTasksFromApi();
     return paginatedResponse.results; // Возвращаем только задачи
   } catch (error) {
     console.error("Error in fetchTasks:", error);
+    throw error;
+  }
+}
+
+// Новая функция для получения всех задач (для календаря)
+export async function fetchAllTasks(): Promise<Task[]> {
+  try {
+    let allTasks: Task[] = [];
+    let page = 1;
+    let hasNext = true;
+
+    while (hasNext) {
+      const paginatedResponse = await fetchTasksFromApi(page);
+      allTasks = [...allTasks, ...paginatedResponse.results];
+      hasNext = paginatedResponse.next !== null;
+      page += 1;
+    }
+
+    console.log(`Fetched ${allTasks.length} tasks in total for calendar`);
+    return allTasks;
+  } catch (error) {
+    console.error("Error in fetchAllTasks:", error);
     throw error;
   }
 }

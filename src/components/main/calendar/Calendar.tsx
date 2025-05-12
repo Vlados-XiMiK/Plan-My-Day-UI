@@ -6,7 +6,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { useMobile } from '@/hooks/use-mobile'
 import TaskDetailModal from './task-detail-modal'
 import TaskModal from './task-modal'
-import { fetchTasks, fetchCategories } from '@/lib/tasks-data'
+import { fetchAllTasks, fetchCategories } from '@/lib/tasks-data'
 import { useCalendar } from '@/hooks/use-calendar'
 import CalendarHeader from './calendar-header'
 import CalendarToolbar from './calendar-toolbar'
@@ -45,7 +45,7 @@ export default function Calendar() {
       setIsLoading(true)
       console.log('Fetching data...'); // Логирование для отладки
       try {
-        const [tasksData, categoriesData] = await Promise.all([fetchTasks(), fetchCategories()]);
+        const [tasksData, categoriesData] = await Promise.all([fetchAllTasks(), fetchCategories()]);
         calendar.setTasks(tasksData);
         calendar.setCategories(categoriesData);
       } catch (error) {
