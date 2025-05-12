@@ -16,8 +16,8 @@ type CalendarToolbarProps = {
   view: 'month' | 'list'
   setView: (view: 'month' | 'list') => void
   categories: Category[]
-  selectedCategories: string[]
-  toggleCategory: (category: string) => void
+  selectedCategories: number[] // Изменено на number[]
+  toggleCategory: (categoryId: number) => void // Изменено на number
   clearCategoryFilters: () => void
   showCompleted: boolean
   toggleShowCompleted: () => void
@@ -53,7 +53,7 @@ export default function CalendarToolbar({
       </div>
 
       <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-        {/* On mobile, use a more compact filter button */}
+        {/* Мобильная версия: компактная кнопка фильтра */}
         {isMobile ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -81,17 +81,17 @@ export default function CalendarToolbar({
               <DropdownMenuItem className="font-medium pt-2">{t('categories')}</DropdownMenuItem>
               {categories.map((category) => (
                 <DropdownMenuItem
-                  key={category.name}
+                  key={category.id} // Используем ID как ключ
                   className={cn(
                     'cursor-pointer rounded-lg flex items-center gap-2 pl-4',
-                    selectedCategories.includes(category.name) &&
+                    selectedCategories.includes(category.id) &&
                       'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium',
                   )}
-                  onClick={() => toggleCategory(category.name)}
+                  onClick={() => toggleCategory(category.id)} // Передаем ID категории
                 >
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
                   {category.name}
-                  {selectedCategories.includes(category.name) && <CheckCircle2 className="h-4 w-4 ml-auto" />}
+                  {selectedCategories.includes(category.id) && <CheckCircle2 className="h-4 w-4 ml-auto" />}
                 </DropdownMenuItem>
               ))}
 
@@ -117,17 +117,17 @@ export default function CalendarToolbar({
               <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto rounded-xl">
                 {categories.map((category) => (
                   <DropdownMenuItem
-                    key={category.name}
+                    key={category.id} // Используем ID как ключ
                     className={cn(
                       'cursor-pointer rounded-lg flex items-center gap-2',
-                      selectedCategories.includes(category.name) &&
+                      selectedCategories.includes(category.id) &&
                         'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium',
                     )}
-                    onClick={() => toggleCategory(category.name)}
+                    onClick={() => toggleCategory(category.id)} // Передаем ID категории
                   >
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
                     {category.name}
-                    {selectedCategories.includes(category.name) && <CheckCircle2 className="h-4 w-4 ml-auto" />}
+                    {selectedCategories.includes(category.id) && <CheckCircle2 className="h-4 w-4 ml-auto" />}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>

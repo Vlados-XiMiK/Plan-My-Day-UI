@@ -28,12 +28,11 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
   const { t, i18n } = useTranslation(['popups', 'notifications'])
   const [title, setTitle] = useState('')
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
-  const [category, setCategory] = useState<string | undefined>(undefined)
+  const [category, setCategory] = useState<number | undefined>(undefined) // Changed to number | undefined
   const [description, setDescription] = useState('')
   const [time, setTime] = useState('09:00')
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  // Use the hook for notifications
   const { addNotification } = useNotification()
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,34 +43,29 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
       const selectedDateTime = new Date(dueDate)
       const currentDateTime = new Date()
 
-      // Check for past date
       if (selectedDateTime < currentDateTime) {
         setValidationError(t('calendar_popup.validation.pastDate', { ns: 'popups' }))
         return
       }
 
-      // Clear validation errors
       setValidationError(null)
 
-      // Create a task
       onAddTask({
         title: title.trim(),
         description: description.trim() || '',
         dueDate,
-        category,
+        category, // Now passing category ID (number | undefined)
         priority,
         completed: false,
         date: selectedDate,
       })
 
-      // Add a notification about successful task creation
       addNotification(
         'success',
         t('taskCreated.title', { ns: 'notifications' }),
         t('taskCreated.message', { ns: 'notifications', title: title.trim() })
       )
 
-      // Reset the form
       setTitle('')
       setPriority('medium')
       setCategory(undefined)
@@ -79,7 +73,6 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
       setTime('09:00')
       onClose()
     } else {
-      // If the title is empty, show the notification
       if (!title.trim()) {
         setValidationError(t('calendar_popup.validation.taskTitleRequired', { ns: 'popups' }))
       }
@@ -146,8 +139,8 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
           <div className="space-y-2">
             <Label htmlFor="category">{t('calendar_popup.category', { ns: 'popups' })}</Label>
             <Select
-              value={category ?? '__none__'}
-              onValueChange={(value) => setCategory(value === '__none__' ? undefined : value)}
+              value={category?.toString() ?? '__none__'} // Convert number to string for Select
+              onValueChange={(value) => setCategory(value === '__none__' ? undefined : Number(value))} // Convert back to number
             >
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder={t('calendar_popup.placeholder.category', { ns: 'popups' })} />
@@ -164,14 +157,14 @@ export default function TaskModal({ isOpen, onClose, onAddTask, selectedDate, ca
                 </SelectItem>
                 {categories.map((cat) => (
                   <SelectItem
-                    key={cat.name}
-                    value={cat.name}
+                    key={cat.id} // Use id as key
+                    value={cat.id.toString()} // Use id as value
                     className={cn(
                       'flex items-center gap-2 hover:bg-indigo-50 dark:hover:bg-indigo-950',
-                      category === cat.name && 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium'
+                      category === cat.id && 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium'
                     )}
                   >
-                    {cat.name}
+                    {cat.name} {/* Display name */}
                   </SelectItem>
                 ))}
               </SelectContent>

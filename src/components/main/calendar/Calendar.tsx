@@ -20,14 +20,12 @@ export default function Calendar() {
   const { t } = useTranslation('calendar')
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const [isAuth, setIsAuth] = useState(false) // Для статуса авторизации
-  const [authLoading, setAuthLoading] = useState(true) // Для проверки авторизации
+  const [isAuth, setIsAuth] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const isMobile = useMobile()
 
-  // Get all calendar functionality from the custom hook
   const calendar = useCalendar()
 
-  // Проверка авторизации
   useEffect(() => {
     async function checkAuth() {
       const auth = await isAuthenticated()
@@ -35,35 +33,34 @@ export default function Calendar() {
       setAuthLoading(false)
 
       if (!auth) {
-        router.replace('/auth/login') // Перенаправление на логин, если не авторизован
+        router.replace('/auth/login')
       }
     }
     checkAuth()
   }, [router])
 
-  // Fetch tasks and categories on component mount
   useEffect(() => {
     const loadData = async () => {
-      if (!isAuth) return // Не загружаем данные, если не авторизован
+      if (!isAuth) return
       setIsLoading(true)
+      console.log('Fetching data...'); // Логирование для отладки
       try {
-        const [tasksData, categoriesData] = await Promise.all([fetchTasks(), fetchCategories()])
-        calendar.setTasks(tasksData)
-        calendar.setCategories(categoriesData)
+        const [tasksData, categoriesData] = await Promise.all([fetchTasks(), fetchCategories()]);
+        calendar.setTasks(tasksData);
+        calendar.setCategories(categoriesData);
       } catch (error) {
-        console.error('Error loading data:', error)
+        console.error('Error loading data:', error);
+        calendar.setTasks([]);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
     if (isAuth) {
-      loadData()
+      loadData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuth])
+  }, [isAuth, calendar.setTasks, calendar.setCategories]); // Зависимости только от isAuth и стабильных функций
 
-  // Get day names from translations
   const dayNames = [
     t('dayNames.0'),
     t('dayNames.1'),
@@ -73,7 +70,6 @@ export default function Calendar() {
     t('dayNames.5'),
     t('dayNames.6'),
   ]
-  // For mobile, use shorter day names
   const shortDayNames = [
     t('shortDayNames.0'),
     t('shortDayNames.1'),
@@ -84,12 +80,10 @@ export default function Calendar() {
     t('shortDayNames.6'),
   ]
 
-  // Показываем лоадер во время проверки авторизации
   if (authLoading) {
     return <Loader />
   }
 
-  // Если не авторизован, ничего не рендерим (редирект уже выполнен)
   if (!isAuth) {
     return null
   }
@@ -100,7 +94,6 @@ export default function Calendar() {
 
   return (
     <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800 transition-colors duration-300 flex flex-col h-full overflow-y-auto">
-      {/* Calendar header */}
       <CalendarHeader
         monthName={calendar.monthName}
         currentYear={calendar.currentYear}
@@ -114,7 +107,6 @@ export default function Calendar() {
         getYearOptions={calendar.getYearOptions}
       />
 
-      {/* Toolbar */}
       <CalendarToolbar
         searchQuery={calendar.searchQuery}
         setSearchQuery={calendar.setSearchQuery}
@@ -128,13 +120,11 @@ export default function Calendar() {
         toggleShowCompleted={calendar.toggleShowCompleted}
       />
 
-      {/* Tabs for different views */}
       <Tabs
         value={calendar.view}
         className="w-full"
         onValueChange={(value) => calendar.setView(value as 'month' | 'list')}
       >
-        {/* Month View */}
         <TabsContent value="month" className="m-0 overflow-hidden">
           <MonthView
             calendarDays={calendar.calendarDays}
@@ -152,7 +142,6 @@ export default function Calendar() {
           />
         </TabsContent>
 
-        {/* List View */}
         <TabsContent value="list" className="m-0">
           <ListView
             getMonthTasks={calendar.getMonthTasks}
@@ -166,7 +155,6 @@ export default function Calendar() {
         </TabsContent>
       </Tabs>
 
-      {/* Task modal */}
       {calendar.isModalOpen && (
         <TaskModal
           isOpen={calendar.isModalOpen}
@@ -177,7 +165,6 @@ export default function Calendar() {
         />
       )}
 
-      {/* Task detail modal */}
       <TaskDetailModal
         task={calendar.selectedTask}
         isOpen={!!calendar.selectedTask}

@@ -5,12 +5,12 @@ import type { Task, Category } from "@/types"
 
 export function useCalendar(initialTasks: Task[] = [], initialCategories: Category[] = []) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [tasks, setTasks] = useState<Task[]>(initialTasks)
+  const [tasks, setTasks] = useState<Task[]>(Array.isArray(initialTasks) ? initialTasks : []) // Проверка на массив
   const [categories, setCategories] = useState<Category[]>(initialCategories)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [view, setView] = useState<"month" | "list">("month")
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([])
   const [direction, setDirection] = useState<"left" | "right" | null>(null)
   const [animationKey, setAnimationKey] = useState(0)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
@@ -43,7 +43,6 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         icon: "📋",
       }
     })
-    // Add a default category
     colorMap["other"] = { color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300", icon: "📋" }
     return colorMap
   }, [categories])
@@ -75,7 +74,13 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
       }
 
       if (selectedCategories.length > 0) {
-        filtered = filtered.filter((task) => selectedCategories.includes(task.category || ""))
+        filtered = filtered.filter((task) => {
+          // If task.category is null/undefined, only include if selectedCategories includes null
+          if (task.category == null) {
+            return selectedCategories.includes(0); // Treat null/undefined as 0 for filtering
+          }
+          return selectedCategories.includes(task.category);
+        });
       }
 
       return filtered
@@ -248,9 +253,9 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   }, [currentMonth, currentYear, filterTasks, tasks])
 
   // Toggle category selection
-  const toggleCategory = useCallback((category: string) => {
+  const toggleCategory = useCallback((categoryId: number) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId],
     )
   }, [])
 
@@ -260,7 +265,13 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   }, [])
 
   // Get all unique categories from tasks
-  const allCategories = useMemo(() => Array.from(new Set(tasks.map((task) => task.category))), [tasks])
+  const allCategories = useMemo(() => {
+    if (!Array.isArray(tasks)) {
+      console.error("tasks is not an array:", tasks); // Логирование для отладки
+      return [];
+    }
+    return Array.from(new Set(tasks.map((task) => task.category).filter((c): c is number => c != null)));
+  }, [tasks])
 
   // Open task detail modal
   const openTaskDetail = useCallback((task: Task) => {
@@ -277,13 +288,23 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
     setShowCompleted((prev) => !prev)
   }, [])
 
+  // Проверка и нормализация входных данных для setTasks
+  const setTasksSafe = useCallback((newTasks: Task[] | any) => {
+    if (!Array.isArray(newTasks)) {
+      console.error("setTasks received non-array value:", newTasks);
+      setTasks([]);
+      return;
+    }
+    setTasks(newTasks);
+  }, []);
+
   return {
     currentDate,
     currentMonth,
     currentYear,
     monthName,
     tasks,
-    setTasks,
+    setTasks: setTasksSafe, // Используем безопасную версию setTasks
     categories,
     setCategories,
     selectedDate,

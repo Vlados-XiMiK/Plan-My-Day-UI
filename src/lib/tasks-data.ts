@@ -6,7 +6,8 @@ import { fetchCategories as fetchCategoriesFromApi } from "@/api/categories";
 // Получение списка задач
 export async function fetchTasks(): Promise<Task[]> {
   try {
-    return await fetchTasksFromApi();
+    const paginatedResponse = await fetchTasksFromApi();
+    return paginatedResponse.results; // Возвращаем только задачи
   } catch (error) {
     console.error("Error in fetchTasks:", error);
     throw error;
