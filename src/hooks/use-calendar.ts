@@ -1,11 +1,14 @@
+// @/hooks/use-calendar.ts
 "use client"
 
 import { useState, useCallback, useMemo, useEffect } from "react"
 import type { Task, Category } from "@/types"
+import { fetchAllTasks } from "@/lib/tasks-data"
+import { createTask, updateTask } from "@/api/tasks"
 
 export function useCalendar(initialTasks: Task[] = [], initialCategories: Category[] = []) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [tasks, setTasks] = useState<Task[]>(Array.isArray(initialTasks) ? initialTasks : []) // Проверка на массив
+  const [tasks, setTasks] = useState<Task[]>(Array.isArray(initialTasks) ? initialTasks : [])
   const [categories, setCategories] = useState<Category[]>(initialCategories)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [view, setView] = useState<"month" | "list">("month")
@@ -16,6 +19,22 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [showCompleted, setShowCompleted] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Загрузка всех задач при инициализации
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        const tasksData = await fetchAllTasks()
+        console.log(`Loaded ${tasksData.length} tasks in useCalendar`) // Логирование для отладки
+        setTasks(tasksData)
+      } catch (error) {
+        console.error("Failed to load tasks in useCalendar:", error)
+        setTasks([])
+      }
+    }
+
+    loadTasks()
+  }, []) // Пустой массив зависимостей, чтобы загрузка происходила один раз при монтировании
 
   // Get current month and year
   const currentMonth = currentDate.getMonth()
@@ -31,7 +50,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   // Get the name of the month
   const monthName = useMemo(
     () => new Intl.DateTimeFormat("en-US", { month: "long" }).format(currentDate),
-    [currentDate],
+    [currentDate]
   )
 
   // Create a mapping of category names to their colors
@@ -48,18 +67,39 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   }, [categories])
 
   // Toggle task completion status
-  const toggleTaskCompletion = useCallback((taskId: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task)),
-    )
-  }, [])
+  const toggleTaskCompletion = useCallback(
+    async (taskId: number) => {
+      try {
+        const task = tasks.find((t) => t.id === taskId)
+        if (!task) {
+          console.error(`Task with id ${taskId} not found`)
+          return
+        }
+
+        const updatedTaskData = {
+          ...task,
+          completed: !task.completed,
+          due_date: task.dueDate, // API ожидает due_date
+          priority: task.priority === "high" ? "H" : task.priority === "medium" ? "M" : "L", // Преобразуем приоритет
+          is_favorite: task.starred, // API ожидает is_favorite
+        }
+
+        const updatedTask = await updateTask(taskId, updatedTaskData)
+        setTasks((prevTasks) =>
+          prevTasks.map((t) => (t.id === taskId ? updatedTask : t))
+        )
+      } catch (error) {
+        console.error("Failed to toggle task completion:", error)
+      }
+    },
+    [tasks]
+  )
 
   // Filter tasks based on search query, selected categories, and completion status
   const filterTasks = useCallback(
     (taskList: Task[]) => {
       let filtered = [...taskList]
 
-      // Filter by completion status if needed
       if (!showCompleted) {
         filtered = filtered.filter((task) => !task.completed)
       }
@@ -69,23 +109,22 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         filtered = filtered.filter(
           (task) =>
             task.title.toLowerCase().includes(query) ||
-            (task.description && task.description.toLowerCase().includes(query)),
+            (task.description && task.description.toLowerCase().includes(query))
         )
       }
 
       if (selectedCategories.length > 0) {
         filtered = filtered.filter((task) => {
-          // If task.category is null/undefined, only include if selectedCategories includes null
           if (task.category == null) {
-            return selectedCategories.includes(0); // Treat null/undefined as 0 for filtering
+            return selectedCategories.includes(0)
           }
-          return selectedCategories.includes(task.category);
-        });
+          return selectedCategories.includes(task.category)
+        })
       }
 
       return filtered
     },
-    [searchQuery, selectedCategories, showCompleted],
+    [searchQuery, selectedCategories, showCompleted]
   )
 
   // Navigate to previous month with animation
@@ -145,7 +184,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         }, 50)
       }
     },
-    [currentYear],
+    [currentYear]
   )
 
   // Change month
@@ -163,7 +202,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         }, 50)
       }
     },
-    [currentMonth],
+    [currentMonth]
   )
 
   // Generate array of years for the year picker (current year ±10 years)
@@ -184,12 +223,10 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   const calendarDays = useMemo(() => {
     const days = []
 
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null)
     }
 
-    // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(day)
     }
@@ -203,13 +240,12 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
       const date = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
       return filterTasks(
         tasks.filter((task) => {
-          // Extract date part from dueDate (YYYY-MM-DD)
           const taskDate = task.dueDate.split("T")[0]
           return taskDate === date
-        }),
+        })
       )
     },
-    [currentMonth, currentYear, tasks, filterTasks],
+    [currentMonth, currentYear, tasks, filterTasks]
   )
 
   // Open modal to add a task for a specific day
@@ -219,23 +255,31 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
       setSelectedDate(date)
       setIsModalOpen(true)
     },
-    [currentMonth, currentYear],
+    [currentMonth, currentYear]
   )
 
-  // Add a new task
+  // Add a new task through API
   const addTask = useCallback(
-    (task: Omit<Task, "id" | "createdAt" | "starred">) => {
-      const newTask: Task = {
-        ...task,
-        id: tasks.length > 0 ? Math.max(...tasks.map((t) => t.id)) + 1 : 1,
-        createdAt: new Date().toISOString(),
-        starred: false,
-      }
+    async (task: Omit<Task, "id" | "createdAt" | "starred">) => {
+      try {
+        const taskPayload = {
+          title: task.title,
+          description: task.description || "",
+          due_date: task.dueDate,
+          category: task.category || null,
+          priority: task.priority === "high" ? "H" : task.priority === "medium" ? "M" : "L",
+          completed: task.completed || false,
+          is_favorite: false,
+        }
 
-      setTasks((prevTasks) => [...prevTasks, newTask])
-      setIsModalOpen(false)
+        const newTask = await createTask(taskPayload)
+        setTasks((prevTasks) => [...prevTasks, newTask])
+        setIsModalOpen(false)
+      } catch (error) {
+        console.error("Failed to create task:", error)
+      }
     },
-    [tasks],
+    []
   )
 
   // Get all tasks for the current month
@@ -245,17 +289,16 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
 
     return filterTasks(
       tasks.filter((task) => {
-        // Extract date part from dueDate (YYYY-MM-DD)
         const taskDate = new Date(task.dueDate.split("T")[0])
         return taskDate >= monthStart && taskDate <= monthEnd
-      }),
+      })
     ).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
   }, [currentMonth, currentYear, filterTasks, tasks])
 
   // Toggle category selection
   const toggleCategory = useCallback((categoryId: number) => {
     setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId],
+      prev.includes(categoryId) ? prev.filter((c) => c !== categoryId) : [...prev, categoryId]
     )
   }, [])
 
@@ -267,10 +310,10 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   // Get all unique categories from tasks
   const allCategories = useMemo(() => {
     if (!Array.isArray(tasks)) {
-      console.error("tasks is not an array:", tasks); // Логирование для отладки
-      return [];
+      console.error("tasks is not an array:", tasks)
+      return []
     }
-    return Array.from(new Set(tasks.map((task) => task.category).filter((c): c is number => c != null)));
+    return Array.from(new Set(tasks.map((task) => task.category).filter((c): c is number => c != null)))
   }, [tasks])
 
   // Open task detail modal
@@ -291,12 +334,12 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   // Проверка и нормализация входных данных для setTasks
   const setTasksSafe = useCallback((newTasks: Task[] | any) => {
     if (!Array.isArray(newTasks)) {
-      console.error("setTasks received non-array value:", newTasks);
-      setTasks([]);
-      return;
+      console.error("setTasks received non-array value:", newTasks)
+      setTasks([])
+      return
     }
-    setTasks(newTasks);
-  }, []);
+    setTasks(newTasks)
+  }, [])
 
   return {
     currentDate,
@@ -304,7 +347,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
     currentYear,
     monthName,
     tasks,
-    setTasks: setTasksSafe, // Используем безопасную версию setTasks
+    setTasks: setTasksSafe,
     categories,
     setCategories,
     selectedDate,

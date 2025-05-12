@@ -6,7 +6,7 @@ import { Calendar, Clock, FolderIcon, CheckCircle2, Circle, CheckCircle, Star } 
 import { TooltipContent } from '@/components/ui/tooltip'
 import { getPriorityColorClass } from '@/lib/calendar-utils'
 import { cn } from '@/lib/utils'
-import type { Task } from '@/types'
+import type { Task, Category } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { enUS, uk } from 'date-fns/locale'
@@ -15,9 +15,10 @@ import { useNotification } from '@/contexts/notification-context'
 type TaskTooltipProps = {
   task: Task
   toggleTaskCompletion: (taskId: number) => void
+  categories: Category[] // Новый проп для категорий
 }
 
-export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipProps) {
+export default function TaskTooltip({ task, toggleTaskCompletion, categories }: TaskTooltipProps) {
   const { t, i18n } = useTranslation(['calendar', 'notifications'])
   const [isCompleted, setIsCompleted] = useState(task.completed)
   const { addNotification } = useNotification()
@@ -42,6 +43,10 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
       3000
     )
   }
+
+  // Найти категорию по ID
+  const category = task.category != null ? categories.find((cat) => cat.id === task.category) : null
+  const categoryName = category ? category.name : t('calendar:noCategory') // Если нет категории, отображаем "No category"
 
   // Extract time from dueDate
   const time = task.dueDate ? task.dueDate.split('T')[1]?.substring(0, 5) : undefined
@@ -98,7 +103,7 @@ export default function TaskTooltip({ task, toggleTaskCompletion }: TaskTooltipP
         )}
         <span className="capitalize flex items-center">
           <FolderIcon className="h-3 w-3 mr-1" />
-          {task.category}
+          {categoryName} {/* Отображаем название категории */}
         </span>
       </div>
       {isCompleted && (

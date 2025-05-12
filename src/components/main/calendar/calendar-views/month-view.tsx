@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { motion, AnimatePresence, MotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react"
 import TaskItem from "@/components/main/calendar/task-item"
 import { isToday, getDayStatus } from "@/lib/calendar-utils"
-import type { Task } from "@/types"
-
+import type { Task, Category } from "@/types"
 import { HTMLAttributes } from 'react'
 
 // type for motion.div
@@ -26,6 +25,7 @@ type MonthViewProps = {
   categoryColorMap: Record<string, { color: string; icon: string }>
   dayNames: string[]
   isMobile: boolean
+  categories: Category[] // Новый проп
 }
 
 // Animation variants for month transitions
@@ -56,6 +56,7 @@ export default function MonthView({
   toggleTaskCompletion,
   dayNames,
   isMobile,
+  categories,
 }: MonthViewProps) {
   return (
     <>
@@ -142,7 +143,7 @@ export default function MonthView({
 
                 <div className="relative h-[calc(100%-24px)]">
                   {isMobile && dayTasks.length > 0 ? (
-                    // On mobile, just show the task count as a badge (non-interactive) - IMPROVED STYLING
+                    // On mobile, just show the task count as a badge (non-interactive)
                     <div className="absolute top-1 left-0 right-0 flex justify-center">
                       <div
                         className={cn(
@@ -170,6 +171,7 @@ export default function MonthView({
                             openTaskDetail={openTaskDetail}
                             toggleTaskCompletion={toggleTaskCompletion}
                             view="month"
+                            categories={categories} // Передаём categories
                           />
                         )
                       })}

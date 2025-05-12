@@ -1,9 +1,8 @@
-"use client"
+'use client'
 
 import { motion, AnimatePresence, MotionProps } from "framer-motion"
 import TaskItem from "@/components/main/calendar/task-item"
-import type { Task } from "@/types"
-
+import type { Task, Category } from "@/types"
 import { HTMLAttributes } from 'react'
 
 // type for motion.div
@@ -17,6 +16,7 @@ type ListViewProps = {
   toggleTaskCompletion: (taskId: number) => void
   categoryColorMap: Record<string, { color: string; icon: string }>
   showCompleted: boolean
+  categories: Category[] // Новый проп
 }
 
 // Animation variants for month transitions
@@ -42,6 +42,7 @@ export default function ListView({
   openTaskDetail,
   toggleTaskCompletion,
   showCompleted,
+  categories,
 }: ListViewProps) {
   const tasks = getMonthTasks()
 
@@ -73,6 +74,7 @@ export default function ListView({
                 toggleTaskCompletion={toggleTaskCompletion}
                 view="list"
                 isTaskToday={isTaskToday}
+                categories={categories} // Передаём categories
               />
             )
           })

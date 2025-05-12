@@ -7,7 +7,7 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Clock, Star } from 'lucide-re
 import { cn } from '@/lib/utils'
 import { getTaskStatus } from '@/types'
 import { getPriorityColorClass } from '@/lib/calendar-utils'
-import type { Task } from '@/types'
+import type { Task, Category } from '@/types'
 import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Checkbox } from '@/components/ui/checkbox'
 import TaskTooltip from './task-tooltip'
@@ -40,6 +40,7 @@ type TaskItemProps = {
   toggleTaskCompletion: (taskId: number) => void
   view: 'month' | 'list'
   isTaskToday?: boolean
+  categories: Category[] // Новый проп
 }
 
 export default function TaskItem({
@@ -48,6 +49,7 @@ export default function TaskItem({
   toggleTaskCompletion,
   view,
   isTaskToday = false,
+  categories,
 }: TaskItemProps) {
   const { t, i18n } = useTranslation(['calendar', 'notifications'])
   const status = getTaskStatus(task)
@@ -90,6 +92,10 @@ export default function TaskItem({
     const locale = i18n.language === 'ua' ? uk : enUS
     return format(date, 'EEE, MMM d', { locale })
   }
+
+  // Найти категорию по ID
+  const category = task.category != null ? categories.find((cat) => cat.id === task.category) : null
+  const categoryName = category ? category.name : t('calendar:noCategory')
 
   // Render task content without tooltip on mobile
   const renderTaskContent = () => {
@@ -146,7 +152,7 @@ export default function TaskItem({
       <TooltipProvider>
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>{renderTaskContent()}</TooltipTrigger>
-          <TaskTooltip task={{ ...task, completed: isCompleted }} toggleTaskCompletion={toggleTaskCompletion} />
+          <TaskTooltip task={{ ...task, completed: isCompleted }} toggleTaskCompletion={toggleTaskCompletion} categories={categories} />
         </Tooltip>
       </TooltipProvider>
     )
@@ -215,7 +221,7 @@ export default function TaskItem({
             </span>
           )}
         </div>
-        <div className='flex items-center'>
+        <div className='flex items-center flex-wrap gap-2'>
           <p
             className={cn(
               'text-sm',
@@ -230,7 +236,7 @@ export default function TaskItem({
           {time && (
             <div
               className={cn(
-                'flex items-center text-sm ml-2',
+                'flex items-center text-sm',
                 status === 'overdue'
                   ? 'text-red-600 dark:text-red-400'
                   : status === 'approaching'
@@ -242,6 +248,14 @@ export default function TaskItem({
               {time}
             </div>
           )}
+          <span
+            className={cn(
+              'px-2 py-0.5 text-xs font-medium rounded-lg',
+              category ? `bg-[${category.color}]/10 text-[${category.color}]` : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
+            )}
+          >
+            {categoryName} {/* Отображаем название категории */}
+          </span>
         </div>
       </div>
       <span

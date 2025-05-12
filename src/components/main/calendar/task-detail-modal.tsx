@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { Clock, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { getTaskStatus } from '@/types'
 import { Checkbox } from '@/components/ui/checkbox'
-import type { Task } from '@/types'
+import type { Task, Category } from '@/types'
 import { HTMLAttributes } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
@@ -22,6 +22,7 @@ type TaskDetailModalProps = {
   isOpen: boolean
   onClose: () => void
   toggleTaskCompletion: (taskId: number) => void
+  categories: Category[] // Новый проп для категорий
 }
 
 export default function TaskDetailModal({
@@ -29,10 +30,10 @@ export default function TaskDetailModal({
   isOpen,
   onClose,
   toggleTaskCompletion,
+  categories,
 }: TaskDetailModalProps) {
   const { t, i18n } = useTranslation('calendar')
   const [isCompleted, setIsCompleted] = useState(false)
-
 
   // Update local state when task changes
   useEffect(() => {
@@ -55,6 +56,10 @@ export default function TaskDetailModal({
     setIsCompleted(!isCompleted)
     toggleTaskCompletion(task.id)
   }
+
+  // Найти категорию по ID
+  const category = task.category != null ? categories.find((cat) => cat.id === task.category) : null
+  const categoryName = category ? category.name : t('noCategory') // Если нет категории, отображаем "No category"
 
   // Extract time from dueDate
   const time = task.dueDate ? task.dueDate.split('T')[1]?.substring(0, 5) : undefined
@@ -109,7 +114,7 @@ export default function TaskDetailModal({
               {t(`priority.${task.priority}`)}
             </Badge>
             <Badge variant="outline" className="rounded-lg">
-              {task.category}
+              {categoryName} {/* Отображаем название категории */}
             </Badge>
             {taskStatus === 'overdue' && (
               <Badge variant="destructive" className="rounded-lg flex items-center gap-1">

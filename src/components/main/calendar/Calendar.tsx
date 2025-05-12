@@ -43,23 +43,23 @@ export default function Calendar() {
     const loadData = async () => {
       if (!isAuth) return
       setIsLoading(true)
-      console.log('Fetching data...'); // Логирование для отладки
+      console.log('Fetching data...')
       try {
-        const [tasksData, categoriesData] = await Promise.all([fetchAllTasks(), fetchCategories()]);
-        calendar.setTasks(tasksData);
-        calendar.setCategories(categoriesData);
+        const [tasksData, categoriesData] = await Promise.all([fetchAllTasks(), fetchCategories()])
+        calendar.setTasks(tasksData)
+        calendar.setCategories(categoriesData)
       } catch (error) {
-        console.error('Error loading data:', error);
-        calendar.setTasks([]);
+        console.error('Error loading data:', error)
+        calendar.setTasks([])
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
 
     if (isAuth) {
-      loadData();
+      loadData()
     }
-  }, [isAuth, calendar.setTasks, calendar.setCategories]); // Зависимости только от isAuth и стабильных функций
+  }, [isAuth, calendar.setTasks, calendar.setCategories])
 
   const dayNames = [
     t('dayNames.0'),
@@ -139,6 +139,7 @@ export default function Calendar() {
             categoryColorMap={calendar.categoryColorMap}
             dayNames={isMobile ? shortDayNames : dayNames}
             isMobile={isMobile}
+            categories={calendar.categories} // Передаём categories
           />
         </TabsContent>
 
@@ -151,6 +152,7 @@ export default function Calendar() {
             toggleTaskCompletion={calendar.toggleTaskCompletion}
             categoryColorMap={calendar.categoryColorMap}
             showCompleted={calendar.showCompleted}
+            categories={calendar.categories} // Передаём categories
           />
         </TabsContent>
       </Tabs>
@@ -170,6 +172,7 @@ export default function Calendar() {
         isOpen={!!calendar.selectedTask}
         onClose={calendar.closeTaskDetail}
         toggleTaskCompletion={calendar.toggleTaskCompletion}
+        categories={calendar.categories}
       />
     </div>
   )
