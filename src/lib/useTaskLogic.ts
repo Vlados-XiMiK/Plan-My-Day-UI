@@ -5,7 +5,7 @@ import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchTasks, createTask, updateTask, deleteTask as deleteTaskApi } from '@/api/tasks';
-import { fetchCategories } from '@/lib/tasks-data';
+import { useCategories } from '@/lib/useCategories'; // Импортируем useCategories
 import type { Task, Category } from '@/types';
 import { useTranslation } from 'react-i18next';
 
@@ -18,9 +18,13 @@ interface TimeRemaining {
 export const useTaskLogic = () => {
   const { t } = useTranslation(['tasks', 'notifications']);
   const { addNotification } = useNotification();
+  const {
+    categories,
+    isLoading: categoriesLoading,
+    refreshCategories, // Используем refreshCategories из useCategories
+  } = useCategories(); // Используем useCategories вместо fetchCategories
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,30 +32,42 @@ export const useTaskLogic = () => {
   const [isEditPopupOpen, setEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  
 
-  // Load tasks and categories on mount
+  // Load tasks on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const [loadedTasks, loadedCategories] = await Promise.all([fetchTasks(), fetchCategories()]);
+        const loadedTasks = await fetchTasks();
         console.log('Loaded tasks:', loadedTasks);
-        console.log('Loaded categories:', loadedCategories);
         setTasks(loadedTasks);
-        setCategories(loadedCategories);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error('Error loading tasks:', error);
         addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
       } finally {
-        setIsLoading(false);
+        setIsInitialLoading(false);
       }
     }
     loadData();
   }, [addNotification, t]);
 
+  // Отладка изменений категорий
+  useEffect(() => {
+    console.log('Categories in useTaskLogic:', categories);
+  }, [categories]);
+
+  // Переопределяем setCreationPopupOpen для рефетча категорий
+  const setCreationPopupOpenWithRefresh = async (open: boolean) => {
+    if (open) {
+      await refreshCategories(); // Рефетч категорий перед открытием поп-апа
+    }
+    setCreationPopupOpen(open);
+  };
+
   // Function for trimming long named tasks
-  const truncateTitle = (title: string, maxLength: number = 30): string => {
-    if (title.length <= maxLength) return title;
-    return title.slice(0, maxLength - 3) + '...';
+  const truncateTitle = (name: string, maxLength: number = 30): string => {
+    if (name.length <= maxLength) return name;
+    return name.slice(0, maxLength - 3) + '...';
   };
 
   const toggleTaskCompletion = async (id: number) => {
@@ -198,6 +214,7 @@ export const useTaskLogic = () => {
       console.log('Sending task to API:', newTask);
       await createTask(newTask);
       const updatedTasks = await fetchTasks();
+      await refreshCategories(); // Рефетч категорий после создания задачи
       setTasks(updatedTasks);
       setCreationPopupOpen(false);
       const truncatedTitle = truncateTitle(task.title);
@@ -238,6 +255,7 @@ export const useTaskLogic = () => {
       };
       await updateTask(updatedTask.id, taskToSend);
       const updatedTasks = await fetchTasks();
+      await refreshCategories(); // Рефетч категорий после редактирования задачи
       setTasks(updatedTasks);
       setEditPopupOpen(false);
       setTaskToEdit(null);
@@ -255,7 +273,8 @@ export const useTaskLogic = () => {
     }
   };
 
-  const openEditPopup = (task: Task) => {
+  const openEditPopup = async (task: Task) => {
+    await refreshCategories(); // Рефетч категорий перед открытием поп-апа
     setTaskToEdit(task);
     setEditPopupOpen(true);
   };
@@ -405,12 +424,12 @@ export const useTaskLogic = () => {
     tasks,
     setTasks,
     categories,
-    isLoading,
+    isLoading: isInitialLoading,// Учитываем загрузку категорий
     isCreating,
     isUpdating,
     isDeleting,
     isCreationPopupOpen,
-    setCreationPopupOpen,
+    setCreationPopupOpen: setCreationPopupOpenWithRefresh,
     isEditPopupOpen,
     setEditPopupOpen,
     taskToEdit,
@@ -427,5 +446,6 @@ export const useTaskLogic = () => {
     formatDate,
     getTimeRemaining,
     filterTasks,
+    refreshCategories,
   };
 };

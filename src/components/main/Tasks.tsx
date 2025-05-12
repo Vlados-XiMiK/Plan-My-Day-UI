@@ -1,33 +1,33 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, ChevronDown, ChevronUp, Edit, Star, Trash, Plus, Calendar, Clock, AlertTriangle } from 'lucide-react'
-import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup'
-import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup'
-import FloatingDeadlineReminder from '@/components/ui/deadline-notification/floating-deadline-reminder'
-import { useTaskLogic } from '@/lib/useTaskLogic'
-import { Task} from '@/types'
-import { useTranslation } from 'react-i18next'
-import { isAuthenticated } from '@/api/auth'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, ChevronDown, ChevronUp, Edit, Star, Trash, Plus, Calendar, Clock, AlertTriangle } from 'lucide-react';
+import TaskCreationPopup from '@/components/main/pop-up/TaskCreationPopup';
+import TaskEditPopup from '@/components/main/pop-up/TaskEditPopup';
+import FloatingDeadlineReminder from '@/components/ui/deadline-notification/floating-deadline-reminder';
+import { useTaskLogic } from '@/lib/useTaskLogic';
+import { Task } from '@/types';
+import { useTranslation } from 'react-i18next';
+import { isAuthenticated } from '@/api/auth';
 
 export default function Tasks() {
-  const { t } = useTranslation('tasks')
-  const router = useRouter()
-  const [isFiltersCollapsed, setFiltersCollapsed] = useState(false)
-  const [isAuth, setIsAuth] = useState(false)
+  const { t } = useTranslation('tasks');
+  const router = useRouter();
+  const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
 
   // Проверка авторизации
   useEffect(() => {
     async function checkAuth() {
-      const auth = await isAuthenticated()
-      setIsAuth(auth)
+      const auth = await isAuthenticated();
+      setIsAuth(auth);
       if (!auth) {
-        router.replace('/auth/login')
+        router.replace('/auth/login');
       }
     }
-    checkAuth()
-  }, [router])
+    checkAuth();
+  }, [router]);
 
   const {
     tasks,
@@ -51,16 +51,21 @@ export default function Tasks() {
     formatDate,
     getTimeRemaining,
     filterTasks,
-  } = useTaskLogic()
+  } = useTaskLogic();
+
+  // Отладка категорий
+  useEffect(() => {
+    console.log('Categories in Tasks:', categories);
+  }, [categories]);
 
   const TaskItem = ({ task }: { task: Task }) => {
-    const [isExpanded, setIsExpanded] = useState(false)
-    const descriptionLengthLimit = 100
+    const [isExpanded, setIsExpanded] = useState(false);
+    const descriptionLengthLimit = 100;
 
     // Находим имя категории по category
     const categoryName = typeof task.category === 'number'
       ? categories.find(cat => cat.id === task.category)?.name || 'No Category'
-      : 'No Category'
+      : 'No Category';
 
     return (
       <li
@@ -182,15 +187,15 @@ export default function Tasks() {
           </div>
         </div>
       </li>
-    )
-  }
+    );
+  };
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f]">
         <div className="w-12 h-12 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full animate-spin"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -325,5 +330,5 @@ export default function Tasks() {
         onSnooze={snoozeTask}
       />
     </>
-  )
+  );
 }
