@@ -1,9 +1,8 @@
-// @/hooks/use-calendar.ts
 "use client"
 
 import { useState, useCallback, useMemo, useEffect } from "react"
 import type { Task, Category } from "@/types"
-import { fetchAllTasks } from "@/lib/tasks-data"
+import { fetchAllTasks, fetchCategories } from "@/lib/tasks-data"
 import { createTask, updateTask } from "@/api/tasks"
 
 export function useCalendar(initialTasks: Task[] = [], initialCategories: Category[] = []) {
@@ -20,21 +19,35 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   const [showCompleted, setShowCompleted] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Загрузка всех задач при инициализации
+  // Загрузка задач и категорий при инициализации
   useEffect(() => {
-    const loadTasks = async () => {
+    const loadData = async () => {
       try {
-        const tasksData = await fetchAllTasks()
-        console.log(`Loaded ${tasksData.length} tasks in useCalendar`) // Логирование для отладки
+        const [tasksData, categoriesData] = await Promise.all([fetchAllTasks(), fetchCategories()])
+        console.log(`Loaded ${tasksData.length} tasks and ${categoriesData.length} categories in useCalendar`)
         setTasks(tasksData)
+        setCategories(categoriesData)
       } catch (error) {
-        console.error("Failed to load tasks in useCalendar:", error)
+        console.error("Failed to load data in useCalendar:", error)
         setTasks([])
+        setCategories([])
       }
     }
 
-    loadTasks()
-  }, []) // Пустой массив зависимостей, чтобы загрузка происходила один раз при монтировании
+    loadData()
+  }, [])
+
+  // Функция для обновления категорий
+  const refreshCategories = useCallback(async () => {
+    try {
+      const categoriesData = await fetchCategories()
+      console.log(`Refreshed ${categoriesData.length} categories`)
+      setCategories(categoriesData)
+    } catch (error) {
+      console.error("Failed to refresh categories:", error)
+      setCategories([])
+    }
+  }, [])
 
   // Get current month and year
   const currentMonth = currentDate.getMonth()
@@ -79,9 +92,9 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         const updatedTaskData = {
           ...task,
           completed: !task.completed,
-          due_date: task.dueDate, // API ожидает due_date
-          priority: task.priority === "high" ? "H" : task.priority === "medium" ? "M" : "L", // Преобразуем приоритет
-          is_favorite: task.starred, // API ожидает is_favorite
+          due_date: task.dueDate,
+          priority: task.priority === "high" ? "H" : task.priority === "medium" ? "M" : "L",
+          is_favorite: task.starred,
         }
 
         const updatedTask = await updateTask(taskId, updatedTaskData)
@@ -382,5 +395,6 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
     openTaskDetail,
     closeTaskDetail,
     toggleShowCompleted,
+    refreshCategories,
   }
 }

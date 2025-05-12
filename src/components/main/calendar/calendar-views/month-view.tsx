@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { motion, AnimatePresence, MotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
@@ -7,7 +7,7 @@ import { Plus, AlertCircle, AlertTriangle, CheckCircle2 } from "lucide-react"
 import TaskItem from "@/components/main/calendar/task-item"
 import { isToday, getDayStatus } from "@/lib/calendar-utils"
 import type { Task, Category } from "@/types"
-import { HTMLAttributes } from 'react'
+import { HTMLAttributes } from "react"
 
 // type for motion.div
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -25,7 +25,8 @@ type MonthViewProps = {
   categoryColorMap: Record<string, { color: string; icon: string }>
   dayNames: string[]
   isMobile: boolean
-  categories: Category[] // Новый проп
+  categories: Category[]
+  refreshCategories: () => Promise<void> // Новый пропс
 }
 
 // Animation variants for month transitions
@@ -57,7 +58,15 @@ export default function MonthView({
   dayNames,
   isMobile,
   categories,
+  refreshCategories,
 }: MonthViewProps) {
+  // Обработчик нажатия на кнопку добавления задачи
+  const handleAddTask = async (e: React.MouseEvent, day: number) => {
+    e.stopPropagation()
+    await refreshCategories() // Обновляем категории перед открытием модального окна
+    openAddTaskModal(day)
+  }
+
   return (
     <>
       {/* Day names */}
@@ -171,7 +180,7 @@ export default function MonthView({
                             openTaskDetail={openTaskDetail}
                             toggleTaskCompletion={toggleTaskCompletion}
                             view="month"
-                            categories={categories} // Передаём categories
+                            categories={categories}
                           />
                         )
                       })}
@@ -194,10 +203,7 @@ export default function MonthView({
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg absolute bottom-0 right-0"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openAddTaskModal(day)
-                      }}
+                      onClick={(e) => handleAddTask(e, day)} // Используем новый обработчик
                     >
                       <Plus className="h-4 w-4" />
                     </Button>

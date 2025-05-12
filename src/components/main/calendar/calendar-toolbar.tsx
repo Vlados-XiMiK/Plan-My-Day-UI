@@ -1,26 +1,27 @@
-'use client'
+"use client"
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Search, ChevronDown, CheckCircle2, Grid, List, Filter } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { Category } from '@/types'
-import { useMobile } from '@/hooks/use-mobile'
-import { useTranslation } from 'react-i18next'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Search, ChevronDown, CheckCircle2, Grid, List, Filter } from "lucide-react"
+import { cn } from "@/lib/utils"
+import type { Category } from "@/types"
+import { useMobile } from "@/hooks/use-mobile"
+import { useTranslation } from "react-i18next"
 
 type CalendarToolbarProps = {
   searchQuery: string
   setSearchQuery: (query: string) => void
-  view: 'month' | 'list'
-  setView: (view: 'month' | 'list') => void
+  view: "month" | "list"
+  setView: (view: "month" | "list") => void
   categories: Category[]
-  selectedCategories: number[] // Изменено на number[]
-  toggleCategory: (categoryId: number) => void // Изменено на number
+  selectedCategories: number[]
+  toggleCategory: (categoryId: number) => void
   clearCategoryFilters: () => void
   showCompleted: boolean
   toggleShowCompleted: () => void
+  refreshCategories: () => Promise<void> // Новый пропс
 }
 
 export default function CalendarToolbar({
@@ -34,9 +35,17 @@ export default function CalendarToolbar({
   clearCategoryFilters,
   showCompleted,
   toggleShowCompleted,
+  refreshCategories,
 }: CalendarToolbarProps) {
-  const { t } = useTranslation('calendar')
+  const { t } = useTranslation("calendar")
   const isMobile = useMobile()
+
+  // Обработчик открытия/закрытия DropdownMenu
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      refreshCategories() // Обновляем категории при открытии меню
+    }
+  }
 
   return (
     <div className="p-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-2">
@@ -44,7 +53,7 @@ export default function CalendarToolbar({
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder={t('searchPlaceholder')}
+            placeholder={t("searchPlaceholder")}
             className="pl-8 rounded-xl"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -55,7 +64,7 @@ export default function CalendarToolbar({
       <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
         {/* Мобильная версия: компактная кнопка фильтра */}
         {isMobile ? (
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="rounded-lg flex items-center gap-1">
                 <Filter className="h-4 w-4" />
@@ -69,25 +78,25 @@ export default function CalendarToolbar({
             <DropdownMenuContent align="end" className="rounded-xl">
               <DropdownMenuItem
                 className={cn(
-                  'cursor-pointer rounded-lg flex items-center gap-2',
-                  showCompleted ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : '',
+                  "cursor-pointer rounded-lg flex items-center gap-2",
+                  showCompleted ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : ""
                 )}
                 onClick={toggleShowCompleted}
               >
                 {showCompleted ? <CheckCircle2 className="h-4 w-4" /> : null}
-                {showCompleted ? t('hideCompleted') : t('showCompleted')}
+                {showCompleted ? t("hideCompleted") : t("showCompleted")}
               </DropdownMenuItem>
 
-              <DropdownMenuItem className="font-medium pt-2">{t('categories')}</DropdownMenuItem>
+              <DropdownMenuItem className="font-medium pt-2">{t("categories")}</DropdownMenuItem>
               {categories.map((category) => (
                 <DropdownMenuItem
-                  key={category.id} // Используем ID как ключ
+                  key={category.id}
                   className={cn(
-                    'cursor-pointer rounded-lg flex items-center gap-2 pl-4',
+                    "cursor-pointer rounded-lg flex items-center gap-2 pl-4",
                     selectedCategories.includes(category.id) &&
-                      'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium',
+                      "bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium"
                   )}
-                  onClick={() => toggleCategory(category.id)} // Передаем ID категории
+                  onClick={() => toggleCategory(category.id)}
                 >
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
                   {category.name}
@@ -100,30 +109,30 @@ export default function CalendarToolbar({
                   onClick={clearCategoryFilters}
                   className="text-xs rounded-lg mt-1"
                 >
-                  {t('clearFilters', { count: selectedCategories.length })}
+                  {t("clearFilters", { count: selectedCategories.length })}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           <>
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={handleOpenChange}>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="rounded-lg flex items-center gap-1">
-                  {t('categories')}
+                  {t("categories")}
                   <ChevronDown className="h-3 w-3 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="max-h-[300px] overflow-y-auto rounded-xl">
                 {categories.map((category) => (
                   <DropdownMenuItem
-                    key={category.id} // Используем ID как ключ
+                    key={category.id}
                     className={cn(
-                      'cursor-pointer rounded-lg flex items-center gap-2',
+                      "cursor-pointer rounded-lg flex items-center gap-2",
                       selectedCategories.includes(category.id) &&
-                        'bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium',
+                        "bg-indigo-100 text-indigo-900 dark:bg-indigo-900 dark:text-indigo-100 font-medium"
                     )}
-                    onClick={() => toggleCategory(category.id)} // Передаем ID категории
+                    onClick={() => toggleCategory(category.id)}
                   >
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
                     {category.name}
@@ -134,7 +143,7 @@ export default function CalendarToolbar({
             </DropdownMenu>
             {selectedCategories.length > 0 && (
               <Button variant="ghost" size="sm" onClick={clearCategoryFilters} className="text-xs rounded-lg ml-1">
-                {t('clearFilters', { count: selectedCategories.length })}
+                {t("clearFilters", { count: selectedCategories.length })}
               </Button>
             )}
 
@@ -143,17 +152,17 @@ export default function CalendarToolbar({
               size="sm"
               onClick={toggleShowCompleted}
               className={cn(
-                'text-xs rounded-lg flex items-center gap-1',
-                showCompleted ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : '',
+                "text-xs rounded-lg flex items-center gap-1",
+                showCompleted ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : ""
               )}
             >
               {showCompleted ? <CheckCircle2 className="h-3 w-3" /> : null}
-              {showCompleted ? t('hideCompleted') : t('showCompleted')}
+              {showCompleted ? t("hideCompleted") : t("showCompleted")}
             </Button>
           </>
         )}
 
-        <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'month' | 'list')}>
+        <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "month" | "list")}>
           <ToggleGroupItem value="month" aria-label="Month view" className="rounded-l-xl">
             <Grid className="h-4 w-4" />
           </ToggleGroupItem>

@@ -1,27 +1,25 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Tabs, TabsContent } from '@/components/ui/tabs'
-import { useMobile } from '@/hooks/use-mobile'
-import TaskDetailModal from './task-detail-modal'
-import TaskModal from './task-modal'
-import { fetchAllTasks, fetchCategories } from '@/lib/tasks-data'
-import { useCalendar } from '@/hooks/use-calendar'
-import CalendarHeader from './calendar-header'
-import CalendarToolbar from './calendar-toolbar'
-import MonthView from './calendar-views/month-view'
-import ListView from './calendar-views/list-view'
-import { useTranslation } from 'react-i18next'
-import { isAuthenticated } from '@/api/auth'
-import Loader from '@/components/ui/preloader'
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { useMobile } from "@/hooks/use-mobile"
+import TaskDetailModal from "./task-detail-modal"
+import TaskModal from "./task-modal"
+import { useCalendar } from "@/hooks/use-calendar"
+import CalendarHeader from "./calendar-header"
+import CalendarToolbar from "./calendar-toolbar"
+import MonthView from "./calendar-views/month-view"
+import ListView from "./calendar-views/list-view"
+import { useTranslation } from "react-i18next"
+import { isAuthenticated } from "@/api/auth"
+import Loader from "@/components/ui/preloader"
 
 export default function Calendar() {
-  const { t } = useTranslation('calendar')
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-  const [isAuth, setIsAuth] = useState(false)
+  const { t } = useTranslation("calendar")
   const [authLoading, setAuthLoading] = useState(true)
+  const [isAuth, setIsAuth] = useState(false)
+  const router = useRouter()
   const isMobile = useMobile()
 
   const calendar = useCalendar()
@@ -33,51 +31,29 @@ export default function Calendar() {
       setAuthLoading(false)
 
       if (!auth) {
-        router.replace('/auth/login')
+        router.replace("/auth/login")
       }
     }
     checkAuth()
   }, [router])
 
-  useEffect(() => {
-    const loadData = async () => {
-      if (!isAuth) return
-      setIsLoading(true)
-      console.log('Fetching data...')
-      try {
-        const [tasksData, categoriesData] = await Promise.all([fetchAllTasks(), fetchCategories()])
-        calendar.setTasks(tasksData)
-        calendar.setCategories(categoriesData)
-      } catch (error) {
-        console.error('Error loading data:', error)
-        calendar.setTasks([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    if (isAuth) {
-      loadData()
-    }
-  }, [isAuth, calendar.setTasks, calendar.setCategories])
-
   const dayNames = [
-    t('dayNames.0'),
-    t('dayNames.1'),
-    t('dayNames.2'),
-    t('dayNames.3'),
-    t('dayNames.4'),
-    t('dayNames.5'),
-    t('dayNames.6'),
+    t("dayNames.0"),
+    t("dayNames.1"),
+    t("dayNames.2"),
+    t("dayNames.3"),
+    t("dayNames.4"),
+    t("dayNames.5"),
+    t("dayNames.6"),
   ]
   const shortDayNames = [
-    t('shortDayNames.0'),
-    t('shortDayNames.1'),
-    t('shortDayNames.2'),
-    t('shortDayNames.3'),
-    t('shortDayNames.4'),
-    t('shortDayNames.5'),
-    t('shortDayNames.6'),
+    t("shortDayNames.0"),
+    t("shortDayNames.1"),
+    t("shortDayNames.2"),
+    t("shortDayNames.3"),
+    t("shortDayNames.4"),
+    t("shortDayNames.5"),
+    t("shortDayNames.6"),
   ]
 
   if (authLoading) {
@@ -86,10 +62,6 @@ export default function Calendar() {
 
   if (!isAuth) {
     return null
-  }
-
-  if (isLoading) {
-    return <Loader />
   }
 
   return (
@@ -118,12 +90,13 @@ export default function Calendar() {
         clearCategoryFilters={calendar.clearCategoryFilters}
         showCompleted={calendar.showCompleted}
         toggleShowCompleted={calendar.toggleShowCompleted}
+        refreshCategories={calendar.refreshCategories}
       />
 
       <Tabs
         value={calendar.view}
         className="w-full"
-        onValueChange={(value) => calendar.setView(value as 'month' | 'list')}
+        onValueChange={(value) => calendar.setView(value as "month" | "list")}
       >
         <TabsContent value="month" className="m-0 overflow-hidden">
           <MonthView
@@ -139,7 +112,8 @@ export default function Calendar() {
             categoryColorMap={calendar.categoryColorMap}
             dayNames={isMobile ? shortDayNames : dayNames}
             isMobile={isMobile}
-            categories={calendar.categories} // Передаём categories
+            categories={calendar.categories}
+            refreshCategories={calendar.refreshCategories} // Передаем refreshCategories
           />
         </TabsContent>
 
@@ -152,7 +126,7 @@ export default function Calendar() {
             toggleTaskCompletion={calendar.toggleTaskCompletion}
             categoryColorMap={calendar.categoryColorMap}
             showCompleted={calendar.showCompleted}
-            categories={calendar.categories} // Передаём categories
+            categories={calendar.categories}
           />
         </TabsContent>
       </Tabs>
