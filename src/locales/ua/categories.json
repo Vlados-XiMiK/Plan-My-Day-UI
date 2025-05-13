@@ -1,0 +1,8 @@
+{
+    "title": "Категорії",
+    "newCategoryLabel": "Нова категорія",
+    "newCategoryPlaceholder": "Введіть назву категорії",
+    "createButton": "Додати категорію",
+    "noCategoriesTitle": "Категорій поки немає",
+    "noCategoriesMessage": "Створіть першу категорію, щоб почати!"
+  }

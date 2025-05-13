@@ -1,0 +1,8 @@
+{
+    "title": "Categories",
+    "newCategoryLabel": "New Category",
+    "newCategoryPlaceholder": "Enter category name",
+    "createButton": "Add Category",
+    "noCategoriesTitle": "No Categories Yet",
+    "noCategoriesMessage": "Create your first category to get started!"
+  }

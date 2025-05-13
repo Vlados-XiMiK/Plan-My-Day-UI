@@ -17,6 +17,7 @@ import stats_en from "../locales/en/stats.json"
 import calendar_en from "../locales/en/calendar.json"
 import popups_en from "../locales/en/popups.json"
 import projects_en from "../locales/en/projects.json"
+import categories_en from "../locales/en/categories.json"
 
 import welcome_ua from "../locales/ua/welcome.json"
 import auth_ua from "../locales/ua/auth.json"
@@ -29,6 +30,7 @@ import stats_ua from "../locales/ua/stats.json"
 import calendar_ua from "../locales/ua/calendar.json"
 import popups_ua from "../locales/ua/popups.json"
 import projects_ua from "../locales/ua/projects.json"
+import categories_ua from "../locales/ua/categories.json"
 
 // Translation resources
 const resources = {
@@ -44,6 +46,7 @@ const resources = {
     calendar: calendar_en,
     popups: popups_en,
     projects: projects_en,
+    categories: categories_en
   },
   ua: {
     welcome: welcome_ua,
@@ -57,6 +60,7 @@ const resources = {
     calendar: calendar_ua,
     popups: popups_ua,
     projects: projects_ua,
+    categories: categories_ua
   },
 }
 
@@ -67,7 +71,7 @@ i18next
     fallbackLng: "en",
     resources,
     ns: ["welcome", "auth", "notifications", "welcome_main", 
-        "tasks", "profile", "legal", "stats", "calendar"],
+        "tasks", "profile", "legal", "stats", "calendar", "projects", "categories"],
     defaultNS: "welcome",
     interpolation: {
       escapeValue: false,
