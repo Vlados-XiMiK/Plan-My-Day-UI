@@ -10,7 +10,7 @@ interface ErrorResponse {
 
 export async function getUserProfile(): Promise<User> {
   try {
-    const response = await axiosClient.get("/auth/users/profile/");
+    const response = await axiosClient.get("/account/profile/");
     console.log("Profile API response:", response.data);
     const data = response.data;
     return {
@@ -42,7 +42,7 @@ export async function getUserProfile(): Promise<User> {
 export async function updateUserProfile(data: Partial<User>): Promise<User> {
   try {
     console.log("Sending updateUserProfile request with data:", data);
-    const response = await axiosClient.patch("/auth/users/update_profile/", {
+    const response = await axiosClient.patch("account/update_profile/", {
       username: data.username,
       email: data.email,
       age: data.age ?? null,

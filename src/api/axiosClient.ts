@@ -22,7 +22,7 @@ async function refreshAccessToken() {
   }
 
   try {
-    const response = await axios.post(`${API_URL}auth/token/refresh/`, { refresh });
+    const response = await axios.post(`${API_URL}account/token/refresh/`, { refresh });
     const newAccess = response.data.access;
     Cookies.set("access_token", newAccess, { expires: 1, secure: true });
     return newAccess;
@@ -68,7 +68,7 @@ axiosClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/token/refresh/")
+      !originalRequest.url.includes("/account/token/refresh/")
     ) {
       originalRequest._retry = true;
 

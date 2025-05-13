@@ -23,7 +23,7 @@ interface ErrorResponse {
 
 export async function registerUser(payload: RegisterPayload) {
   try {
-    const response = await axiosClient.post(`auth/users/register/`, payload);
+    const response = await axiosClient.post(`account/register/`, payload);
     return response.data;
   } catch (error: unknown) { // Используем unknown вместо AxiosError
     // Проверяем, является ли ошибка экземпляром AxiosError
@@ -54,7 +54,7 @@ export async function registerUser(payload: RegisterPayload) {
 
 export async function loginUser(payload: LoginPayload) {
   try {
-    const response = await axios.post(`${API_URL}auth/users/login/`, payload, {
+    const response = await axios.post(`${API_URL}account/login/`, payload, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -95,7 +95,7 @@ export async function logoutUser() {
   try {
     const refresh = Cookies.get("refresh_token");
 
-    const response = await axiosClient.post("auth/users/logout/", {
+    const response = await axiosClient.post("account/logout/", {
       refresh,
     });
 
