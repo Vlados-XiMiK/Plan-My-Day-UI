@@ -15,6 +15,7 @@ export default function Tasks() {
   const { t } = useTranslation('tasks');
   const router = useRouter();
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
 
   // Проверка авторизации
   useEffect(() => {
@@ -36,8 +37,9 @@ export default function Tasks() {
     isEditPopupOpen,
     setEditPopupOpen,
     taskToEdit,
-    searchQuery,
-    setSearchQuery,
+    filters,
+    updateFilters,
+    resetFilters,
     toggleTaskCompletion,
     toggleTaskStarred,
     handleCreateTask,
@@ -48,10 +50,21 @@ export default function Tasks() {
     getPriorityColor,
     formatDate,
     getTimeRemaining,
-    filterTasks,
     loadMoreTasks,
     hasMore,
   } = useTaskLogic();
+
+  // Обработчик нажатия Enter для поиска
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      updateFilters({ search: searchInput });
+    }
+  };
+
+  // Обработчик нажатия кнопки поиска
+  const handleSearchClick = () => {
+    updateFilters({ search: searchInput });
+  };
 
   // Отладка категорий
   useEffect(() => {
@@ -229,26 +242,35 @@ export default function Tasks() {
               </button>
             </div>
             <div className={`flex flex-wrap gap-4 ${isFiltersCollapsed ? 'hidden' : 'block'}`}>
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
+              <div className="flex-1 min-w-[200px] flex items-center gap-2">
+                <div className="relative flex-1">
                   <input
                     type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
                     className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
                     placeholder={t('searchPlaceholder')}
                   />
                   <Search className="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500" size={20} />
                 </div>
+                <button
+                  onClick={handleSearchClick}
+                  className="rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 transition-all duration-200"
+                >
+                  {t('searchButton')}
+                </button>
               </div>
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <select
+                    value={filters.status}
+                    onChange={(e) => updateFilters({ status: e.target.value as '' | 'completed' | 'incomplete' })}
                     className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
                   >
-                    <option>{t('status.all')}</option>
-                    <option>{t('status.completed')}</option>
-                    <option>{t('status.incomplete')}</option>
+                    <option value="">{t('status.select')}</option>
+                    <option value="completed">{t('status.completed')}</option>
+                    <option value="incomplete">{t('status.incomplete')}</option>
                   </select>
                   <ChevronDown
                     className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
@@ -259,12 +281,14 @@ export default function Tasks() {
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <select
-                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] button text-gray-800 dark:text-gray-100"
+                    value={filters.priority}
+                    onChange={(e) => updateFilters({ priority: e.target.value as '' | 'high' | 'medium' | 'low' })}
+                    className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
                   >
-                    <option>{t('priority.all')}</option>
-                    <option>{t('priority.high')}</option>
-                    <option>{t('priority.medium')}</option>
-                    <option>{t('priority.low')}</option>
+                    <option value="">{t('priority.select')}</option>
+                    <option value="high">{t('priority.high')}</option>
+                    <option value="medium">{t('priority.medium')}</option>
+                    <option value="low">{t('priority.low')}</option>
                   </select>
                   <ChevronDown
                     className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
@@ -275,11 +299,17 @@ export default function Tasks() {
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <select
+                    value={filters.sort}
+                    onChange={(e) => updateFilters({ sort: e.target.value as '' | 'created_at' | '-created_at' | 'due_date' | '-due_date' | 'favorites' | 'today' })}
                     className="w-full appearance-none rounded-md border border-gray-300 py-2 pl-3 pr-10 focus:border-transparent focus:ring-2 focus:ring-purple-500 transition-all duration-200 bg-white dark:bg-[#2a2a3e] text-gray-800 dark:text-gray-100"
                   >
-                    <option>{t('sort.createdDate')}</option>
-                    <option>{t('sort.lastModified')}</option>
-                    <option>{t('sort.dueDate')}</option>
+                    <option value="">{t('sort.select')}</option>
+                    <option value="created_at">{t('sort.createdDate')}</option>
+                    <option value="-created_at">{t('sort.createdDateDesc')}</option>
+                    <option value="due_date">{t('sort.dueDate')}</option>
+                    <option value="-due_date">{t('sort.dueDateDesc')}</option>
+                    <option value="favorites">{t('sort.favorites')}</option>
+                    <option value="today">{t('sort.today')}</option>
                   </select>
                   <ChevronDown
                     className="pointer-events-none absolute right-3 top-2.5 text-gray-400 dark:text-gray-500"
@@ -290,6 +320,7 @@ export default function Tasks() {
             </div>
             {!isFiltersCollapsed && (
               <button
+                onClick={resetFilters}
                 className="mt-4 rounded-md bg-transparent border border-purple-600 text-purple-600 dark:text-purple-400 px-4 py-2 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-700 transition-all duration-200"
               >
                 {t('clearFilters')}
@@ -309,7 +340,7 @@ export default function Tasks() {
 
           <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg">
             <ul className="space-y-4">
-              {filterTasks.map((task) => (
+              {tasks.map((task) => (
                 <TaskItem key={task.id} task={task} />
               ))}
             </ul>

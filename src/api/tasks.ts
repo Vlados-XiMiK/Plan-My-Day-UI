@@ -27,6 +27,16 @@ interface CreateTaskPayload {
   is_favorite?: boolean;
 }
 
+// Интерфейс для параметров фильтрации
+interface TaskFilterParams {
+  page?: number;
+  page_size?: number;
+  completed?: boolean;
+  priority?: "H" | "M" | "L";
+  ordering?: string;
+  search?: string;
+}
+
 // Преобразование приоритета API в клиентский формат
 const mapPriorityToString = (priority: "H" | "M" | "L"): "high" | "medium" | "low" => {
   switch (priority) {
@@ -48,39 +58,53 @@ export const mapClientPriorityToApi = (
   return priority === "high" ? "H" : priority === "medium" ? "M" : "L";
 };
 
-// Получение списка задач
-export async function fetchTasks(page: number = 1): Promise<PaginatedResponse> {
+// Получение списка задач с фильтрацией
+export async function fetchTasks(filters: TaskFilterParams = {}): Promise<PaginatedResponse> {
   try {
-    const response = await axiosClient.get("/tasks/", {
-      params: { page, page_size: 10 },
-    });
+    const params: Record<string, string | number | boolean> = {
+      page: filters.page || 1,
+      page_size: filters.page_size || 10,
+    };
+
+    if (filters.completed !== undefined) params.completed = filters.completed;
+    if (filters.priority) params.priority = filters.priority;
+    if (filters.ordering) params.ordering = filters.ordering;
+    if (filters.search) params.search = filters.search;
+
+    const response = await axiosClient.get("/tasks/", { params });
     const data: { count: number; next: string | null; previous: string | null; results: APITask[] } = response.data;
-    console.log("Tasks API response:", data);
+    console.log("Tasks API response:", JSON.stringify(data, null, 2));
 
     const tasks = Array.isArray(data.results) ? data.results : [];
     if (!tasks.length) {
       console.warn("No tasks found in response:", data);
     }
 
-    const transformedTasks: Task[] = tasks.map((task: APITask) => ({
-      id: task.id,
-      title: task.title || "",
-      description: task.description || "",
-      createdAt: task.created_at || new Date().toISOString(),
-      dueDate: task.due_date || new Date().toISOString(),
-      category: task.category ?? null,
-      priority: mapPriorityToString(task.priority),
-      completed: task.completed ?? false,
-      starred: task.is_favorite ?? false,
-      date: task.due_date ? task.due_date.split(" ")[0] : new Date().toISOString().split("T")[0],
-    }));
+    const transformedTasks: Task[] = tasks.map((task: APITask) => {
+      const transformedTask: Task = {
+        id: task.id,
+        title: task.title || "",
+        description: task.description || "",
+        createdAt: task.created_at || new Date().toISOString(),
+        dueDate: task.due_date || new Date().toISOString(),
+        category: task.category ?? null,
+        priority: mapPriorityToString(task.priority),
+        completed: task.completed ?? false,
+        starred: task.is_favorite ?? false,
+        date: task.due_date ? task.due_date.split(" ")[0] : new Date().toISOString().split("T")[0],
+      };
+      console.log("Transformed task:", transformedTask);
+      return transformedTask;
+    });
 
-    return {
-      count: data.count,
-      next: data.next,
-      previous: data.previous,
+    const result: PaginatedResponse = {
+      count: data.count || transformedTasks.length,
+      next: data.next || null,
+      previous: data.previous || null,
       results: transformedTasks,
     };
+    console.log("Paginated response for tasks:", JSON.stringify(result, null, 2));
+    return result;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       const axiosError = error as AxiosError<ErrorResponse>;
@@ -97,6 +121,130 @@ export async function fetchTasks(page: number = 1): Promise<PaginatedResponse> {
     }
     console.error("Failed to fetch tasks:", error);
     throw new Error("Failed to fetch tasks");
+  }
+}
+
+// Получение избранных задач
+export async function fetchFavoriteTasks(page: number = 1): Promise<PaginatedResponse> {
+  try {
+    const response = await axiosClient.get("/tasks/favorites/", {
+      params: { page, page_size: 10 },
+    });
+    const data = response.data;
+    console.log("Favorite tasks API response:", JSON.stringify(data, null, 2));
+
+    // Обрабатываем как объект с results, так и прямой массив
+    const tasks: APITask[] = Array.isArray(data.results)
+      ? data.results
+      : Array.isArray(data)
+      ? data
+      : [];
+    if (!tasks.length) {
+      console.warn("No favorite tasks found in response:", data);
+    } else {
+      console.log("Found favorite tasks:", tasks.length);
+    }
+
+    const transformedTasks: Task[] = tasks.map((task: APITask) => {
+      const transformedTask: Task = {
+        id: task.id,
+        title: task.title || "",
+        description: task.description || "",
+        createdAt: task.created_at || new Date().toISOString(),
+        dueDate: task.due_date || new Date().toISOString(),
+        category: task.category ?? null,
+        priority: mapPriorityToString(task.priority),
+        completed: task.completed ?? false,
+        starred: task.is_favorite ?? false,
+        date: task.due_date ? task.due_date.split(" ")[0] : new Date().toISOString().split("T")[0],
+      };
+      console.log("Transformed favorite task:", transformedTask);
+      return transformedTask;
+    });
+
+    const result: PaginatedResponse = {
+      count: data.count || transformedTasks.length,
+      next: data.next || null,
+      previous: data.previous || null,
+      results: transformedTasks,
+    };
+    console.log("Paginated response for favorites:", JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      console.error(
+        "Failed to fetch favorite tasks:",
+        axiosError.response?.data || axiosError.message
+      );
+      throw new Error(
+        axiosError.response?.data?.detail || "Failed to fetch favorite tasks"
+      );
+    }
+    console.error("Failed to fetch favorite tasks:", error);
+    throw new Error("Failed to fetch favorite tasks");
+  }
+}
+
+// Получение задач на сегодня
+export async function fetchTodayTasks(page: number = 1): Promise<PaginatedResponse> {
+  try {
+    const response = await axiosClient.get("/tasks/today/", {
+      params: { page, page_size: 10 },
+    });
+    const data = response.data;
+    console.log("Today tasks API response:", JSON.stringify(data, null, 2));
+
+    // Обрабатываем как объект с results, так и прямой массив
+    const tasks: APITask[] = Array.isArray(data.results)
+      ? data.results
+      : Array.isArray(data)
+      ? data
+      : [];
+    if (!tasks.length) {
+      console.warn("No today tasks found in response:", data);
+    } else {
+      console.log("Found today tasks:", tasks.length);
+    }
+
+    const transformedTasks: Task[] = tasks.map((task: APITask) => {
+      const transformedTask: Task = {
+        id: task.id,
+        title: task.title || "",
+        description: task.description || "",
+        createdAt: task.created_at || new Date().toISOString(),
+        dueDate: task.due_date || new Date().toISOString(),
+        category: task.category ?? null,
+        priority: mapPriorityToString(task.priority),
+        completed: task.completed ?? false,
+        starred: task.is_favorite ?? false,
+        date: task.due_date ? task.due_date.split(" ")[0] : new Date().toISOString().split("T")[0],
+      };
+      console.log("Transformed today task:", transformedTask);
+      return transformedTask;
+    });
+
+    const result: PaginatedResponse = {
+      count: data.count || transformedTasks.length,
+      next: data.next || null,
+      previous: data.previous || null,
+      results: transformedTasks,
+    };
+    console.log("Paginated response for today:", JSON.stringify(result, null, 2));
+    return result;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      console.error(
+        "Failed to fetch today tasks:",
+        axiosError.response?.data || axiosError.message
+      );
+      throw new Error(
+        axiosError.response?.data?.detail || "Failed to fetch today tasks"
+      );
+    }
+    console.error("Failed to fetch today tasks:", error);
+    throw new Error("Failed to fetch today tasks");
   }
 }
 

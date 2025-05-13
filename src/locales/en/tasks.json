@@ -2,22 +2,30 @@
   "language": "en",
   "filtersAndSearch": "Filters and Search",
   "searchPlaceholder": "Search (e.g., 'high priority work this week')",
+  "searchButton": "Search",
   "status": {
-    "all": "All Status",
+    "select": "Select Status",
     "completed": "Completed",
     "incomplete": "Incomplete"
   },
   "priority": {
-    "all": "All Priority",
+    "select": "Select Priority",
     "high": "High",
     "medium": "Medium",
     "low": "Low",
     "label": "Priority"
   },
+  "category": {
+    "select": "Select Category"
+  },
   "sort": {
+    "select": "Select Sort",
     "createdDate": "Created Date",
-    "lastModified": "Last Modified",
-    "dueDate": "Due Date"
+    "createdDateDesc": "Created Date (Descending)",
+    "dueDate": "Due Date",
+    "dueDateDesc": "Due Date (Descending)",
+    "favorites": "Sort by favorites",
+    "today": "Created today"
   },
   "clearFilters": "Clear Filters",
   "createTask": "Create Task",

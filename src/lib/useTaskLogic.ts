@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
-import { fetchTasks, createTask, updateTask, deleteTask as deleteTaskApi, mapClientPriorityToApi } from '@/api/tasks';
+import { fetchTasks, fetchFavoriteTasks, fetchTodayTasks, createTask, updateTask, deleteTask as deleteTaskApi, mapClientPriorityToApi } from '@/api/tasks';
 import { useCategories } from '@/lib/useCategories';
 import type { Task, CreateTaskPayload } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 
-// Define interface for API error response data
+// Интерфейс для ошибок API
 interface ApiErrorResponse {
   due_date?: string[];
   priority?: string[];
 }
 
+// Интерфейс для времени до дедлайна
 interface TimeRemaining {
   text: string;
   isOverdue: boolean;
@@ -34,53 +35,120 @@ export const useTaskLogic = () => {
   const [isCreationPopupOpen, setCreationPopupOpen] = useState(false);
   const [isEditPopupOpen, setEditPopupOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Load initial tasks on mount
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const response = await fetchTasks(1);
-        console.log('Loaded tasks:', response.results);
-        setTasks(response.results);
-        setHasMore(response.next !== null);
-      } catch (error: unknown) {
-        console.error('Error loading tasks:', error);
-        addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
-      } finally {
-        setIsInitialLoading(false);
-      }
-    }
-    loadData();
-  }, [addNotification, t]);
+  // Состояние фильтров с нейтральными начальными значениями
+  const [filters, setFilters] = useState<{
+    search: string;
+    status: '' | 'completed' | 'incomplete';
+    priority: '' | 'high' | 'medium' | 'low';
+    sort: '' | 'created_at' | '-created_at' | 'due_date' | '-due_date' | 'favorites' | 'today';
+  }>({
+    search: '',
+    status: '',
+    priority: '',
+    sort: '',
+  });
 
-  // Отладка изменений категорий
+  // Загрузка задач с учетом фильтров
+  const loadTasks = async (resetPage: boolean = false) => {
+    try {
+      const currentPage = resetPage ? 1 : page;
+      let response;
+
+      // Формируем параметры фильтрации
+      const taskFilters: {
+        page?: number;
+        completed?: boolean;
+        priority?: 'H' | 'M' | 'L';
+        ordering?: string;
+        search?: string;
+      } = { page: currentPage };
+
+      if (filters.search) taskFilters.search = filters.search;
+      if (filters.status === 'completed') taskFilters.completed = true;
+      if (filters.status === 'incomplete') taskFilters.completed = false;
+      if (filters.priority) taskFilters.priority = mapClientPriorityToApi(filters.priority);
+      if (filters.sort && !['favorites', 'today'].includes(filters.sort)) taskFilters.ordering = filters.sort;
+
+      // Выбираем подходящий эндпоинт
+      console.log(`Loading tasks with sort: ${filters.sort}, page: ${currentPage}, filters:`, taskFilters);
+      if (filters.sort === 'favorites') {
+        response = await fetchFavoriteTasks(currentPage);
+      } else if (filters.sort === 'today') {
+        response = await fetchTodayTasks(currentPage);
+      } else {
+        response = await fetchTasks(taskFilters);
+      }
+
+      console.log('Loaded response:', JSON.stringify(response, null, 2));
+      console.log('Tasks count:', response.results.length, 'Total count:', response.count);
+
+      // Обновляем задачи
+      const newTasks = resetPage ? response.results : [...tasks, ...response.results];
+      console.log('New tasks to set:', JSON.stringify(newTasks, null, 2));
+      setTasks(newTasks);
+
+      // Обновляем страницу
+      setPage(currentPage + 1);
+
+      // Проверяем hasMore: если next === null или count <= загруженных задач
+      const totalLoadedTasks = newTasks.length;
+      const newHasMore = response.next !== null && totalLoadedTasks < response.count;
+      setHasMore(newHasMore);
+      console.log('Set hasMore:', newHasMore, 'Next URL:', response.next, 'Total loaded:', totalLoadedTasks, 'Count:', response.count);
+    } catch (error: unknown) {
+      console.error('Error loading tasks:', error);
+      addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
+
+  // Загрузка начальных задач
+  useEffect(() => {
+    console.log('Filters changed:', filters);
+    setTasks([]); // Сбрасываем задачи при изменении фильтров
+    setPage(1); // Сбрасываем страницу
+    setHasMore(true); // Сбрасываем hasMore
+    loadTasks(true);
+  }, [filters]);
+
+  // Отладка категорий
   useEffect(() => {
     console.log('Categories in useTaskLogic:', categories);
   }, [categories]);
 
-  // Функция для подгрузки дополнительных задач
+  // Подгрузка дополнительных задач
   const loadMoreTasks = async () => {
     if (!hasMore) {
       console.warn('No more tasks to load');
       return;
     }
-    try {
-      const nextPage = page + 1;
-      const response = await fetchTasks(nextPage);
-      console.log('Loaded more tasks for page', nextPage, ':', response.results);
-      setTasks((prevTasks) => [...prevTasks, ...response.results]);
-      setPage(nextPage);
-      setHasMore(response.next !== null);
-    } catch (error: unknown) {
-      console.error('Error loading more tasks:', error);
-      addNotification('error', t('notifications:tasks.loadFailed.title'), t('notifications:tasks.loadFailed.message'));
-    }
+    await loadTasks();
   };
 
-  // Переопределяем setCreationPopupOpen для рефетча категорий
+  // Обновление фильтров
+  const updateFilters = (newFilters: Partial<typeof filters>) => {
+    console.log('Updating filters:', newFilters);
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  // Сброс фильтров
+  const resetFilters = () => {
+    setFilters({
+      search: '',
+      status: '',
+      priority: '',
+      sort: '',
+    });
+    setPage(1);
+    setTasks([]);
+    setHasMore(true);
+  };
+
+  // Открытие попапа создания с рефетчем категорий
   const setCreationPopupOpenWithRefresh = async (open: boolean) => {
     if (open) {
       await refreshCategories();
@@ -88,14 +156,14 @@ export const useTaskLogic = () => {
     setCreationPopupOpen(open);
   };
 
-  // Переопределяем openEditPopup для рефетча категорий
+  // Открытие попапа редактирования с рефетчем категорий
   const openEditPopup = async (task: Task) => {
     await refreshCategories();
     setTaskToEdit(task);
     setEditPopupOpen(true);
   };
 
-  // Function for trimming long named tasks
+  // Усечение длинных заголовков
   const truncateTitle = (name: string, maxLength: number = 30): string => {
     if (name.length <= maxLength) return name;
     return name.slice(0, maxLength - 3) + '...';
@@ -124,10 +192,7 @@ export const useTaskLogic = () => {
         category: task.category,
       };
       await updateTask(id, updatedTask);
-      const response = await fetchTasks(1);
-      setTasks(response.results);
-      setPage(1);
-      setHasMore(response.next !== null);
+      await loadTasks(true);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'info',
@@ -170,10 +235,7 @@ export const useTaskLogic = () => {
         category: task.category,
       };
       await updateTask(id, updatedTask);
-      const response = await fetchTasks(1);
-      setTasks(response.results);
-      setPage(1);
-      setHasMore(response.next !== null);
+      await loadTasks(true);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'info',
@@ -211,10 +273,7 @@ export const useTaskLogic = () => {
         category: task.category,
       };
       await updateTask(id, updatedTask);
-      const response = await fetchTasks(1);
-      setTasks(response.results);
-      setPage(1);
-      setHasMore(response.next !== null);
+      await loadTasks(true);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'success',
@@ -253,11 +312,8 @@ export const useTaskLogic = () => {
         is_favorite: false,
       };
       await createTask(newTask);
-      const response = await fetchTasks(1);
       await refreshCategories();
-      setTasks(response.results);
-      setPage(1);
-      setHasMore(response.next !== null);
+      await loadTasks(true);
       setCreationPopupOpen(false);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
@@ -299,11 +355,8 @@ export const useTaskLogic = () => {
         category: updatedTask.category ?? null,
       };
       await updateTask(updatedTask.id, taskToSend);
-      const response = await fetchTasks(1);
       await refreshCategories();
-      setTasks(response.results);
-      setPage(1);
-      setHasMore(response.next !== null);
+      await loadTasks(true);
       setEditPopupOpen(false);
       setTaskToEdit(null);
       const truncatedTitle = truncateTitle(updatedTask.title);
@@ -334,10 +387,7 @@ export const useTaskLogic = () => {
     setIsDeleting(true);
     try {
       await deleteTaskApi(id);
-      const response = await fetchTasks(1);
-      setTasks(response.results);
-      setPage(1);
-      setHasMore(response.next !== null);
+      await loadTasks(true);
       const truncatedTitle = truncateTitle(task.title);
       addNotification(
         'success',
@@ -446,23 +496,6 @@ export const useTaskLogic = () => {
     };
   };
 
-  const filterTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      const query = searchQuery.toLowerCase();
-      const categoryName = task.category
-        ? categories.find(cat => cat.id === task.category)?.name.toLowerCase() || ''
-        : '';
-      return (
-        task.title.toLowerCase().includes(query) ||
-        task.description.toLowerCase().includes(query) ||
-        categoryName.includes(query) ||
-        task.priority.toLowerCase().includes(query) ||
-        formatDate(task.createdAt).toLowerCase().includes(query) ||
-        formatDate(task.dueDate).toLowerCase().includes(query)
-      );
-    });
-  }, [tasks, searchQuery, formatDate, categories]);
-
   return {
     tasks,
     setTasks,
@@ -476,8 +509,9 @@ export const useTaskLogic = () => {
     isEditPopupOpen,
     setEditPopupOpen,
     taskToEdit,
-    searchQuery,
-    setSearchQuery,
+    filters,
+    updateFilters,
+    resetFilters,
     toggleTaskCompletion,
     snoozeTask,
     toggleTaskStarred,
@@ -488,7 +522,6 @@ export const useTaskLogic = () => {
     getPriorityColor,
     formatDate,
     getTimeRemaining,
-    filterTasks,
     refreshCategories,
     loadMoreTasks,
     hasMore,
