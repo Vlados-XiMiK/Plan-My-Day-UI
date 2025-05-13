@@ -1,12 +1,11 @@
-// @/lib/tasks-data.ts
-import { Task, Category } from "@/types";
+import { Task, Category, TaskFilterParams } from "@/types";
 import { fetchTasks as fetchTasksFromApi } from "@/api/tasks";
 import { fetchCategories as fetchCategoriesFromApi } from "@/api/categories";
 
 // Получение списка задач (с пагинацией, для других компонентов)
-export async function fetchTasks(): Promise<Task[]> {
+export async function fetchTasks(filters: TaskFilterParams = {}): Promise<Task[]> {
   try {
-    const paginatedResponse = await fetchTasksFromApi();
+    const paginatedResponse = await fetchTasksFromApi(filters);
     return paginatedResponse.results; // Возвращаем только задачи
   } catch (error) {
     console.error("Error in fetchTasks:", error);
@@ -22,7 +21,7 @@ export async function fetchAllTasks(): Promise<Task[]> {
     let hasNext = true;
 
     while (hasNext) {
-      const paginatedResponse = await fetchTasksFromApi(page);
+      const paginatedResponse = await fetchTasksFromApi({ page });
       allTasks = [...allTasks, ...paginatedResponse.results];
       hasNext = paginatedResponse.next !== null;
       page += 1;

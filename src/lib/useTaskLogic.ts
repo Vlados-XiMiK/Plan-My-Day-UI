@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { differenceInMinutes, isPast, format, addHours } from 'date-fns';
+import { differenceInMinutes, isPast, format } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchTasks, fetchFavoriteTasks, fetchTodayTasks, createTask, updateTask, deleteTask as deleteTaskApi, mapClientPriorityToApi } from '@/api/tasks';
@@ -222,18 +222,27 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
-      const now = new Date();
-      const currentDueDate = new Date(task.dueDate);
-      const newDueDate = isPast(currentDueDate) ? addHours(now, 2) : addHours(currentDueDate, 2);
+      console.log('Исходный dueDate:', task.dueDate);
+      // Предполагаем, что task.dueDate в UTC, если нет явного часового пояса
+      const currentDueDate = new Date(task.dueDate + (task.dueDate.endsWith('Z') ? '' : 'Z'));
+      console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
+      // Добавляем 2 часа вручную
+      const newDueDate = new Date(currentDueDate.getTime() + 2 * 60 * 60 * 1000);
+      console.log('Новая newDueDate:', newDueDate.toISOString());
+      const formattedDueDate = newDueDate.toISOString().replace('T', ' ').slice(0, 19);
+      console.log('Форматированная due_date для API:', formattedDueDate);
+  
       const updatedTask: CreateTaskPayload = {
         title: task.title,
         description: task.description,
-        due_date: newDueDate.toISOString().replace('T', ' ').slice(0, 19),
+        due_date: formattedDueDate,
         priority: mapClientPriorityToApi(task.priority),
         completed: task.completed,
         is_favorite: task.starred,
         category: task.category,
       };
+      console.log('Отправляемый объект в API:', updatedTask);
+  
       await updateTask(id, updatedTask);
       await loadTasks(true);
       const truncatedTitle = truncateTitle(task.title);
@@ -243,7 +252,7 @@ export const useTaskLogic = () => {
         t('notifications:taskSnoozed.message', { title: truncatedTitle })
       );
     } catch (error: unknown) {
-      console.error('Failed to snooze task:', error);
+      console.error('Ошибка при отложении задачи:', error);
       addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
     } finally {
       setIsUpdating(false);

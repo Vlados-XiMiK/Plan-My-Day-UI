@@ -54,6 +54,15 @@ export interface APITask {
   is_favorite?: boolean;
 }
 
+export interface TaskFilterParams {
+  page?: number;
+  page_size?: number;
+  completed?: boolean;
+  priority?: "H" | "M" | "L";
+  ordering?: string;
+  search?: string;
+}
+
 export interface CreateTaskPayload {
   title: string;
   description?: string;
