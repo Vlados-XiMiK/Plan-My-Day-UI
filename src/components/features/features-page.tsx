@@ -40,12 +40,12 @@ export default function FeaturesPage() {
     "statistics",
   ].map((key) => {
     const images: Record<string, string> = {
-      smartCalendar: "/placeholder.svg",
-      taskManagement: "/placeholder.svg",
-      categoryManagement: "/placeholder.svg",
-      teamCollaboration: "/placeholder.svg",
-      smartNotifications: "/placeholder.svg",
-      statistics: "/placeholder.svg",
+      smartCalendar: "/features-page/calendar.png",
+      taskManagement: "/features-page/tasks.png",
+      categoryManagement: "/features-page/categories.png",
+      teamCollaboration: "/features-page/projects.png",
+      smartNotifications: "/features-page/notification.png",
+      statistics: "/features-page/stats.png",
     }
   
     return {
@@ -66,7 +66,7 @@ export default function FeaturesPage() {
                 : key === "smartNotifications"
                   ? "#f59e0b"
                   : key === "statistics"
-                    ? "#f59e0b"
+                    ? "#f50e0b"
                     : "#ec4899",
     }
   })
