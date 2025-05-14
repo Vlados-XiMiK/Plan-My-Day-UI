@@ -10,6 +10,19 @@ import { useTaskLogic } from '@/lib/useTaskLogic';
 import { Task } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { isAuthenticated } from '@/api/auth';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Анимации из CategoriesPage
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2, ease: [0.6, 0.05, 0.01, 0.99] } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+  exit: { opacity: 0, x: -100, transition: { duration: 0.5, ease: [0.43, 0.13, 0.23, 0.96] } },
+};
 
 export default function Tasks() {
   const { t } = useTranslation('tasks');
@@ -333,18 +346,55 @@ export default function Tasks() {
               onClick={() => setCreationPopupOpen(true)}
               className="flex items-center rounded-md bg-purple-600 px-4 py-2 text-white shadow-md transition-colors hover:bg-purple-700 duration-200"
             >
-              <Plus className="mr-2" size={20} />
+             
+
+ <Plus className="mr-2" size={20} />
               {t('createTask')}
             </button>
           </div>
 
-          <div className="rounded-lg bg-white dark:bg-[#2a2a3e] p-4 sm:p-6 shadow-lg">
-            <ul className="space-y-4">
-              {tasks.map((task) => (
-                <TaskItem key={task.id} task={task} />
-              ))}
-            </ul>
-            {hasMore && (
+          <div className="rounded-lg  p-4">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
+              <AnimatePresence mode="popLayout">
+                {tasks.length === 0 ? (
+                  <motion.div
+                    className="text-center py-12"
+                    variants={itemVariants}
+                  >
+                    <motion.div
+                      className="mx-auto w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4"
+                      animate={{ scale: [1, 1.05, 1], y: [0, -10, 0] }}
+                      transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
+                    >
+                      <div className="text-purple-500 dark:text-purple-300 text-4xl">📋</div>
+                    </motion.div>
+                    <motion.h3
+                      className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-1"
+                      variants={itemVariants}
+                    >
+                      {t('noTasks')}
+                    </motion.h3>
+                    <motion.p
+                      className="text-gray-500 dark:text-gray-400"
+                      variants={itemVariants}
+                    >
+                      {t('noTasksMessage')} 🎉 {t('noTasksCallToAction')}
+                    </motion.p>
+                  </motion.div>
+                ) : (
+                  <ul className="space-y-4">
+                    {tasks.map((task) => (
+                      <TaskItem key={task.id} task={task} />
+                    ))}
+                  </ul>
+                )}
+              </AnimatePresence>
+            </motion.div>
+            {hasMore && tasks.length > 0 && (
               <div className="mt-4 flex justify-center">
                 <button
                   onClick={loadMoreTasks}

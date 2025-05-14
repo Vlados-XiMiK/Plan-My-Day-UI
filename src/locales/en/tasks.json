@@ -3,6 +3,9 @@
   "filtersAndSearch": "Filters and Search",
   "searchPlaceholder": "Search (e.g., 'high priority work this week')",
   "searchButton": "Search",
+  "noTasks": "No Tasks Yet",
+  "noTasksMessage": "Looks like you're all caught up!",
+  "noTasksCallToAction": "Add a new task to get started.",
   "status": {
     "select": "Select Status",
     "completed": "Completed",

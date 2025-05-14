@@ -33,7 +33,8 @@
       "description": "Description",
       "category": "Category",
       "priority": "Priority",
-      "dueDateTime": "Due Date and Time"
+      "dueDateTime": "Due Date and Time",
+      "noCategories": "No Categories"
     },
     "placeholders": {
       "title": "Enter task title",
@@ -49,7 +50,9 @@
       "descriptionRequired": "Description is required",
       "dueDateRequired": "Due date is required",
       "dueTimeRequired": "Due time is required",
-      "pastDateTime": "Date and time cannot be in the past"
+      "pastDateTime": "Date and time cannot be in the past",
+      "errorTitle": "Validation Error",
+      "errorMessage": "Please fix the errors in the form"
     },
     "priority": {
       "low": "Low",
@@ -64,7 +67,8 @@
       "description": "Description",
       "category": "Category",
       "priority": "Priority",
-      "dueDateTime": "Due Date and Time"
+      "dueDateTime": "Due Date and Time",
+      "noCategories": "No Categories"
     },
     "placeholders": {
       "title": "Enter task title",

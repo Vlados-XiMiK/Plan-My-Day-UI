@@ -236,7 +236,7 @@ export default function TaskCreationPopup({ isOpen, onClose, onSave, categories,
                         ))
                       ) : (
                         <option key="no-categories" value="" disabled className={isDarkTheme ? 'bg-gray-800 text-gray-500' : 'bg-white text-gray-500'}>
-                          {t('popups:task_creation_popup.noCategories')}
+                          {t('popups:task_creation_popup.labels.noCategories')}
                         </option>
                       )}
                     </select>

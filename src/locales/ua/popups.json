@@ -33,7 +33,8 @@
       "description": "Опис",
       "category": "Категорія",
       "priority": "Пріоритет",
-      "dueDateTime": "Дата та час виконання"
+      "dueDateTime": "Дата та час виконання",
+      "noCategories": "Немає категорій"
     },
     "placeholders": {
       "title": "Введіть назву завдання",
@@ -49,7 +50,9 @@
       "descriptionRequired": "Опис обов’язковий",
       "dueDateRequired": "Дата виконання обов’язкова",
       "dueTimeRequired": "Час виконання обов’язковий",
-      "pastDateTime": "Дата та час не можуть бути в минулому"
+      "pastDateTime": "Дата та час не можуть бути в минулому",
+      "errorTitle": "Помилка валідації",
+      "errorMessage": "Будь ласка, виправте помилки у формі"
     },
     "priority": {
       "low": "Низький",
@@ -64,7 +67,8 @@
       "description": "Опис",
       "category": "Категорія",
       "priority": "Пріоритет",
-      "dueDateTime": "Дата та час виконання"
+      "dueDateTime": "Дата та час виконання",
+      "noCategories": "Немає категорій"
     },
     "placeholders": {
       "title": "Введіть назву завдання",

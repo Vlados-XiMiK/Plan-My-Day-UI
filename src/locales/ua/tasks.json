@@ -3,6 +3,9 @@
   "filtersAndSearch": "Фільтри та пошук",
   "searchPlaceholder": "Пошук (наприклад, 'високий пріоритет цього тижня')",
   "searchButton": "Знайти",
+  "noTasks": "Немає завдань",
+  "noTasksMessage": "Схоже, ви все виконали!",
+  "noTasksCallToAction": "Додайте нове завдання, щоб почати.",
   "status": {
     "select": "Оберіть статус",
     "completed": "Завершені",
