@@ -38,7 +38,6 @@ export default function TaskItem({
   const { t, i18n } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
 
-  // Selection of the date-fns locale based on the current language
   const locale = i18n.language === 'ua' ? uk : enUS
 
   const priorityColors = {
@@ -50,35 +49,34 @@ export default function TaskItem({
   }
 
   const categoryColors = {
-    design:
+    Design:
       'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-    development:
+    Development:
       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800',
-    testing:
+    Testing:
       'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 border-orange-200 dark:border-orange-800',
-    marketing: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 border-pink-200 dark:border-pink-800',
-    other: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+    Marketing:
+      'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 border-pink-200 dark:border-pink-800',
+    Other: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
     default: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
   }
 
-  const createdDate = new Date(task.createdAt)
-  const dueDate = task.dueDate ? new Date(task.dueDate) : null
+  const createdDate = new Date(task.created_at) // Changed to created_at
+  const dueDate = task.due_date ? new Date(task.due_date) : null // Changed to due_date
   const completedDate = task.completion ? new Date(task.completion.completedAt) : null
 
   const handleToggleComplete = () => {
     try {
       onToggleComplete()
-  
       const isNowCompleted = !task.completed
-  
       addNotification(
         isNowCompleted ? 'success' : 'info',
         isNowCompleted
           ? t('notifications:taskCompleted.title')
           : t('notifications:taskReopened.title'),
         isNowCompleted
-          ? t('notifications:taskCompleted.message', { title: task.title })
-          : t('notifications:taskReopened.message', { title: task.title }),
+          ? t('notifications:taskCompleted.message', { title: task.title }) // Changed to name
+          : t('notifications:taskReopened.message', { title: task.title }), // Changed to name
         3000
       )
     } catch {
@@ -116,7 +114,7 @@ export default function TaskItem({
       addNotification(
         'success',
         t('notifications:taskDeleted.title'),
-        t('notifications:taskDeleted.message', { title: task.title }),
+        t('notifications:taskDeleted.message', { title: task.title }), // Changed to name
         3000
       )
     } catch {
@@ -141,7 +139,7 @@ export default function TaskItem({
         <div className='flex items-start gap-3'>
           {canComplete ? (
             <Checkbox
-              id={task.id}
+              id={task.id.toString()} // Ensure id is string for HTML
               checked={task.completed}
               onCheckedChange={handleToggleComplete}
               className='mt-1 transition-all duration-300 data-[state=checked]:bg-purple-600 data-[state=checked]:text-white flex-shrink-0'
@@ -159,10 +157,10 @@ export default function TaskItem({
           <div className='flex-1 min-w-0'>
             <div className='flex items-start justify-between gap-2'>
               <label
-                htmlFor={canComplete ? task.id : undefined}
+                htmlFor={canComplete ? task.id.toString() : undefined} // Ensure id is string
                 className={`font-medium line-clamp-2 ${task.completed ? 'text-muted-foreground line-through' : ''}`}
               >
-                {task.title}
+                {task.title} {/* Changed to name */}
               </label>
 
               <div className='flex items-center gap-1 flex-shrink-0'>
@@ -231,7 +229,7 @@ export default function TaskItem({
                     categoryColors[task.category as keyof typeof categoryColors] || categoryColors.default
                   } transition-all duration-300 hover:shadow-sm text-xs`}
                 >
-                  {t(`${task.category}`)}
+                  {task.category} {/* Removed translation */}
                 </Badge>
               )}
             </div>
@@ -267,10 +265,10 @@ export default function TaskItem({
                           <Avatar className='h-4 w-4 mr-1'>
                             <AvatarImage
                               src={completedByUser.avatar || '/placeholder.svg'}
-                              alt={completedByUser.name}
+                              alt={completedByUser.username} // Changed to username
                             />
                             <AvatarFallback className='text-[8px]'>
-                              {completedByUser.name
+                              {completedByUser.username
                                 .split(' ')
                                 .map((n) => n[0])
                                 .join('')
@@ -280,7 +278,7 @@ export default function TaskItem({
                           </Avatar>
                         ) : (
                           <div className='inline-flex h-4 w-4 mr-1 rounded-full overflow-hidden flex-shrink-0 items-center justify-center bg-purple-500 text-white text-[8px] font-bold'>
-                            {completedByUser.name
+                            {completedByUser.username
                               .split(' ')
                               .map((n) => n[0])
                               .join('')
@@ -288,7 +286,7 @@ export default function TaskItem({
                               .toUpperCase()}
                           </div>
                         )}
-                        <span className='font-medium line-clamp-1'>{completedByUser.name}</span>
+                        <span className='font-medium line-clamp-1'>{completedByUser.username}</span> {/* Changed to username */}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>

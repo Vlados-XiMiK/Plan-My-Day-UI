@@ -40,17 +40,16 @@ interface TaskDialogProps {
 
 export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, task }: TaskDialogProps) {
   const { t, i18n } = useTranslation(['popups', 'notifications'])
-  const [title, setTitle] = useState('')
+  const [title, setTitle] = useState('') // Changed from name to title
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<string>('medium')
-  const [category, setCategory] = useState<string>('')
+  const [category, setCategory] = useState<string | undefined>(undefined) // Changed to string | undefined
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
   const [dueTime, setDueTime] = useState<string>('23:59')
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const { addNotification } = useNotification()
 
-  // Selection of the date-fns locale based on the current language
   const locale = i18n.language === 'ua' ? uk : enUS
   const dateFormat = i18n.language === 'ua' ? 'd MMMM yyyy' : 'MMMM d, yyyy'
 
@@ -60,7 +59,6 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
   const isEditing = !!task
   const isDateSelectionEnabled = title.trim() && description.trim() && priority
 
-  // Load categories when opening the dialog
   useEffect(() => {
     if (open) {
       fetchCategories()
@@ -89,13 +87,13 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title)
+      setTitle(task.title) // Changed to title
       setDescription(task.description || '')
       setPriority(task.priority || 'medium')
-      setCategory(task.category || '')
+      setCategory(task.category || undefined) // Changed to undefined
 
-      if (task.dueDate) {
-        const date = new Date(task.dueDate)
+      if (task.due_date) {
+        const date = new Date(task.due_date)
         setDueDate(date)
         const hours = date.getHours().toString().padStart(2, '0')
         const minutes = date.getMinutes().toString().padStart(2, '0')
@@ -108,7 +106,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
       setTitle('')
       setDescription('')
       setPriority('medium')
-      setCategory('')
+      setCategory(undefined) // Changed to undefined
       setDueDate(undefined)
       setDueTime('23:59')
     }
@@ -157,7 +155,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
       return
     }
 
-    let finalDueDate: string | undefined = undefined
+    let finalDueDate: string = '' // Changed to string
     if (dueDate) {
       const [hours, minutes] = dueTime.split(':').map(Number)
       const dateWithTime = new Date(dueDate)
@@ -166,25 +164,25 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
     }
 
     const taskData = {
-      title,
+      title, // Changed to title
       description,
       completed: isEditing ? task.completed : false,
-      createdAt: isEditing ? task.createdAt : new Date().toISOString(),
-      dueDate: finalDueDate,
+      created_at: isEditing ? task.created_at : new Date().toISOString(),
+      due_date: finalDueDate,
       priority: priority as 'low' | 'medium' | 'high',
-      category: category || undefined,
+      category: category, // Changed to undefined
     }
 
     try {
       if (isEditing && onEditTask) {
         onEditTask({
-          id: task.id,
           ...taskData,
-          completion: task.completion,
+          id: task.id, // id is string
         })
         addNotification('success', t('notifications:taskUpdated.title'), t('notifications:taskUpdated.message', { title }), 3000)
       } else if (onAddTask) {
         onAddTask(taskData)
+        addNotification('success', t('notifications:taskCreated.title'), t('notifications:taskCreated.message', { title }), 3000)
       }
       onOpenChange(false)
     } catch {
@@ -309,8 +307,8 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
               <div className='grid gap-2'>
                 <Label htmlFor='category'>{t('popups:task_dialog.labels.category')}</Label>
                 <Select
-                  value={category}
-                  onValueChange={(value) => setCategory(value === 'none' ? '' : value)}
+                  value={category || 'none'}
+                  onValueChange={(value) => setCategory(value === 'none' ? undefined : value)}
                 >
                   <SelectTrigger
                     id='category'

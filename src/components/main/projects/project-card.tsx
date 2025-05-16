@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Clock, Folder, MoreHorizontal, Plus, Trash } fr
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import type { Project, Task, User } from "@/types/project"
+import type { ProjectMember } from "@/types/roles"
 import { AvatarGroup } from "./avatar-group"
 import ProjectManageDialog from "./project-manage-dialog"
 import TaskDialog from "./task-dialog"
@@ -25,22 +26,27 @@ import {
 import { currentUser } from "@/lib/project-data"
 import { HTMLAttributes } from 'react'
 import { useTranslation } from "react-i18next"
+import { getUserRoleInProject, hasPermission } from "@/utils/roleUtils"
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectCardProps {
   project: Project
+  projectMembers: ProjectMember[]
   onUpdateProject: (project: Project) => void
-  onDeleteProject: (projectId: string) => void
+  onDeleteProject: (projectId: number) => void
+  onUpdateMembers: (projectId: number, members: ProjectMember[]) => void // Added
   isExpanded: boolean
   onToggleExpanded: () => void
-  currentUser?: User // In a real app, this would come from auth context
+  currentUser?: User
 }
 
 export default function ProjectCard({
   project,
+  projectMembers,
   onUpdateProject,
   onDeleteProject,
+  onUpdateMembers, // Added
   isExpanded,
   onToggleExpanded,
   currentUser: userProp,
@@ -51,7 +57,6 @@ export default function ProjectCard({
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  // Use provided user or default to the current user from data
   const mockCurrentUser: User = userProp || currentUser
 
   const toggleExpanded = () => {
@@ -61,20 +66,18 @@ export default function ProjectCard({
   const handleTaskToggle = (taskId: string) => {
     const updatedTasks = project.tasks.map((task) => {
       if (task.id === taskId) {
-        // If task is being marked as completed, add completion info
         if (!task.completed) {
           return {
             ...task,
             completed: true,
             completion: {
-              completedBy: mockCurrentUser.id,
+              completedBy: mockCurrentUser.id.toString(),
               completedAt: new Date().toISOString(),
             },
           }
         }
-        // If task is being unmarked, remove completion info
         else {
-          const { ...rest } = task
+          const { completion, ...rest } = task
           return { ...rest, completed: false }
         }
       }
@@ -84,6 +87,7 @@ export default function ProjectCard({
     onUpdateProject({
       ...project,
       tasks: updatedTasks,
+      tasks_count: updatedTasks.length,
     })
   }
 
@@ -96,6 +100,7 @@ export default function ProjectCard({
     onUpdateProject({
       ...project,
       tasks: [...project.tasks, newTask],
+      tasks_count: project.tasks.length + 1,
     })
 
     setTaskDialogOpen(false)
@@ -107,6 +112,7 @@ export default function ProjectCard({
     onUpdateProject({
       ...project,
       tasks: updatedTasks,
+      tasks_count: updatedTasks.length,
     })
 
     setEditingTask(null)
@@ -118,9 +124,9 @@ export default function ProjectCard({
     onUpdateProject({
       ...project,
       tasks: updatedTasks,
+      tasks_count: updatedTasks.length,
     })
 
-    // If we were editing this task, close the dialog
     if (editingTask && editingTask.id === taskId) {
       setEditingTask(null)
     }
@@ -135,25 +141,30 @@ export default function ProjectCard({
     setDeleteDialogOpen(false)
   }
 
-  // Check user permissions
-  const userRole = project.members.find((member) => member.id === mockCurrentUser.id)?.role || "read_only"
-  const canEdit = userRole === "full_access"
-  const canComplete = userRole === "full_access" || userRole === "complete_only"
-  const isCreator = project.createdBy.id === mockCurrentUser.id
+  // Check user permissions using roleUtils
+  const userRole = getUserRoleInProject(mockCurrentUser, project.id, projectMembers)
+  const canEdit = hasPermission(userRole, 'edit_project')
+  const canComplete = hasPermission(userRole, 'edit_task')
+  const isCreator = project.owner === mockCurrentUser.id
 
   const completedTasksCount = project.tasks.filter((task) => task.completed).length
-  const createdDate = new Date(project.createdAt)
+  const createdDate = new Date(project.created_at)
 
-  // Find users by ID (for showing who completed tasks)
   const getUserById = (userId: string) => {
-    return project.members.find((member) => member.id === userId)
+    return projectMembers.find((member) => member.user.toString() === userId)?.user_details
   }
 
-  // Format creation date with locale
   const formatCreatedDate = () => {
     const locale = i18n.language === 'ua' ? uk : enUS
     return formatDistanceToNow(createdDate, { addSuffix: true, locale })
   }
+
+  // Handle member updates
+  const handleUpdateMembers = (members: ProjectMember[]) => {
+    // TODO: Implement actual member update logic (e.g., update project-data.ts or send to API)
+    console.log('ProjectCard: Updating members for project', project.id, 'with members:', members);
+    onUpdateMembers(project.id, members);
+  };
 
   return (
     <>
@@ -172,7 +183,7 @@ export default function ProjectCard({
             </div>
             <div className="flex items-start justify-between ml-10">
               <div>
-                <h3 className="text-lg font-semibold line-clamp-1">{project.title}</h3>
+                <h3 className="text-lg font-semibold line-clamp-1">{project.name}</h3>
                 <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
               </div>
               <Button
@@ -195,7 +206,11 @@ export default function ProjectCard({
                 <Clock className="mr-1 h-3 w-3 flex-shrink-0" />
                 <span className="line-clamp-1">{t('project_card.created')} {formatCreatedDate()}</span>
               </div>
-              <AvatarGroup users={project.members} />
+              <AvatarGroup
+                users={projectMembers.map((m) => m.user_details)}
+                projectId={project.id}
+                projectMembers={projectMembers}
+              />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col items-stretch pt-0">
@@ -314,9 +329,11 @@ export default function ProjectCard({
 
       <ProjectManageDialog
         project={project}
+        projectMembers={projectMembers} // Use prop instead of []
         open={manageOpen}
         onOpenChange={setManageOpen}
         onUpdateProject={onUpdateProject}
+        onUpdateMembers={handleUpdateMembers} // Use implemented function
         onDeleteProject={onDeleteProject}
         currentUser={mockCurrentUser}
         canEdit={canEdit}
@@ -343,7 +360,7 @@ export default function ProjectCard({
           <AlertDialogHeader>
             <AlertDialogTitle>{t('project_card.deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('project_card.deleteDialog.description', { title: project.title })}
+              {t('project_card.deleteDialog.description', { title: project.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -65,9 +65,10 @@
     "createdOn": "Created on",
     "creator": "(Creator)",
     "roles": {
-      "full_access": "Full Access",
-      "read_only": "Read Only",
-      "complete_only": "Complete Tasks Only"
+      "admin": "Administrator",
+      "moderator": "Moderator",
+      "member": "Member",
+      "viewer": "Viewer"
     },
     "linkInfo": "This link can be used {{usageLimit}} time{{plural}} and expires on {{expirationDate}}",
     "linkWarning": "Link settings cannot be modified after creation."

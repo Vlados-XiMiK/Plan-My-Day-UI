@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Project } from '@/types/project'
 import { motion, MotionProps } from 'framer-motion'
-import { currentUser } from '@/lib/project-data'
+import { currentUser } from '@/lib/project-data' // Updated import path to match provided data
 import { HTMLAttributes } from 'react'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
@@ -33,31 +33,31 @@ interface CreateProjectDialogProps {
 
 export default function CreateProjectDialog({ open, onOpenChange, onCreateProject }: CreateProjectDialogProps) {
   const { t } = useTranslation(['popups', 'notifications'])
-  const [title, setTitle] = useState('')
+  const [name, setName] = useState('') // Changed from title to name
   const [description, setDescription] = useState('')
   const { addNotification } = useNotification()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title.trim()) {
+    if (!name.trim()) {
       addNotification('error', t('notifications:invalidInput.title'), t('notifications:invalidInput.message'), 5000)
       return
     }
 
     try {
       onCreateProject({
-        title,
+        name, // Changed from title to name
         description,
-        createdBy: currentUser,
-        members: [currentUser],
+        owner: currentUser.id, // Changed from createdBy to owner
+        tasks_count: 0, // Added required field
+        created_at: new Date().toISOString(), // Changed from createdAt to created_at
         tasks: [],
-        createdAt: new Date().toISOString(),
       })
 
-      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { title }), 5000)
+      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { name }), 5000)
 
-      setTitle('')
+      setName('') // Updated to match state
       setDescription('')
       onOpenChange(false)
     } catch {
@@ -81,11 +81,11 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
               transition={{ duration: 0.3 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="title">{t('popups:create_project.labels.title')}</Label>
+              <Label htmlFor="name">{t('popups:create_project.labels.title')}</Label> {/* Updated htmlFor to match id */}
               <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                id="name" // Changed from title to name
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder={t('popups:create_project.placeholders.title')}
                 required
                 className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
@@ -123,9 +123,9 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                 >
                   {currentUser.avatar ? (
                     <Avatar className="h-5 w-5 border-2 border-purple-500/20">
-                      <AvatarImage src={currentUser.avatar || '/placeholder.svg'} alt={currentUser.name} />
+                      <AvatarImage src={currentUser.avatar || '/placeholder.svg'} alt={currentUser.username} />
                       <AvatarFallback>
-                        {currentUser.name
+                        {currentUser.username
                           .split(' ')
                           .map((n) => n[0])
                           .join('')
@@ -135,7 +135,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                     </Avatar>
                   ) : (
                     <div className="h-5 w-5 rounded-full overflow-hidden flex items-center justify-center bg-purple-500 text-white text-[10px] font-bold flex-shrink-0">
-                      {currentUser.name
+                      {currentUser.username
                         .split(' ')
                         .map((n) => n[0])
                         .join('')
@@ -143,7 +143,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                         .toUpperCase()}
                     </div>
                   )}
-                  <span>{currentUser.name}</span>
+                  <span>{currentUser.username}</span> {/* Changed from name to username */}
                   <span className="text-xs text-muted-foreground">{t('popups:create_project.currentUser')}</span>
                 </Badge>
               </div>

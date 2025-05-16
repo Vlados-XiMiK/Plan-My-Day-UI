@@ -6,7 +6,8 @@ import { LayoutGrid, LayoutList, PlusCircle } from 'lucide-react'
 import ProjectCard from './project-card'
 import CreateProjectDialog from './create-project-dialog'
 import type { Project } from '@/types/project'
-import { initialProjects } from '@/lib/project-data'
+import type { ProjectMember } from '@/types/roles'
+import { initialProjects, projectMembers, currentUser } from '@/lib/project-data'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslation } from 'react-i18next'
@@ -16,11 +17,12 @@ type ViewMode = 'list' | 'grid'
 export default function ProjectsList() {
   const { t } = useTranslation(['projects'])
   const [projects, setProjects] = useState<Project[]>(initialProjects)
+  const [members, setMembers] = useState<ProjectMember[]>(projectMembers)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
+  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set())
 
-  const toggleProjectExpanded = (projectId: string) => {
+  const toggleProjectExpanded = (projectId: number) => {
     setExpandedProjects((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(projectId)) {
@@ -33,12 +35,34 @@ export default function ProjectsList() {
   }
 
   const handleCreateProject = (newProject: Omit<Project, 'id'>) => {
+    const projectId = Math.max(...projects.map((p) => p.id), 0) + 1
     const project: Project = {
-      id: `project-${Date.now()}`,
-      ...newProject,
+      id: projectId,
+      name: newProject.name,
+      description: newProject.description,
+      owner: newProject.owner,
+      tasks_count: newProject.tasks_count,
+      created_at: newProject.created_at,
+      tasks: newProject.tasks,
+    }
+
+    const newMember: ProjectMember = {
+      id: Math.max(...members.map((m) => m.id), 0) + 1,
+      user: currentUser.id,
+      user_name: currentUser.username,
+      user_details: {
+        id: currentUser.id,
+        username: currentUser.username,
+        email: currentUser.email,
+        avatar: currentUser.avatar,
+      },
+      project: projectId,
+      role: 1,
+      role_name: 'Admin',
     }
 
     setProjects([...projects, project])
+    setMembers([...members, newMember])
     setIsCreateDialogOpen(false)
   }
 
@@ -46,8 +70,16 @@ export default function ProjectsList() {
     setProjects(projects.map((project) => (project.id === updatedProject.id ? updatedProject : project)))
   }
 
-  const handleDeleteProject = (projectId: string) => {
+  const handleDeleteProject = (projectId: number) => {
     setProjects(projects.filter((project) => project.id !== projectId))
+    setMembers(members.filter((member) => member.project !== projectId))
+  }
+
+  const handleUpdateMembers = (projectId: number, updatedMembers: ProjectMember[]) => {
+    // Keep members for other projects, update members for the specified project
+    const otherMembers = members.filter((m) => m.project !== projectId)
+    setMembers([...otherMembers, ...updatedMembers])
+    console.log('ProjectsList: Updated members for project', projectId, 'to:', updatedMembers)
   }
 
   return (
@@ -67,7 +99,6 @@ export default function ProjectsList() {
               </TooltipTrigger>
               <TooltipContent>{t('projects:projects_list.tooltips.listView')}</TooltipContent>
             </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <ToggleGroupItem value='grid' aria-label={t('projects:projects_list.tooltips.gridView')}>
@@ -230,30 +261,44 @@ export default function ProjectsList() {
         <>
           {viewMode === 'list' ? (
             <div className='grid gap-6'>
-              {projects.map((project) => (
-                <div key={project.id} className='w-full'>
-                  <ProjectCard
-                    project={project}
-                    onUpdateProject={handleUpdateProject}
-                    onDeleteProject={handleDeleteProject}
-                    isExpanded={expandedProjects.has(project.id)}
-                    onToggleExpanded={() => toggleProjectExpanded(project.id)}
-                  />
-                </div>
-              ))}
+              {projects.map((project) => {
+                const filteredMembers = members.filter((m) => m.project === project.id)
+                console.log('ProjectsList: project.id =', project.id, 'filteredMembers =', filteredMembers)
+                return (
+                  <div key={project.id} className='w-full'>
+                    <ProjectCard
+                      project={project}
+                      projectMembers={filteredMembers}
+                      onUpdateProject={handleUpdateProject}
+                      onDeleteProject={handleDeleteProject}
+                      onUpdateMembers={handleUpdateMembers}
+                      isExpanded={expandedProjects.has(project.id)}
+                      onToggleExpanded={() => toggleProjectExpanded(project.id)}
+                      currentUser={currentUser}
+                    />
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-              {projects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onUpdateProject={handleUpdateProject}
-                  onDeleteProject={handleDeleteProject}
-                  isExpanded={expandedProjects.has(project.id)}
-                  onToggleExpanded={() => toggleProjectExpanded(project.id)}
-                />
-              ))}
+              {projects.map((project) => {
+                const filteredMembers = members.filter((m) => m.project === project.id)
+                console.log('ProjectsList: project.id =', project.id, 'filteredMembers =', filteredMembers)
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    projectMembers={filteredMembers}
+                    onUpdateProject={handleUpdateProject}
+                    onDeleteProject={handleDeleteProject}
+                    onUpdateMembers={handleUpdateMembers}
+                    isExpanded={expandedProjects.has(project.id)}
+                    onToggleExpanded={() => toggleProjectExpanded(project.id)}
+                    currentUser={currentUser}
+                  />
+                )
+              })}
             </div>
           )}
         </>

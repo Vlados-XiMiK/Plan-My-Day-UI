@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Project, User } from '@/types/project'
+import type { ProjectMember } from '@/types/roles'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar, ChevronDown, ChevronUp, Copy, Link, Trash2, UserPlus } from 'lucide-react'
@@ -29,26 +30,30 @@ import { cn } from '@/lib/utils'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
 import { HTMLAttributes } from 'react'
+import { projectMembers as dataProjectMembers } from '@/lib/project-data' // Keep for debugging
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectManageDialogProps {
   project: Project
+  projectMembers: ProjectMember[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdateProject: (project: Project) => void
-  onDeleteProject: (projectId: string) => void
+  onUpdateMembers: (members: ProjectMember[]) => void
+  onDeleteProject: (projectId: number) => void
   currentUser?: User
   canEdit: boolean
   isCreator: boolean
 }
 
-
 export default function ProjectManageDialog({
   project,
+  projectMembers = [],
   open,
   onOpenChange,
   onUpdateProject,
+  onUpdateMembers,
   onDeleteProject,
   currentUser,
   canEdit,
@@ -56,10 +61,9 @@ export default function ProjectManageDialog({
 }: ProjectManageDialogProps) {
   const { t, i18n } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
-  const [title, setTitle] = useState(project.title)
+  const [name, setName] = useState(project.name)
   const [description, setDescription] = useState(project.description)
-  const [members, setMembers] = useState<User[]>(project.members)
-  const [pendingRoleChanges, setPendingRoleChanges] = useState<Record<string, string>>({})
+  const [pendingRoleChanges, setPendingRoleChanges] = useState<Record<number, ProjectMember['role_name']>>({})
   const [hasRoleChanges, setHasRoleChanges] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('details')
   const [inviteLink, setInviteLink] = useState('')
@@ -72,6 +76,24 @@ export default function ProjectManageDialog({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  const roles = [
+    { id: 1, name: 'Admin' },
+    { id: 2, name: 'Moderator' },
+    { id: 3, name: 'Member' },
+    { id: 4, name: 'Viewer' },
+  ]
+
+  // Debug: Fallback to dataProjectMembers if projectMembers is empty
+  const effectiveMembers = projectMembers.length > 0
+    ? projectMembers
+    : dataProjectMembers.filter((m) => m.project === project.id);
+
+  useEffect(() => {
+    console.log('ProjectManageDialog: project.id =', project.id);
+    console.log('projectMembers =', projectMembers);
+    console.log('effectiveMembers =', effectiveMembers);
+  }, [project.id, projectMembers, effectiveMembers]);
+
   useEffect(() => {
     if (!open) {
       setInviteLink('')
@@ -80,8 +102,12 @@ export default function ProjectManageDialog({
       setIsLinkGenerated(false)
       setIsInviteSectionExpanded(false)
       setActiveTab('details')
+      setName(project.name)
+      setDescription(project.description)
+      setPendingRoleChanges({})
+      setHasRoleChanges(false)
     }
-  }, [open])
+  }, [open, project.name, project.description])
 
   useEffect(() => {
     if (isInviteSectionExpanded && scrollContainerRef.current && inviteSectionRef.current) {
@@ -96,26 +122,25 @@ export default function ProjectManageDialog({
     }
   }, [isInviteSectionExpanded])
 
-  // Format date with locale
   const formatDate = (date: Date, formatStr: string) => {
     const locale = i18n.language === 'ua' ? uk : enUS
     return format(date, formatStr, { locale })
   }
 
-  const handleUpdateMemberRole = (userId: string, role: string) => {
+  const handleUpdateMemberRole = (userId: number, role: ProjectMember['role_name']) => {
     setPendingRoleChanges((prev) => {
       const newChanges = { ...prev, [userId]: role }
       setHasRoleChanges(true)
       return newChanges
     })
-    const member = members.find((m) => m.id === userId)
+    const member = effectiveMembers.find((m) => m.user === userId)
     if (member) {
       addNotification(
         'info',
         t('notifications:roleChangePending.title'),
         t('notifications:roleChangePending.message', {
-          name: member.name,
-          role: t(`projects:project_manage.roles.${role}`),
+          name: member.user_details.username,
+          role: t(`projects:project_manage.roles.${role.toLowerCase()}`),
         }),
         3000,
       )
@@ -123,17 +148,18 @@ export default function ProjectManageDialog({
   }
 
   const saveRoleChanges = () => {
-    const updatedMembers = members.map((member) => {
-      if (pendingRoleChanges[member.id]) {
+    const updatedMembers = effectiveMembers.map((member) => {
+      if (pendingRoleChanges[member.user]) {
         return {
           ...member,
-          role: pendingRoleChanges[member.id] as 'full_access' | 'read_only' | 'complete_only',
+          role_name: pendingRoleChanges[member.user],
+          role: roles.find((r) => r.name === pendingRoleChanges[member.user])!.id,
         }
       }
       return member
     })
 
-    setMembers(updatedMembers)
+    onUpdateMembers(updatedMembers)
     setPendingRoleChanges({})
     setHasRoleChanges(false)
     addNotification(
@@ -172,20 +198,19 @@ export default function ProjectManageDialog({
     }
     onUpdateProject({
       ...project,
-      title,
+      name,
       description,
-      members,
     })
     addNotification(
       'success',
       t('notifications:projectUpdated.title'),
-      t('notifications:projectUpdated.message', { title }),
+      t('notifications:projectUpdated.message', { title: name }),
       3000,
     )
     onOpenChange(false)
   }
 
-  const handleRemoveMember = (userId: string) => {
+  const handleRemoveMember = (userId: number) => {
     if (!canEdit && !isCreator) {
       addNotification(
         'error',
@@ -195,13 +220,14 @@ export default function ProjectManageDialog({
       )
       return
     }
-    const member = members.find((m) => m.id === userId)
-    setMembers(members.filter((member) => member.id !== userId))
+    const member = effectiveMembers.find((m) => m.user === userId)
+    const updatedMembers = effectiveMembers.filter((m) => m.user !== userId)
+    onUpdateMembers(updatedMembers)
     if (member) {
       addNotification(
         'success',
         t('notifications:memberRemoved.title'),
-        t('notifications:memberRemoved.message', { name: member.name }),
+        t('notifications:memberRemoved.message', { name: member.user_details.username }),
         3000,
       )
     }
@@ -217,11 +243,8 @@ export default function ProjectManageDialog({
       )
       return
     }
-    const updatedMembers = members.filter((member) => member.id !== currentUser?.id)
-    onUpdateProject({
-      ...project,
-      members: updatedMembers,
-    })
+    const updatedMembers = effectiveMembers.filter((member) => member.user !== currentUser?.id)
+    onUpdateMembers(updatedMembers)
     onOpenChange(false)
     if (currentUser) {
       onDeleteProject(project.id)
@@ -301,7 +324,7 @@ export default function ProjectManageDialog({
   }
 
   const isGenerateButtonDisabled = !usageLimit || usageLimit < 1 || !expirationDate
-  const createdDate = new Date(project.createdAt)
+  const createdDate = new Date(project.created_at)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -325,11 +348,11 @@ export default function ProjectManageDialog({
             <TabsContent value="details">
               <form onSubmit={handleUpdateProject} className="space-y-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-title">{t('projects:project_manage.labels.title')}</Label>
+                  <Label htmlFor="edit-name">{t('projects:project_manage.labels.title')}</Label>
                   <Input
-                    id="edit-title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    id="edit-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     disabled={!canEdit && !isCreator}
                     className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
                   />
@@ -376,81 +399,88 @@ export default function ProjectManageDialog({
             <TabsContent value="members">
               <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto pr-2">
                 <div className="space-y-4">
-                  {members.map((member, index) => (
-                    <motion.div
-                      key={member.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: index * 0.05 }}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-all duration-200 gap-2"
-                      {...({} as MotionDivProps)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        {member.avatar ? (
-                          <Avatar className="border-2 border-background shadow-sm">
-                            <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                            <AvatarFallback>
-                              {member.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .substring(0, 2)
-                                .toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="border-2 border-background rounded-full shadow-sm">
-                            <CustomAvatar name={member.name} size="small" />
+                  {effectiveMembers.length > 0 ? (
+                    effectiveMembers.map((member, index) => (
+                      <motion.div
+                        key={member.user}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-all duration-200 gap-2"
+                        {...({} as MotionDivProps)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          {member.user_details.avatar ? (
+                            <Avatar className="border-2 border-background shadow-sm">
+                              <AvatarImage src={member.user_details.avatar || ""} alt={member.user_details.username} />
+                              <AvatarFallback>
+                                {member.user_details.username
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .substring(0, 2)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          ) : (
+                            <div className="border-2 border-background rounded-full shadow-sm">
+                              <CustomAvatar name={member.user_details.username} size="small" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-medium">{member.user_details.username}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.user_details.email}
+                              {member.user === project.owner ? ` ${t('projects:project_manage.creator')}` : ""}
+                            </p>
                           </div>
-                        )}
-                        <div>
-                          <p className="text-sm font-medium">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {member.email}
-                            {member.id === project.createdBy.id ? ` ${t('projects:project_manage.creator')}` : ""}
-                          </p>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                        {(canEdit || isCreator) && member.id !== project.createdBy.id ? (
-                          <>
-                            <Select
-                              value={pendingRoleChanges[member.id] || member.role}
-                              onValueChange={(value) => handleUpdateMemberRole(member.id, value)}
-                            >
-                              <SelectTrigger
-                                className={`h-8 min-w-[160px] ${
-                                  pendingRoleChanges[member.id]
-                                    ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                                    : ""
-                                }`}
+                        <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                          {(canEdit || isCreator) && member.user !== project.owner ? (
+                            <>
+                              <Select
+                                value={pendingRoleChanges[member.user] || member.role_name}
+                                onValueChange={(value: ProjectMember['role_name']) => handleUpdateMemberRole(member.user, value)}
                               >
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="full_access">{t('projects:project_manage.roles.full_access')}</SelectItem>
-                                <SelectItem value="read_only">{t('projects:project_manage.roles.read_only')}</SelectItem>
-                                <SelectItem value="complete_only">{t('projects:project_manage.roles.complete_only')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemoveMember(member.id)}
-                              className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">{t('projects:project_manage.buttons.removeMember')}</span>
-                            </Button>
-                          </>
-                        ) : (
-                          <div className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md">
-                            {t(`projects:project_manage.roles.${member.role}`)}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
+                                <SelectTrigger
+                                  className={`h-8 min-w-[160px] ${
+                                    pendingRoleChanges[member.user]
+                                      ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
+                                      : ""
+                                  }`}
+                                >
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Admin">{t('projects:project_manage.roles.admin')}</SelectItem>
+                                  <SelectItem value="Moderator">{t('projects:project_manage.roles.moderator')}</SelectItem>
+                                  <SelectItem value="Member">{t('projects:project_manage.roles.member')}</SelectItem>
+                                  <SelectItem value="Viewer">{t('projects:project_manage.roles.viewer')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveMember(member.user)}
+                                className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">{t('projects:project_manage.buttons.removeMember')}</span>
+                              </Button>
+                            </>
+                          ) : (
+                            <div className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md">
+                              {t(`projects:project_manage.roles.${member.role_name.toLowerCase()}`)}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {t('projects:project_manage.noMembers')} (Debug: No members found for project ID {project.id}. Check if projectMembers prop is passed correctly from parent component.)
+                    </p>
+                  )}
                 </div>
 
                 {(canEdit || isCreator) && (
