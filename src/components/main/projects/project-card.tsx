@@ -32,10 +32,12 @@ type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectCardProps {
   project: Project
+  tasks: Task[]
   projectMembers: ProjectMember[]
   onUpdateProject: (project: Project) => void
   onDeleteProject: (projectId: number) => void
-  onUpdateMembers: (projectId: number, members: ProjectMember[]) => void // Added
+  onUpdateMembers: (projectId: number, members: ProjectMember[]) => void
+  onCreateShareLink?: () => void // Добавлено: опциональный пропс для создания ссылки
   isExpanded: boolean
   onToggleExpanded: () => void
   currentUser?: User
@@ -43,10 +45,11 @@ interface ProjectCardProps {
 
 export default function ProjectCard({
   project,
+  tasks, // Добавлено: использование пропса tasks
   projectMembers,
   onUpdateProject,
   onDeleteProject,
-  onUpdateMembers, // Added
+  onUpdateMembers,
   isExpanded,
   onToggleExpanded,
   currentUser: userProp,
@@ -64,69 +67,88 @@ export default function ProjectCard({
   }
 
   const handleTaskToggle = (taskId: string) => {
-    const updatedTasks = project.tasks.map((task) => {
+    const updatedTasks = tasks.map((task) => {
       if (task.id === taskId) {
         if (!task.completed) {
           return {
             ...task,
             completed: true,
-            completion: {
-              completedBy: mockCurrentUser.id.toString(),
-              completedAt: new Date().toISOString(),
-            },
+            completed_at: new Date().toISOString(),
+            completed_by: mockCurrentUser.id,
+            completed_by_name: mockCurrentUser.username,
           }
-        }
-        else {
-          const { completion, ...rest } = task
-          return { ...rest, completed: false }
+        } else {
+          return {
+            ...task,
+            completed: false,
+            completed_at: null,
+            completed_by: null,
+            completed_by_name: null,
+          }
         }
       }
       return task
     })
 
+    // Обновляем только tasks_count, так как задачи передаются отдельно
     onUpdateProject({
       ...project,
-      tasks: updatedTasks,
       tasks_count: updatedTasks.length,
     })
+
+    // Можно также вызвать callback для обновления tasks, если он нужен
+    // Например: onUpdateTasks(updatedTasks)
   }
 
-  const handleAddTask = (task: Omit<Task, "id">) => {
+  const handleAddTask = (task: Omit<Task, "id" | "user" | "user_name" | "created_at" | "updated_at" | "completed_at" | "completed_by" | "completed_by_name">) => {
     const newTask: Task = {
       id: `task-${Date.now()}`,
       ...task,
+      user: mockCurrentUser.id,
+      user_name: mockCurrentUser.username,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      completed_at: null,
+      completed_by: null,
+      completed_by_name: null,
     }
 
+    // Обновляем tasks_count
     onUpdateProject({
       ...project,
-      tasks: [...project.tasks, newTask],
-      tasks_count: project.tasks.length + 1,
+      tasks_count: tasks.length + 1,
     })
 
+    // Можно также вызвать callback для добавления задачи
+    // Например: onAddTask(newTask)
     setTaskDialogOpen(false)
   }
 
   const handleEditTask = (task: Task) => {
-    const updatedTasks = project.tasks.map((t) => (t.id === task.id ? task : t))
+    const updatedTasks = tasks.map((t) => (t.id === task.id ? task : t))
 
+    // Обновляем tasks_count
     onUpdateProject({
       ...project,
-      tasks: updatedTasks,
       tasks_count: updatedTasks.length,
     })
 
+    // Можно также вызвать callback для обновления tasks
+    // Например: onUpdateTasks(updatedTasks)
     setEditingTask(null)
   }
 
   const handleDeleteTask = (taskId: string) => {
-    const updatedTasks = project.tasks.filter((task) => task.id !== taskId)
+    const updatedTasks = tasks.filter((task) => task.id !== taskId)
 
+    // Обновляем tasks_count
     onUpdateProject({
       ...project,
-      tasks: updatedTasks,
       tasks_count: updatedTasks.length,
     })
 
+    // Можно также вызвать callback для обновления tasks
+    // Например: onUpdateTasks(updatedTasks)
     if (editingTask && editingTask.id === taskId) {
       setEditingTask(null)
     }
@@ -141,17 +163,18 @@ export default function ProjectCard({
     setDeleteDialogOpen(false)
   }
 
-  // Check user permissions using roleUtils
+  // Проверяем права пользователя
   const userRole = getUserRoleInProject(mockCurrentUser, project.id, projectMembers)
   const canEdit = hasPermission(userRole, 'edit_project')
   const canComplete = hasPermission(userRole, 'edit_task')
   const isCreator = project.owner === mockCurrentUser.id
 
-  const completedTasksCount = project.tasks.filter((task) => task.completed).length
+  const completedTasksCount = tasks.filter((task) => task.completed).length
   const createdDate = new Date(project.created_at)
 
-  const getUserById = (userId: string) => {
-    return projectMembers.find((member) => member.user.toString() === userId)?.user_details
+  const getUserById = (userId: number | null) => {
+    if (!userId) return undefined
+    return projectMembers.find((member) => member.user === userId)?.user_details
   }
 
   const formatCreatedDate = () => {
@@ -159,12 +182,11 @@ export default function ProjectCard({
     return formatDistanceToNow(createdDate, { addSuffix: true, locale })
   }
 
-  // Handle member updates
+  // Обработка обновления членов проекта
   const handleUpdateMembers = (members: ProjectMember[]) => {
-    // TODO: Implement actual member update logic (e.g., update project-data.ts or send to API)
-    console.log('ProjectCard: Updating members for project', project.id, 'with members:', members);
-    onUpdateMembers(project.id, members);
-  };
+    console.log('ProjectCard: Updating members for project', project.id, 'with members:', members)
+    onUpdateMembers(project.id, members)
+  }
 
   return (
     <>
@@ -217,7 +239,7 @@ export default function ProjectCard({
             <div className="flex items-center justify-between py-2">
               <div className="text-sm">
                 <span className="font-medium text-purple-500">{completedTasksCount}</span> {t('project_card.of')}{" "}
-                <span className="font-medium">{project.tasks.length}</span> {t('project_card.tasksCompleted')}
+                <span className="font-medium">{tasks.length}</span> {t('project_card.tasksCompleted')}
               </div>
               <Button
                 variant="ghost"
@@ -252,7 +274,7 @@ export default function ProjectCard({
                 >
                   <div className="mt-2 space-y-4 border-t pt-4">
                     <div className="space-y-2">
-                      {project.tasks.length === 0 ? (
+                      {tasks.length === 0 ? (
                         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
                           <p className="text-sm text-muted-foreground">{t('project_card.noTasks')}</p>
                           {canEdit && (
@@ -269,7 +291,7 @@ export default function ProjectCard({
                         </div>
                       ) : (
                         <AnimatePresence>
-                          {project.tasks.map((task, index) => (
+                          {tasks.map((task, index) => (
                             <motion.div
                               key={task.id}
                               initial={{ opacity: 0, y: 10 }}
@@ -284,7 +306,7 @@ export default function ProjectCard({
                                 onDelete={() => handleDeleteTask(task.id)}
                                 canEdit={canEdit}
                                 canComplete={canComplete}
-                                completedByUser={task.completion ? getUserById(task.completion.completedBy) : undefined}
+                                completedByUser={task.completed_by ? getUserById(task.completed_by) : undefined}
                               />
                             </motion.div>
                           ))}
@@ -305,7 +327,7 @@ export default function ProjectCard({
                           <span className="sm:hidden">{t('project_card.buttons.delete')}</span>
                         </Button>
 
-                        {project.tasks.length > 0 && (
+                        {tasks.length > 0 && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -329,11 +351,11 @@ export default function ProjectCard({
 
       <ProjectManageDialog
         project={project}
-        projectMembers={projectMembers} // Use prop instead of []
+        projectMembers={projectMembers}
         open={manageOpen}
         onOpenChange={setManageOpen}
         onUpdateProject={onUpdateProject}
-        onUpdateMembers={handleUpdateMembers} // Use implemented function
+        onUpdateMembers={handleUpdateMembers}
         onDeleteProject={onDeleteProject}
         currentUser={mockCurrentUser}
         canEdit={canEdit}

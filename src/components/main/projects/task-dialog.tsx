@@ -33,17 +33,17 @@ type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 interface TaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAddTask?: (task: Omit<Task, 'id'>) => void
+  onAddTask?: (task: Omit<Task, 'id' | 'user' | 'user_name' | 'created_at' | 'updated_at' | 'completed_at' | 'completed_by' | 'completed_by_name'>) => void // Обновлено
   onEditTask?: (task: Task) => void
   task?: Task
 }
 
 export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, task }: TaskDialogProps) {
   const { t, i18n } = useTranslation(['popups', 'notifications'])
-  const [title, setTitle] = useState('') // Changed from name to title
+  const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState<string>('medium')
-  const [category, setCategory] = useState<string | undefined>(undefined) // Changed to string | undefined
+  const [priority, setPriority] = useState<'H' | 'M' | 'L'>('M') // Обновлено: используем 'H', 'M', 'L'
+  const [category, setCategory] = useState<string | null>(null) // Обновлено: string | null
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
   const [dueTime, setDueTime] = useState<string>('23:59')
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
@@ -87,10 +87,10 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title) // Changed to title
+      setTitle(task.title)
       setDescription(task.description || '')
-      setPriority(task.priority || 'medium')
-      setCategory(task.category || undefined) // Changed to undefined
+      setPriority(task.priority || 'M')
+      setCategory(task.category || null)
 
       if (task.due_date) {
         const date = new Date(task.due_date)
@@ -105,8 +105,8 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
     } else {
       setTitle('')
       setDescription('')
-      setPriority('medium')
-      setCategory(undefined) // Changed to undefined
+      setPriority('M')
+      setCategory(null)
       setDueDate(undefined)
       setDueTime('23:59')
     }
@@ -155,29 +155,30 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
       return
     }
 
-    let finalDueDate: string = '' // Changed to string
+    let due_date: string | null = null // Обновлено: string | null
     if (dueDate) {
       const [hours, minutes] = dueTime.split(':').map(Number)
       const dateWithTime = new Date(dueDate)
       dateWithTime.setHours(hours, minutes, 0, 0)
-      finalDueDate = dateWithTime.toISOString()
+      due_date = dateWithTime.toISOString()
     }
 
     const taskData = {
-      title, // Changed to title
+      title,
       description,
+      due_date,
+      priority,
+      category,
       completed: isEditing ? task.completed : false,
-      created_at: isEditing ? task.created_at : new Date().toISOString(),
-      due_date: finalDueDate,
-      priority: priority as 'low' | 'medium' | 'high',
-      category: category, // Changed to undefined
+      is_favorite: isEditing ? task.is_favorite : false, // Добавлено
     }
 
     try {
-      if (isEditing && onEditTask) {
+      if (isEditing && onEditTask && task) {
         onEditTask({
+          ...task,
           ...taskData,
-          id: task.id, // id is string
+          updated_at: new Date().toISOString(), // Обновляем дату изменения
         })
         addNotification('success', t('notifications:taskUpdated.title'), t('notifications:taskUpdated.message', { title }), 3000)
       } else if (onAddTask) {
@@ -290,7 +291,7 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                 <Label htmlFor='priority'>
                   {t('popups:task_dialog.labels.priority')} <span className='text-red-500'>*</span>
                 </Label>
-                <Select value={priority} onValueChange={setPriority} required>
+                <Select value={priority} onValueChange={(value: 'H' | 'M' | 'L') => setPriority(value)} required>
                   <SelectTrigger
                     id='priority'
                     className='transition-all duration-200 focus:ring-2 focus:ring-purple-500/20'
@@ -298,17 +299,17 @@ export default function TaskDialog({ open, onOpenChange, onAddTask, onEditTask, 
                     <SelectValue placeholder={t('popups:task_dialog.placeholders.priority')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='low'>{t('popups:task_dialog.priorities.low')}</SelectItem>
-                    <SelectItem value='medium'>{t('popups:task_dialog.priorities.medium')}</SelectItem>
-                    <SelectItem value='high'>{t('popups:task_dialog.priorities.high')}</SelectItem>
+                    <SelectItem value='H'>{t('popups:task_dialog.priorities.high')}</SelectItem>
+                    <SelectItem value='M'>{t('popups:task_dialog.priorities.medium')}</SelectItem>
+                    <SelectItem value='L'>{t('popups:task_dialog.priorities.low')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className='grid gap-2'>
                 <Label htmlFor='category'>{t('popups:task_dialog.labels.category')}</Label>
                 <Select
-                  value={category || 'none'}
-                  onValueChange={(value) => setCategory(value === 'none' ? undefined : value)}
+                  value={category ?? 'none'}
+                  onValueChange={(value) => setCategory(value === 'none' ? null : value)}
                 >
                   <SelectTrigger
                     id='category'

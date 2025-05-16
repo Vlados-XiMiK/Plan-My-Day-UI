@@ -41,10 +41,9 @@ export default function TaskItem({
   const locale = i18n.language === 'ua' ? uk : enUS
 
   const priorityColors = {
-    low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-    medium:
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-    high: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800',
+    H: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800', // Обновлено
+    M: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800', // Обновлено
+    L: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800', // Обновлено
     default: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
   }
 
@@ -61,9 +60,9 @@ export default function TaskItem({
     default: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
   }
 
-  const createdDate = new Date(task.created_at) // Changed to created_at
-  const dueDate = task.due_date ? new Date(task.due_date) : null // Changed to due_date
-  const completedDate = task.completion ? new Date(task.completion.completedAt) : null
+  const createdDate = new Date(task.created_at)
+  const dueDate = task.due_date ? new Date(task.due_date) : null
+  const completedDate = task.completed_at ? new Date(task.completed_at) : null // Обновлено
 
   const handleToggleComplete = () => {
     try {
@@ -75,8 +74,8 @@ export default function TaskItem({
           ? t('notifications:taskCompleted.title')
           : t('notifications:taskReopened.title'),
         isNowCompleted
-          ? t('notifications:taskCompleted.message', { title: task.title }) // Changed to name
-          : t('notifications:taskReopened.message', { title: task.title }), // Changed to name
+          ? t('notifications:taskCompleted.message', { title: task.title })
+          : t('notifications:taskReopened.message', { title: task.title }),
         3000
       )
     } catch {
@@ -114,7 +113,7 @@ export default function TaskItem({
       addNotification(
         'success',
         t('notifications:taskDeleted.title'),
-        t('notifications:taskDeleted.message', { title: task.title }), // Changed to name
+        t('notifications:taskDeleted.message', { title: task.title }),
         3000
       )
     } catch {
@@ -139,7 +138,7 @@ export default function TaskItem({
         <div className='flex items-start gap-3'>
           {canComplete ? (
             <Checkbox
-              id={task.id.toString()} // Ensure id is string for HTML
+              id={task.id}
               checked={task.completed}
               onCheckedChange={handleToggleComplete}
               className='mt-1 transition-all duration-300 data-[state=checked]:bg-purple-600 data-[state=checked]:text-white flex-shrink-0'
@@ -157,10 +156,10 @@ export default function TaskItem({
           <div className='flex-1 min-w-0'>
             <div className='flex items-start justify-between gap-2'>
               <label
-                htmlFor={canComplete ? task.id.toString() : undefined} // Ensure id is string
+                htmlFor={canComplete ? task.id : undefined}
                 className={`font-medium line-clamp-2 ${task.completed ? 'text-muted-foreground line-through' : ''}`}
               >
-                {task.title} {/* Changed to name */}
+                {task.title}
               </label>
 
               <div className='flex items-center gap-1 flex-shrink-0'>
@@ -215,10 +214,10 @@ export default function TaskItem({
                 <Badge
                   variant='outline'
                   className={`${
-                    priorityColors[task.priority as keyof typeof priorityColors] || priorityColors.default
+                    priorityColors[task.priority] || priorityColors.default
                   } transition-all duration-300 hover:shadow-sm text-xs`}
                 >
-                  {t(`projects:task_item.priorities.${task.priority}`)}
+                  {t(`projects:task_item.priorities.${task.priority.toLowerCase()}`)}
                 </Badge>
               )}
 
@@ -229,7 +228,7 @@ export default function TaskItem({
                     categoryColors[task.category as keyof typeof categoryColors] || categoryColors.default
                   } transition-all duration-300 hover:shadow-sm text-xs`}
                 >
-                  {task.category} {/* Removed translation */}
+                  {task.category}
                 </Badge>
               )}
             </div>
@@ -254,7 +253,7 @@ export default function TaskItem({
                 </div>
               )}
 
-              {task.completed && completedByUser && completedDate && (
+              {task.completed && task.completed_by && completedByUser && completedDate && (
                 <div className='flex items-center gap-1 mt-1 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-2 py-1 rounded-full'>
                   <Check className='h-3 w-3 flex-shrink-0' />
                   <span className='whitespace-nowrap'>{t('projects:task_item.completedBy')}</span>
@@ -264,8 +263,8 @@ export default function TaskItem({
                         {completedByUser.avatar ? (
                           <Avatar className='h-4 w-4 mr-1'>
                             <AvatarImage
-                              src={completedByUser.avatar || '/placeholder.svg'}
-                              alt={completedByUser.username} // Changed to username
+                              src={completedByUser.avatar}
+                              alt={completedByUser.username}
                             />
                             <AvatarFallback className='text-[8px]'>
                               {completedByUser.username
@@ -286,7 +285,7 @@ export default function TaskItem({
                               .toUpperCase()}
                           </div>
                         )}
-                        <span className='font-medium line-clamp-1'>{completedByUser.username}</span> {/* Changed to username */}
+                        <span className='font-medium line-clamp-1'>{completedByUser.username}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>

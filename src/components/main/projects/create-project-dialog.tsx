@@ -52,7 +52,6 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
         owner: currentUser.id, // Changed from createdBy to owner
         tasks_count: 0, // Added required field
         created_at: new Date().toISOString(), // Changed from createdAt to created_at
-        tasks: [],
       })
 
       addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { name }), 5000)

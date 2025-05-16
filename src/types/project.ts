@@ -2,30 +2,25 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  avatar: string; // Added for custom avatar support
-  age?: number | null;
-  place_of_work?: string;
-  phone_number?: string;
-  last_login_at?: string;
-  last_profile_edit_at?: string | null;
-  last_task_completed_at?: string | null;
-}
-
-export interface TaskCompletion {
-  completedBy: string; // Changed to string to match task data
-  completedAt: string;
+  avatar: string;
 }
 
 export interface Task {
-  id: string; // Changed to string to match task data
+  id: string;
   title: string;
   description: string;
+  category: string | null;
+  due_date: string | null;
+  priority: 'H' | 'M' | 'L';
   completed: boolean;
-  created_at: string; // Renamed to created_at for API consistency
-  due_date?: string;
-  priority: 'low' | 'medium' | 'high';
-  category?: string;
-  completion?: TaskCompletion;
+  is_favorite: boolean;
+  user: number;
+  user_name: string;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+  completed_by: number | null;
+  completed_by_name: string | null;
 }
 
 export interface Project {
@@ -35,5 +30,36 @@ export interface Project {
   owner: number;
   tasks_count: number;
   created_at: string;
-  tasks: Task[]; // Added to store tasks in project
+}
+
+export interface ProjectShareLink {
+  id: number;
+  share_url: string;
+  role_name: string;
+  max_uses: number;
+  expires_at: string;
+  is_active: boolean;
+  created_by: string;
+  created_at: string;
+}
+
+export interface PaginatedProjects {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Project[];
+}
+
+export interface PaginatedTasks {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Task[];
+}
+
+export interface PaginatedProjectShareLinks {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProjectShareLink[];
 }

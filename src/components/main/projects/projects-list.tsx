@@ -2,25 +2,46 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, LayoutList, PlusCircle } from 'lucide-react'
+import { LayoutGrid, LayoutList, PlusCircle, Share2 } from 'lucide-react'
 import ProjectCard from './project-card'
 import CreateProjectDialog from './create-project-dialog'
-import type { Project } from '@/types/project'
+import type { Project, ProjectShareLink, Task } from '@/types/project'
 import type { ProjectMember } from '@/types/roles'
-import { initialProjects, projectMembers, currentUser } from '@/lib/project-data'
+import { initialProjects, projectMembers, projectShareLinks, projectTasks, currentUser } from '@/lib/project-data'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslation } from 'react-i18next'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useNotification } from '@/contexts/notification-context'
+import { roles } from '@/lib/project-data'
 
 type ViewMode = 'list' | 'grid'
 
 export default function ProjectsList() {
   const { t } = useTranslation(['projects'])
+  const { addNotification } = useNotification()
   const [projects, setProjects] = useState<Project[]>(initialProjects)
   const [members, setMembers] = useState<ProjectMember[]>(projectMembers)
+  const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>(projectShareLinks)
+  const [tasks, setTasks] = useState<Task[]>(projectTasks) // Добавлено: состояние для задач
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set())
+  const [shareRole, setShareRole] = useState<string>('Viewer')
+  const [maxUses, setMaxUses] = useState<string>('5')
+  const [expiresAt, setExpiresAt] = useState<string>('')
 
   const toggleProjectExpanded = (projectId: number) => {
     setExpandedProjects((prev) => {
@@ -43,7 +64,6 @@ export default function ProjectsList() {
       owner: newProject.owner,
       tasks_count: newProject.tasks_count,
       created_at: newProject.created_at,
-      tasks: newProject.tasks,
     }
 
     const newMember: ProjectMember = {
@@ -73,13 +93,69 @@ export default function ProjectsList() {
   const handleDeleteProject = (projectId: number) => {
     setProjects(projects.filter((project) => project.id !== projectId))
     setMembers(members.filter((member) => member.project !== projectId))
+    setTasks(tasks.filter((task) => task.user !== projectId)) // Добавлено: удаление задач проекта
+    // Удаление shareLinks не требуется, так как они не привязаны к projectId
+    setShareLinks(shareLinks)
   }
 
   const handleUpdateMembers = (projectId: number, updatedMembers: ProjectMember[]) => {
-    // Keep members for other projects, update members for the specified project
     const otherMembers = members.filter((m) => m.project !== projectId)
     setMembers([...otherMembers, ...updatedMembers])
     console.log('ProjectsList: Updated members for project', projectId, 'to:', updatedMembers)
+  }
+
+  const openShareDialog = (projectId: number) => {
+    setSelectedProjectId(projectId)
+    setShareRole('Viewer')
+    setMaxUses('5')
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    setExpiresAt(tomorrow.toISOString().split('T')[0])
+    setIsShareDialogOpen(true)
+  }
+
+  const handleCreateShareLink = () => {
+    if (!selectedProjectId) return
+
+    if (!expiresAt || new Date(expiresAt) <= new Date()) {
+      addNotification(
+        'error',
+        t('notifications:invalidInput.title'),
+        t('notifications:invalidInput.shareLinkExpiresAt'),
+        5000
+      )
+      return
+    }
+
+    if (!maxUses || parseInt(maxUses) <= 0) {
+      addNotification(
+        'error',
+        t('notifications:invalidInput.title'),
+        t('notifications:invalidInput.shareLinkMaxUses'),
+        5000
+      )
+      return
+    }
+
+    const newShareLink: ProjectShareLink = {
+      id: Math.max(...shareLinks.map((link) => link.id), 0) + 1,
+      share_url: `http://localhost:8000/api/v1/projects/join/${crypto.randomUUID()}/`,
+      role_name: shareRole,
+      max_uses: parseInt(maxUses),
+      expires_at: new Date(expiresAt).toISOString(),
+      is_active: true,
+      created_by: currentUser.username,
+      created_at: new Date().toISOString(),
+    }
+
+    setShareLinks([...shareLinks, newShareLink])
+    setIsShareDialogOpen(false)
+    addNotification(
+      'success',
+      t('notifications:shareLinkCreated.title'),
+      t('notifications:shareLinkCreated.message', { projectId: selectedProjectId }),
+      3000
+    )
   }
 
   return (
@@ -263,15 +339,17 @@ export default function ProjectsList() {
             <div className='grid gap-6'>
               {projects.map((project) => {
                 const filteredMembers = members.filter((m) => m.project === project.id)
-                console.log('ProjectsList: project.id =', project.id, 'filteredMembers =', filteredMembers)
+                const filteredTasks = tasks.filter((task) => task.user === project.owner) // Фильтруем задачи по owner проекта
                 return (
                   <div key={project.id} className='w-full'>
                     <ProjectCard
                       project={project}
+                      tasks={filteredTasks} // Добавлено: передача задач
                       projectMembers={filteredMembers}
                       onUpdateProject={handleUpdateProject}
                       onDeleteProject={handleDeleteProject}
                       onUpdateMembers={handleUpdateMembers}
+                      onCreateShareLink={() => openShareDialog(project.id)} // Добавлено в ProjectCardProps
                       isExpanded={expandedProjects.has(project.id)}
                       onToggleExpanded={() => toggleProjectExpanded(project.id)}
                       currentUser={currentUser}
@@ -284,15 +362,17 @@ export default function ProjectsList() {
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {projects.map((project) => {
                 const filteredMembers = members.filter((m) => m.project === project.id)
-                console.log('ProjectsList: project.id =', project.id, 'filteredMembers =', filteredMembers)
+                const filteredTasks = tasks.filter((task) => task.user === project.owner) // Фильтруем задачи по owner проекта
                 return (
                   <ProjectCard
                     key={project.id}
                     project={project}
+                    tasks={filteredTasks} // Добавлено: передача задач
                     projectMembers={filteredMembers}
                     onUpdateProject={handleUpdateProject}
                     onDeleteProject={handleDeleteProject}
                     onUpdateMembers={handleUpdateMembers}
+                    onCreateShareLink={() => openShareDialog(project.id)} // Добавлено в ProjectCardProps
                     isExpanded={expandedProjects.has(project.id)}
                     onToggleExpanded={() => toggleProjectExpanded(project.id)}
                     currentUser={currentUser}
@@ -308,6 +388,68 @@ export default function ProjectsList() {
         onOpenChange={setIsCreateDialogOpen}
         onCreateProject={handleCreateProject}
       />
+      <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent className='sm:max-w-[500px] max-w-[95vw]'>
+          <DialogHeader>
+            <DialogTitle>{t('projects:share_dialog.title')}</DialogTitle>
+            <DialogDescription>{t('projects:share_dialog.description')}</DialogDescription>
+          </DialogHeader>
+          <div className='grid gap-4 py-4'>
+            <div className='grid gap-2'>
+              <Label htmlFor='role'>{t('projects:share_dialog.labels.role')}</Label>
+              <Select value={shareRole} onValueChange={setShareRole}>
+                <SelectTrigger id='role'>
+                  <SelectValue placeholder={t('projects:share_dialog.placeholders.role')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className='grid gap-2'>
+              <Label htmlFor='maxUses'>{t('projects:share_dialog.labels.maxUses')}</Label>
+              <Input
+                id='maxUses'
+                type='number'
+                value={maxUses}
+                onChange={(e) => setMaxUses(e.target.value)}
+                placeholder={t('projects:share_dialog.placeholders.maxUses')}
+                min='1'
+              />
+            </div>
+            <div className='grid gap-2'>
+              <Label htmlFor='expiresAt'>{t('projects:share_dialog.labels.expiresAt')}</Label>
+              <Input
+                id='expiresAt'
+                type='date'
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                placeholder={t('projects:share_dialog.placeholders.expiresAt')}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => setIsShareDialogOpen(false)}
+            >
+              {t('projects:share_dialog.buttons.cancel')}
+            </Button>
+            <Button
+              type='button'
+              onClick={handleCreateShareLink}
+              className='bg-purple-600 hover:bg-purple-700'
+            >
+              {t('projects:share_dialog.buttons.create')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
