@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { differenceInMinutes, isPast, format } from 'date-fns';
+import { differenceInMinutes, isPast, format, parseISO, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchTasks, fetchFavoriteTasks, fetchTodayTasks, createTask, updateTask, deleteTask as deleteTaskApi, mapClientPriorityToApi } from '@/api/tasks';
@@ -209,55 +209,73 @@ export const useTaskLogic = () => {
     }
   };
 
-  const snoozeTask = async (id: number) => {
-    if (isUpdating) {
-      console.warn('snoozeTask skipped: update already in progress');
-      return;
-    }
-    const task = tasks.find((task) => task.id === id);
-    if (!task) {
-      console.error('Task with id', id, 'not found');
-      addNotification('error', t('notifications:tasks.undefinedTask.title'), t('notifications:tasks.undefinedTask.message'));
-      return;
-    }
-    setIsUpdating(true);
+
+
+const snoozeTask = async (id: number) => {
+  if (isUpdating) {
+    console.warn('snoozeTask skipped: update already in progress');
+    return;
+  }
+  const task = tasks.find((task) => task.id === id);
+  if (!task) {
+    console.error('Task with id', id, 'not found');
+    addNotification('error', t('notifications:tasks.undefinedTask.title'), t('notifications:tasks.undefinedTask.message'));
+    return;
+  }
+  setIsUpdating(true);
+  try {
+    console.log('Исходный dueDate:', task.dueDate);
+    // Парсим dueDate, предполагая, что это может быть ISO или другой формат
+    let currentDueDate: Date;
     try {
-      console.log('Исходный dueDate:', task.dueDate);
-      // Предполагаем, что task.dueDate в UTC, если нет явного часового пояса
-      const currentDueDate = new Date(task.dueDate + (task.dueDate.endsWith('Z') ? '' : 'Z'));
-      console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
-      // Добавляем 2 часа вручную
-      const newDueDate = new Date(currentDueDate.getTime() + 2 * 60 * 60 * 1000);
-      console.log('Новая newDueDate:', newDueDate.toISOString());
-      const formattedDueDate = newDueDate.toISOString().replace('T', ' ').slice(0, 19);
-      console.log('Форматированная due_date для API:', formattedDueDate);
-  
-      const updatedTask: CreateTaskPayload = {
-        title: task.title,
-        description: task.description,
-        due_date: formattedDueDate,
-        priority: mapClientPriorityToApi(task.priority),
-        completed: task.completed,
-        is_favorite: task.starred,
-        category: task.category,
-      };
-      console.log('Отправляемый объект в API:', updatedTask);
-  
-      await updateTask(id, updatedTask);
-      await loadTasks(true);
-      const truncatedTitle = truncateTitle(task.title);
-      addNotification(
-        'info',
-        t('notifications:taskSnoozed.title'),
-        t('notifications:taskSnoozed.message', { title: truncatedTitle })
-      );
-    } catch (error: unknown) {
-      console.error('Ошибка при отложении задачи:', error);
-      addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
-    } finally {
-      setIsUpdating(false);
+      // Проверяем, содержит ли dueDate пробел (формат API: YYYY-MM-DD HH:mm:ss)
+      if (task.dueDate.includes(' ')) {
+        currentDueDate = new Date(task.dueDate.replace(' ', 'T') + 'Z');
+      } else {
+        currentDueDate = parseISO(task.dueDate);
+      }
+      if (isNaN(currentDueDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+    } catch (error) {
+      console.error('Ошибка парсинга dueDate:', error);
+      throw new Error('Invalid date format');
     }
-  };
+
+    console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
+    // Добавляем 2 часа
+    const newDueDate = addHours(currentDueDate, 2);
+    console.log('Новая newDueDate:', newDueDate.toISOString());
+    // Форматируем дату для API (YYYY-MM-DD HH:mm:ss)
+    const formattedDueDate = format(newDueDate, "yyyy-MM-dd HH:mm:ss");
+    console.log('Форматированная due_date для API:', formattedDueDate);
+
+    const updatedTask: CreateTaskPayload = {
+      title: task.title,
+      description: task.description,
+      due_date: formattedDueDate,
+      priority: mapClientPriorityToApi(task.priority),
+      completed: task.completed,
+      is_favorite: task.starred,
+      category: task.category,
+    };
+    console.log('Отправляемый объект в API:', updatedTask);
+
+    await updateTask(id, updatedTask);
+    await loadTasks(true);
+    const truncatedTitle = truncateTitle(task.title);
+    addNotification(
+      'info',
+      t('notifications:taskSnoozed.title'),
+      t('notifications:taskSnoozed.message', { title: truncatedTitle })
+    );
+  } catch (error: unknown) {
+    console.error('Ошибка при отложении задачи:', error);
+    addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
+  } finally {
+    setIsUpdating(false);
+  }
+};
 
   const toggleTaskStarred = async (id: number) => {
     if (isUpdating) {
