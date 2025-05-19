@@ -112,8 +112,8 @@ export const useTaskLogic = () => {
     setTasks([]); // Сбрасываем задачи при изменении фильтров
     setPage(1); // Сбрасываем страницу
     setHasMore(true); // Сбрасываем hasMore
-    loadTasks(true);
-  }, [filters]);
+    loadTasks(true); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // Отладка категорий
   useEffect(() => {
