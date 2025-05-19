@@ -107,7 +107,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-2 overflow-y-auto p-4">
+      <nav className="flex-1 space-y-2 p-4">
         <button
           onClick={() => router.push("/dashboard/stats")}
           className={`flex w-full items-center rounded-lg p-3 ${

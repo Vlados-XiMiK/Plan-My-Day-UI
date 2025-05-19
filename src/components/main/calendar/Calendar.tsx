@@ -65,7 +65,7 @@ export default function Calendar() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800 transition-colors duration-300 flex flex-col h-full overflow-y-auto">
+    <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800 transition-colors duration-300 flex flex-col">
       <CalendarHeader
         monthName={calendar.monthName}
         currentYear={calendar.currentYear}

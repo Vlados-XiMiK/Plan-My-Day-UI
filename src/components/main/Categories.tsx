@@ -69,13 +69,11 @@ export default function CategoriesPage() {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return
     await addCategory()
-    // refreshCategories is no longer needed here
     newInputRef.current?.focus()
   }
 
   const handleDeleteCategory = async (id: number) => {
     await deleteCategory(id)
-    // refreshCategories is no longer needed here
   }
 
   const handleEditCategory = (id: number) => {
@@ -85,7 +83,6 @@ export default function CategoriesPage() {
 
   const handleSaveEdit = async (id: number) => {
     await saveEditing(id)
-    // refreshCategories is no longer needed here
   }
 
   const handleKeyDown = (e: React.KeyboardEvent, id?: number) => {
@@ -106,20 +103,18 @@ export default function CategoriesPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
         className="mb-8 text-center sm:text-left"
-        >
+      >
         <motion.h1
           className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400"
           initial={{ opacity: 0, filter: "blur(8px)" }}
           animate={{ opacity: 1, filter: "blur(0px)" }}
           transition={{ duration: 1, ease: [0.43, 0.13, 0.23, 0.96] }}
-          
         >
           {t("categories:title")}
         </motion.h1>
         <motion.div
           style={{ width: useTransform(springLineWidth, [0, 100], ["0%", "100%"]) }}
           className="h-1 bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-400 dark:to-indigo-400 mt-2 rounded-full"
-          
         />
       </motion.div>
 
@@ -129,7 +124,6 @@ export default function CategoriesPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.3 }}
         className="mb-8"
-        
       >
         <Card className="border-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
           <div className="p-5">
@@ -144,6 +138,7 @@ export default function CategoriesPage() {
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  maxLength={20}
                   className="rounded-lg border-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-purple-500 focus:border-purple-500"
                   disabled={isCreating || isUpdating || isDeleting}
                 />
@@ -169,7 +164,6 @@ export default function CategoriesPage() {
         initial="hidden"
         animate={isPageLoaded ? "show" : "hidden"}
         className="space-y-3"
-        
       >
         <AnimatePresence mode="popLayout">
           {isLoading ? (
@@ -178,7 +172,6 @@ export default function CategoriesPage() {
                 className="mx-auto w-12 h-12 border-4 border-t-purple-600 border-gray-200 dark:border-gray-700 rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                
               />
             </motion.div>
           ) : categories.length === 0 ? (
@@ -187,10 +180,8 @@ export default function CategoriesPage() {
                 className="mx-auto w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4"
                 animate={{ scale: [1, 1.05, 1], y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
-                
               >
                 <div className="text-purple-500 dark:text-purple-300 text-4xl">📋</div>
-              
               </motion.div>
               <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-1">
                 {t("categories:noCategoriesTitle")}
@@ -205,7 +196,6 @@ export default function CategoriesPage() {
                 layout
                 layoutId={`category-${category.id}`}
                 className="w-full"
-                
               >
                 <Card
                   className={cn(
@@ -221,7 +211,6 @@ export default function CategoriesPage() {
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         className="p-4"
-                        
                       >
                         <div className="flex items-center gap-3">
                           <motion.div
@@ -229,13 +218,13 @@ export default function CategoriesPage() {
                             style={{ backgroundColor: category.color }}
                             animate={{ scale: [1, 1.05, 1] }}
                             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
-                            
                           />
                           <Input
                             ref={inputRef}
                             value={tempCategory}
                             onChange={(e) => setTempCategory(e.target.value)}
                             onKeyDown={(e) => handleKeyDown(e, category.id)}
+                            maxLength={20}
                             className="flex-1 rounded-lg border-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-purple-500"
                             disabled={isUpdating || isDeleting}
                           />
@@ -272,19 +261,16 @@ export default function CategoriesPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="p-4 flex items-center"
-                        
                       >
                         <motion.div
                           className="w-10 h-10 rounded-lg mr-3 flex-shrink-0"
                           style={{ backgroundColor: category.color }}
                           whileHover={{ scale: 1.1 }}
                           transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                          
                         />
                         <motion.span
                           className="flex-1 font-medium text-gray-800 dark:text-gray-200"
                           whileHover={{ x: 3 }}
-                          
                         >
                           {category.name}
                         </motion.span>
@@ -337,7 +323,6 @@ export default function CategoriesPage() {
             className="fixed bottom-6 right-6 z-10"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            
           >
             <Button
               onClick={() => newInputRef.current?.focus()}
@@ -365,13 +350,11 @@ export default function CategoriesPage() {
           className="absolute top-20 right-[10%] w-64 h-64 rounded-full bg-purple-600 dark:bg-purple-800 opacity-5 blur-3xl"
           animate={{ scale: [1, 1.2, 1], x: [0, 30, 0], y: [0, -30, 0] }}
           transition={{ duration: 15, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "easeInOut" }}
-          
         />
         <motion.div
           className="absolute bottom-20 left-[5%] w-72 h-72 rounded-full bg-indigo-600 dark:bg-indigo-800 opacity-5 blur-3xl"
           animate={{ scale: [1, 1.3, 1], x: [0, -20, 0], y: [0, 40, 0] }}
           transition={{ duration: 18, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse", ease: "easeInOut" }}
-          
         />
       </div>
     </div>

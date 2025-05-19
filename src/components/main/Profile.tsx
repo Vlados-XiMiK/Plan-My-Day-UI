@@ -102,7 +102,7 @@ export default function Profile() {
   const displayedUsername = user.username.length > 20 ? `${user.username.slice(0, 20)}...` : user.username
 
   return (
-    <div className="mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 min-h-screen relative pb-24 md:pb-32 h-full overflow-y-auto">
+    <div className="mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
       <div className="relative z-20">
         <div className="bg-white dark:bg-[#2a2a3e] rounded-xl shadow-lg p-4 sm:p-6 transition-all duration-300 hover:shadow-xl">
           <div className="flex justify-between items-center mb-4 sm:mb-6">

@@ -310,7 +310,7 @@ export default function StatsView() {
   // Error UI
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-[#1e1e2f] overflow-y-auto">
+      <div className="flex flex-col items-center justify-center bg-gray-100 dark:bg-[#1e1e2f]">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <p className="text-red-500 text-lg mb-4">{error}</p>
         <button
@@ -324,7 +324,7 @@ export default function StatsView() {
   }
 
   return (
-    <div className="flex flex-col h-full min-h-screen px-6 pt-6 pb-[150px] overflow-y-auto">
+    <div className="flex flex-col min-h-screen px-6 pt-6">
       <motion.div
         className="mb-8 bg-white dark:bg-[#2a2a3e] p-8 rounded-2xl shadow-lg"
         initial={{ opacity: 0, y: -20 }}

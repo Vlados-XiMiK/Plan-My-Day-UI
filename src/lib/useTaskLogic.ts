@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { differenceInMinutes, isPast, format } from 'date-fns';
+import { differenceInMinutes, isPast, format, parseISO, addHours } from 'date-fns';
 import { uk, enUS } from 'date-fns/locale';
 import { useNotification } from '@/contexts/notification-context';
 import { fetchTasks, fetchFavoriteTasks, fetchTodayTasks, createTask, updateTask, deleteTask as deleteTaskApi, mapClientPriorityToApi } from '@/api/tasks';
@@ -182,15 +182,46 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
+      console.log('Исходный dueDate:', task.dueDate);
+      // Парсим dueDate
+      let currentDueDate: Date;
+      try {
+        if (task.dueDate.includes(' ')) {
+          currentDueDate = new Date(task.dueDate.replace(' ', 'T') + 'Z');
+        } else {
+          currentDueDate = parseISO(task.dueDate);
+        }
+        if (isNaN(currentDueDate.getTime())) {
+          throw new Error('Invalid date format');
+        }
+      } catch (error) {
+        console.error('Ошибка парсинга dueDate:', error);
+        throw new Error('Invalid date format');
+      }
+  
+      console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
+      // Если дата в прошлом, используем текущую дату и время + 2 часа
+      const now = new Date();
+      const baseDate = isPast(currentDueDate) ? now : currentDueDate;
+      console.log('Базовая дата:', baseDate.toISOString());
+      // Добавляем 2 часа, если дата просрочена
+      const newDueDate = isPast(currentDueDate) ? addHours(baseDate, 2) : baseDate;
+      console.log('Новая newDueDate:', newDueDate.toISOString());
+      // Форматируем дату для API (YYYY-MM-DD HH:mm:ss)
+      const formattedDueDate = format(newDueDate, 'yyyy-MM-dd HH:mm:ss');
+      console.log('Форматированная due_date для API:', formattedDueDate);
+  
       const updatedTask: CreateTaskPayload = {
         title: task.title,
         description: task.description,
-        due_date: task.dueDate.replace('T', ' ').slice(0, 19),
+        due_date: formattedDueDate,
         priority: mapClientPriorityToApi(task.priority),
         completed: !task.completed,
         is_favorite: task.starred,
         category: task.category,
       };
+      console.log('Отправляемый объект в API:', updatedTask);
+  
       await updateTask(id, updatedTask);
       await loadTasks(true);
       const truncatedTitle = truncateTitle(task.title);
@@ -223,13 +254,32 @@ export const useTaskLogic = () => {
     setIsUpdating(true);
     try {
       console.log('Исходный dueDate:', task.dueDate);
-      // Предполагаем, что task.dueDate в UTC, если нет явного часового пояса
-      const currentDueDate = new Date(task.dueDate + (task.dueDate.endsWith('Z') ? '' : 'Z'));
+      // Парсим dueDate
+      let currentDueDate: Date;
+      try {
+        if (task.dueDate.includes(' ')) {
+          currentDueDate = new Date(task.dueDate.replace(' ', 'T') + 'Z');
+        } else {
+          currentDueDate = parseISO(task.dueDate);
+        }
+        if (isNaN(currentDueDate.getTime())) {
+          throw new Error('Invalid date format');
+        }
+      } catch (error) {
+        console.error('Ошибка парсинга dueDate:', error);
+        throw new Error('Invalid date format');
+      }
+  
       console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
-      // Добавляем 2 часа вручную
-      const newDueDate = new Date(currentDueDate.getTime() + 2 * 60 * 60 * 1000);
+      // Если дата в прошлом, используем текущую дату и время
+      const now = new Date();
+      const baseDate = isPast(currentDueDate) ? now : currentDueDate;
+      console.log('Базовая дата для добавления:', baseDate.toISOString());
+      // Добавляем 2 часа
+      const newDueDate = addHours(baseDate, 2);
       console.log('Новая newDueDate:', newDueDate.toISOString());
-      const formattedDueDate = newDueDate.toISOString().replace('T', ' ').slice(0, 19);
+      // Форматируем дату для API (YYYY-MM-DD HH:mm:ss)
+      const formattedDueDate = format(newDueDate, 'yyyy-MM-dd HH:mm:ss');
       console.log('Форматированная due_date для API:', formattedDueDate);
   
       const updatedTask: CreateTaskPayload = {

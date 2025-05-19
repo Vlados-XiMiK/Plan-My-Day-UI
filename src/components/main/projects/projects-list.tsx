@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { LayoutGrid, LayoutList, PlusCircle, Share2 } from 'lucide-react'
+import { LayoutGrid, LayoutList, PlusCircle } from 'lucide-react'
 import ProjectCard from './project-card'
 import CreateProjectDialog from './create-project-dialog'
 import type { Project, ProjectShareLink, Task } from '@/types/project'

@@ -10,23 +10,19 @@ import { UserProvider } from "@/contexts/UserContext"
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme()
   const [isSidebarVisible, setIsSidebarVisible] = useState(() => {
-    // Load initial visibility state from localStorage
     const savedState = localStorage.getItem('sidebarVisible')
     return savedState !== null ? JSON.parse(savedState) : false
   })
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    // Load initial collapsed state from localStorage
     const savedState = localStorage.getItem('sidebarCollapsed')
     return savedState !== null ? JSON.parse(savedState) : false
   })
   const [isMobile, setIsMobile] = useState(false)
 
-  // Save sidebar visibility state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('sidebarVisible', JSON.stringify(isSidebarVisible))
   }, [isSidebarVisible])
 
-  // Save sidebar collapsed state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed))
   }, [isSidebarCollapsed])
@@ -47,7 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <UserProvider>
-      <div className="flex h-screen overflow-hidden bg-white dark:bg-[#1a1a2e] relative">
+      <div className="flex h-screen bg-white dark:bg-[#1a1a2e] relative">
         <div className="absolute inset-0 z-0">
           {theme === "dark" ? <AnimatedBackground /> : <LightAnimatedBackground />}
         </div>
@@ -64,12 +60,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               toggleCollapse={toggleSidebarCollapse}
               isCollapsed={isSidebarCollapsed}
             />
-            <main className="flex-1 overflow-hidden transition-all duration-300 ease-in-out p-6">
+            <main className="flex-1 overflow-y-auto transition-all duration-300 ease-in-out p-6">
               {children}
             </main>
           </div>
 
-          {/* Mobile overlay */}
           {isSidebarVisible && isMobile && (
             <div 
               className="fixed inset-0 bg-opacity-50 md:hidden z-20"
