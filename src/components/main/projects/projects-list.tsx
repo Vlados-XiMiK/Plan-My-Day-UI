@@ -28,12 +28,17 @@ import { roles } from '@/lib/project-data'
 type ViewMode = 'list' | 'grid'
 
 export default function ProjectsList() {
-  const { t } = useTranslation(['projects'])
+  const { t } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
   const [projects, setProjects] = useState<Project[]>(initialProjects)
   const [members, setMembers] = useState<ProjectMember[]>(projectMembers)
   const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>(projectShareLinks)
-  const [tasks, setTasks] = useState<Task[]>(projectTasks) // Добавлено: состояние для задач
+  const [tasksByProject, setTasksByProject] = useState<{ [projectId: number]: Task[] }>(
+    initialProjects.reduce((acc, project) => ({
+      ...acc,
+      [project.id]: projectTasks.filter((task) => task.user === project.owner), // Начальная фильтрация (заменить на API)
+    }), {})
+  )
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
@@ -62,7 +67,7 @@ export default function ProjectsList() {
       name: newProject.name,
       description: newProject.description,
       owner: newProject.owner,
-      tasks_count: newProject.tasks_count,
+      tasks_count: 0,
       created_at: newProject.created_at,
     }
 
@@ -83,6 +88,7 @@ export default function ProjectsList() {
 
     setProjects([...projects, project])
     setMembers([...members, newMember])
+    setTasksByProject((prev) => ({ ...prev, [projectId]: [] }))
     setIsCreateDialogOpen(false)
   }
 
@@ -93,8 +99,11 @@ export default function ProjectsList() {
   const handleDeleteProject = (projectId: number) => {
     setProjects(projects.filter((project) => project.id !== projectId))
     setMembers(members.filter((member) => member.project !== projectId))
-    setTasks(tasks.filter((task) => task.user !== projectId)) // Добавлено: удаление задач проекта
-    // Удаление shareLinks не требуется, так как они не привязаны к projectId
+    setTasksByProject((prev) => {
+      const newTasks = { ...prev }
+      delete newTasks[projectId]
+      return newTasks
+    })
     setShareLinks(shareLinks)
   }
 
@@ -102,6 +111,59 @@ export default function ProjectsList() {
     const otherMembers = members.filter((m) => m.project !== projectId)
     setMembers([...otherMembers, ...updatedMembers])
     console.log('ProjectsList: Updated members for project', projectId, 'to:', updatedMembers)
+  }
+
+  const handleAddTask = (projectId: number, newTask: Task) => {
+    setTasksByProject((prev) => ({
+      ...prev,
+      [projectId]: [...(prev[projectId] || []), newTask],
+    }))
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === projectId
+          ? { ...project, tasks_count: (tasksByProject[projectId] || []).length + 1 }
+          : project
+      )
+    )
+    addNotification(
+      'success',
+      t('notifications:taskCreated.title'),
+      t('notifications:taskCreated.message', { taskName: newTask.title }),
+      3000
+    )
+  }
+
+  const handleUpdateTask = (projectId: number, updatedTask: Task) => {
+    setTasksByProject((prev) => ({
+      ...prev,
+      [projectId]: prev[projectId].map((task) => (task.id === updatedTask.id ? updatedTask : task)),
+    }))
+    addNotification(
+      'success',
+      t('notifications:taskUpdated.title'),
+      t('notifications:taskUpdated.message', { taskName: updatedTask.title }),
+      3000
+    )
+  }
+
+  const handleDeleteTask = (projectId: number, taskId: string) => {
+    setTasksByProject((prev) => ({
+      ...prev,
+      [projectId]: prev[projectId].filter((task) => task.id !== taskId),
+    }))
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === projectId
+          ? { ...project, tasks_count: (tasksByProject[projectId] || []).length - 1 }
+          : project
+      )
+    )
+    addNotification(
+      'success',
+      t('notifications:taskDeleted.title'),
+      t('notifications:taskDeleted.message'),
+      3000
+    )
   }
 
   const openShareDialog = (projectId: number) => {
@@ -339,17 +401,20 @@ export default function ProjectsList() {
             <div className='grid gap-6'>
               {projects.map((project) => {
                 const filteredMembers = members.filter((m) => m.project === project.id)
-                const filteredTasks = tasks.filter((task) => task.user === project.owner) // Фильтруем задачи по owner проекта
+                const filteredTasks = tasksByProject[project.id] || []
                 return (
                   <div key={project.id} className='w-full'>
                     <ProjectCard
                       project={project}
-                      tasks={filteredTasks} // Добавлено: передача задач
+                      tasks={filteredTasks}
                       projectMembers={filteredMembers}
                       onUpdateProject={handleUpdateProject}
                       onDeleteProject={handleDeleteProject}
                       onUpdateMembers={handleUpdateMembers}
-                      onCreateShareLink={() => openShareDialog(project.id)} // Добавлено в ProjectCardProps
+                      onAddTask={(task) => handleAddTask(project.id, task)}
+                      onUpdateTask={(task) => handleUpdateTask(project.id, task)}
+                      onDeleteTask={(taskId) => handleDeleteTask(project.id, taskId)}
+                      onCreateShareLink={() => openShareDialog(project.id)}
                       isExpanded={expandedProjects.has(project.id)}
                       onToggleExpanded={() => toggleProjectExpanded(project.id)}
                       currentUser={currentUser}
@@ -362,17 +427,20 @@ export default function ProjectsList() {
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {projects.map((project) => {
                 const filteredMembers = members.filter((m) => m.project === project.id)
-                const filteredTasks = tasks.filter((task) => task.user === project.owner) // Фильтруем задачи по owner проекта
+                const filteredTasks = tasksByProject[project.id] || []
                 return (
                   <ProjectCard
                     key={project.id}
                     project={project}
-                    tasks={filteredTasks} // Добавлено: передача задач
+                    tasks={filteredTasks}
                     projectMembers={filteredMembers}
                     onUpdateProject={handleUpdateProject}
                     onDeleteProject={handleDeleteProject}
                     onUpdateMembers={handleUpdateMembers}
-                    onCreateShareLink={() => openShareDialog(project.id)} // Добавлено в ProjectCardProps
+                    onAddTask={(task) => handleAddTask(project.id, task)}
+                    onUpdateTask={(task) => handleUpdateTask(project.id, task)}
+                    onDeleteTask={(taskId) => handleDeleteTask(project.id, taskId)}
+                    onCreateShareLink={() => openShareDialog(project.id)}
                     isExpanded={expandedProjects.has(project.id)}
                     onToggleExpanded={() => toggleProjectExpanded(project.id)}
                     currentUser={currentUser}

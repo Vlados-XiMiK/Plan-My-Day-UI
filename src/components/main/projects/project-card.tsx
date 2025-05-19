@@ -27,6 +27,7 @@ import { currentUser } from "@/lib/project-data"
 import { HTMLAttributes } from 'react'
 import { useTranslation } from "react-i18next"
 import { getUserRoleInProject, hasPermission } from "@/utils/roleUtils"
+import { useNotification } from "@/contexts/notification-context"
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -37,7 +38,10 @@ interface ProjectCardProps {
   onUpdateProject: (project: Project) => void
   onDeleteProject: (projectId: number) => void
   onUpdateMembers: (projectId: number, members: ProjectMember[]) => void
-  onCreateShareLink?: () => void // Добавлено: опциональный пропс для создания ссылки
+  onAddTask: (task: Task) => void
+  onUpdateTask: (task: Task) => void
+  onDeleteTask: (taskId: string) => void
+  onCreateShareLink?: () => void
   isExpanded: boolean
   onToggleExpanded: () => void
   currentUser?: User
@@ -45,16 +49,20 @@ interface ProjectCardProps {
 
 export default function ProjectCard({
   project,
-  tasks, // Добавлено: использование пропса tasks
+  tasks,
   projectMembers,
   onUpdateProject,
   onDeleteProject,
   onUpdateMembers,
+  onAddTask,
+  onUpdateTask,
+  onDeleteTask,
   isExpanded,
   onToggleExpanded,
   currentUser: userProp,
 }: ProjectCardProps) {
-  const { t, i18n } = useTranslation('projects')
+  const { t, i18n } = useTranslation(['projects', 'notifications'])
+  const { addNotification } = useNotification()
   const [manageOpen, setManageOpen] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -67,40 +75,44 @@ export default function ProjectCard({
   }
 
   const handleTaskToggle = (taskId: string) => {
-    const updatedTasks = tasks.map((task) => {
-      if (task.id === taskId) {
-        if (!task.completed) {
-          return {
-            ...task,
-            completed: true,
-            completed_at: new Date().toISOString(),
-            completed_by: mockCurrentUser.id,
-            completed_by_name: mockCurrentUser.username,
-          }
-        } else {
-          return {
-            ...task,
-            completed: false,
-            completed_at: null,
-            completed_by: null,
-            completed_by_name: null,
-          }
-        }
-      }
-      return task
-    })
+    const task = tasks.find((t) => t.id === taskId)
+    if (!task) return
 
-    // Обновляем только tasks_count, так как задачи передаются отдельно
-    onUpdateProject({
-      ...project,
-      tasks_count: updatedTasks.length,
-    })
+    const updatedTask: Task = {
+      ...task,
+      completed: !task.completed,
+      completed_at: task.completed ? null : new Date().toISOString(),
+      completed_by: task.completed ? null : mockCurrentUser.id,
+      completed_by_name: task.completed ? null : mockCurrentUser.username,
+      updated_at: new Date().toISOString(),
+    }
 
-    // Можно также вызвать callback для обновления tasks, если он нужен
-    // Например: onUpdateTasks(updatedTasks)
+    try {
+      onUpdateTask(updatedTask)
+      addNotification(
+        updatedTask.completed ? 'success' : 'info',
+        updatedTask.completed
+          ? t('notifications:taskCompleted.title')
+          : t('notifications:taskReopened.title'),
+        updatedTask.completed
+          ? t('notifications:taskCompleted.message', { title: task.title })
+          : t('notifications:taskReopened.message', { title: task.title }),
+        3000
+      )
+    } catch (error) {
+      console.error('Failed to toggle task:', error)
+      addNotification(
+        'error',
+        t('notifications:taskUpdateFailed.title'),
+        t('notifications:taskUpdateFailed.message'),
+        5000
+      )
+    }
   }
 
-  const handleAddTask = (task: Omit<Task, "id" | "user" | "user_name" | "created_at" | "updated_at" | "completed_at" | "completed_by" | "completed_by_name">) => {
+  const handleAddTask = (
+    task: Omit<Task, "id" | "user" | "user_name" | "created_at" | "updated_at" | "completed_at" | "completed_by" | "completed_by_name">
+  ) => {
     const newTask: Task = {
       id: `task-${Date.now()}`,
       ...task,
@@ -113,44 +125,68 @@ export default function ProjectCard({
       completed_by_name: null,
     }
 
-    // Обновляем tasks_count
-    onUpdateProject({
-      ...project,
-      tasks_count: tasks.length + 1,
-    })
-
-    // Можно также вызвать callback для добавления задачи
-    // Например: onAddTask(newTask)
-    setTaskDialogOpen(false)
+    try {
+      onAddTask(newTask)
+      setTaskDialogOpen(false)
+      addNotification(
+        'success',
+        t('notifications:taskCreated.title'),
+        t('notifications:taskCreated.message', { title: newTask.title }),
+        3000
+      )
+    } catch (error) {
+      console.error('Failed to add task:', error)
+      addNotification(
+        'error',
+        t('notifications:taskCreationFailed.title'),
+        t('notifications:taskCreationFailed.message'),
+        5000
+      )
+    }
   }
 
   const handleEditTask = (task: Task) => {
-    const updatedTasks = tasks.map((t) => (t.id === task.id ? task : t))
-
-    // Обновляем tasks_count
-    onUpdateProject({
-      ...project,
-      tasks_count: updatedTasks.length,
-    })
-
-    // Можно также вызвать callback для обновления tasks
-    // Например: onUpdateTasks(updatedTasks)
-    setEditingTask(null)
+    try {
+      onUpdateTask(task)
+      setEditingTask(null)
+      addNotification(
+        'success',
+        t('notifications:taskUpdated.title'),
+        t('notifications:taskUpdated.message', { title: task.title }),
+        3000
+      )
+    } catch (error) {
+      console.error('Failed to edit task:', error)
+      addNotification(
+        'error',
+        t('notifications:taskUpdateFailed.title'),
+        t('notifications:taskUpdateFailed.message'),
+        5000
+      )
+    }
   }
 
   const handleDeleteTask = (taskId: string) => {
-    const updatedTasks = tasks.filter((task) => task.id !== taskId)
-
-    // Обновляем tasks_count
-    onUpdateProject({
-      ...project,
-      tasks_count: updatedTasks.length,
-    })
-
-    // Можно также вызвать callback для обновления tasks
-    // Например: onUpdateTasks(updatedTasks)
-    if (editingTask && editingTask.id === taskId) {
-      setEditingTask(null)
+    try {
+      onDeleteTask(taskId)
+      if (editingTask && editingTask.id === taskId) {
+        setEditingTask(null)
+      }
+      const task = tasks.find((t) => t.id === taskId)
+      addNotification(
+        'success',
+        t('notifications:taskDeleted.title'),
+        t('notifications:taskDeleted.message', { title: task?.title || '' }),
+        3000
+      )
+    } catch (error) {
+      console.error('Failed to delete task:', error)
+      addNotification(
+        'error',
+        t('notifications:taskDeleteFailed.title'),
+        t('notifications:taskDeleteFailed.message'),
+        5000
+      )
     }
   }
 
@@ -163,7 +199,6 @@ export default function ProjectCard({
     setDeleteDialogOpen(false)
   }
 
-  // Проверяем права пользователя
   const userRole = getUserRoleInProject(mockCurrentUser, project.id, projectMembers)
   const canEdit = hasPermission(userRole, 'edit_project')
   const canComplete = hasPermission(userRole, 'edit_task')
@@ -182,7 +217,6 @@ export default function ProjectCard({
     return formatDistanceToNow(createdDate, { addSuffix: true, locale })
   }
 
-  // Обработка обновления членов проекта
   const handleUpdateMembers = (members: ProjectMember[]) => {
     console.log('ProjectCard: Updating members for project', project.id, 'with members:', members)
     onUpdateMembers(project.id, members)
