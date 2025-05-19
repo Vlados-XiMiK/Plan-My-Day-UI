@@ -12,7 +12,7 @@ import { useMobile } from "@/hooks/use-mobile"
 import { useCategories } from "@/lib/useCategories"
 import { useTranslation } from "react-i18next"
 
-// Анимации
+// Animations
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2, ease: [0.6, 0.05, 0.01, 0.99] } },
@@ -88,16 +88,16 @@ export default function CategoriesPage() {
   const handleKeyDown = (e: React.KeyboardEvent, id?: number) => {
     if (e.key === "Enter") {
       if (id) {
-        handleSaveEdit(id);  // обрабатываем редактирование
+        handleSaveEdit(id);  // handle editing
       } else {
-        handleAddCategory();  // добавляем категорию
+        handleAddCategory();  // add category
       }
     }
   }
 
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-1xl mx-auto relative">
-      {/* Заголовок */}
+      {/* Headline */}
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -118,7 +118,7 @@ export default function CategoriesPage() {
         />
       </motion.div>
 
-      {/* Форма добавления */}
+      {/* Add form */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -158,7 +158,7 @@ export default function CategoriesPage() {
         </Card>
       </motion.div>
 
-      {/* Список категорий */}
+      {/* List of categories */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -312,7 +312,7 @@ export default function CategoriesPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Плавающая кнопка для мобильных */}
+      {/* Floating button for mobile */}
       <AnimatePresence>
         {isMobile && categories.length > 0 && (
           <motion.div
@@ -344,7 +344,7 @@ export default function CategoriesPage() {
         )}
       </AnimatePresence>
 
-      {/* Фоновые декоративные элементы */}
+      {/* Background decorative elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-20 right-[10%] w-64 h-64 rounded-full bg-purple-600 dark:bg-purple-800 opacity-5 blur-3xl"

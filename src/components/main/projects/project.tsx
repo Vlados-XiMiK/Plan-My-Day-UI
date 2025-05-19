@@ -11,10 +11,10 @@ import Loader from '@/components/ui/preloader'
 export default function Project() {
   const { t } = useTranslation('projects')
   const router = useRouter()
-  const [isAuth, setIsAuth] = useState(false) // Для статуса авторизации
-  const [authLoading, setAuthLoading] = useState(true) // Для проверки авторизации
+  const [isAuth, setIsAuth] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
-  // Проверка авторизации
+  // Checking authorization
   useEffect(() => {
     async function checkAuth() {
       const auth = await isAuthenticated()
@@ -22,18 +22,16 @@ export default function Project() {
       setAuthLoading(false)
 
       if (!auth) {
-        router.replace('/auth/login') // Перенаправление на логин, если не авторизован
+        router.replace('/auth/login') // Redirect to login if not authorized
       }
     }
     checkAuth()
   }, [router])
 
-  // Показываем лоадер во время проверки авторизации
   if (authLoading) {
     return <Loader />
   }
 
-  // Если не авторизован, ничего не рендерим (редирект уже выполнен)
   if (!isAuth) {
     return null
   }

@@ -40,7 +40,7 @@ type TaskItemProps = {
   toggleTaskCompletion: (taskId: number) => void
   view: 'month' | 'list'
   isTaskToday?: boolean
-  categories: Category[] // Новый проп
+  categories: Category[]
 }
 
 export default function TaskItem({
@@ -93,7 +93,7 @@ export default function TaskItem({
     return format(date, 'EEE, MMM d', { locale })
   }
 
-  // Найти категорию по ID
+// Find category by ID
   const category = task.category != null ? categories.find((cat) => cat.id === task.category) : null
   const categoryName = category ? category.name : t('calendar:noCategory')
 
@@ -254,7 +254,7 @@ export default function TaskItem({
               category ? `bg-[${category.color}]/10 text-[${category.color}]` : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
             )}
           >
-            {categoryName} {/* Отображаем название категории */}
+            {categoryName} {/* Display category name */}
           </span>
         </div>
       </div>

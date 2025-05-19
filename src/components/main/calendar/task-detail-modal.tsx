@@ -22,7 +22,7 @@ type TaskDetailModalProps = {
   isOpen: boolean
   onClose: () => void
   toggleTaskCompletion: (taskId: number) => void
-  categories: Category[] // Новый проп для категорий
+  categories: Category[] 
 }
 
 export default function TaskDetailModal({
@@ -57,9 +57,9 @@ export default function TaskDetailModal({
     toggleTaskCompletion(task.id)
   }
 
-  // Найти категорию по ID
+  // Find category by ID
   const category = task.category != null ? categories.find((cat) => cat.id === task.category) : null
-  const categoryName = category ? category.name : t('noCategory') // Если нет категории, отображаем "No category"
+  const categoryName = category ? category.name : t('noCategory') // If there is no category, display "No category"
 
   // Extract time from dueDate
   const time = task.dueDate ? task.dueDate.split('T')[1]?.substring(0, 5) : undefined
@@ -114,7 +114,7 @@ export default function TaskDetailModal({
               {t(`priority.${task.priority}`)}
             </Badge>
             <Badge variant="outline" className="rounded-lg">
-              {categoryName} {/* Отображаем название категории */}
+              {categoryName} {/* Display category name */}
             </Badge>
             {taskStatus === 'overdue' && (
               <Badge variant="destructive" className="rounded-lg flex items-center gap-1">

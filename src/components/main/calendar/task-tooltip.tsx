@@ -15,7 +15,7 @@ import { useNotification } from '@/contexts/notification-context'
 type TaskTooltipProps = {
   task: Task
   toggleTaskCompletion: (taskId: number) => void
-  categories: Category[] // Новый проп для категорий
+  categories: Category[]
 }
 
 export default function TaskTooltip({ task, toggleTaskCompletion, categories }: TaskTooltipProps) {
@@ -44,9 +44,9 @@ export default function TaskTooltip({ task, toggleTaskCompletion, categories }: 
     )
   }
 
-  // Найти категорию по ID
+// Find category by ID
   const category = task.category != null ? categories.find((cat) => cat.id === task.category) : null
-  const categoryName = category ? category.name : t('calendar:noCategory') // Если нет категории, отображаем "No category"
+  const categoryName = category ? category.name : t('calendar:noCategory') // If there is no category, display "No category"
 
   // Extract time from dueDate
   const time = task.dueDate ? task.dueDate.split('T')[1]?.substring(0, 5) : undefined
@@ -103,7 +103,7 @@ export default function TaskTooltip({ task, toggleTaskCompletion, categories }: 
         )}
         <span className="capitalize flex items-center">
           <FolderIcon className="h-3 w-3 mr-1" />
-          {categoryName} {/* Отображаем название категории */}
+          {categoryName} {/* Display category name*/}
         </span>
       </div>
       {isCompleted && (

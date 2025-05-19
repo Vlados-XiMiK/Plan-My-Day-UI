@@ -10,13 +10,13 @@ import type { Task, CreateTaskPayload } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 
-// Интерфейс для ошибок API
+// Interface for API errors
 interface ApiErrorResponse {
   due_date?: string[];
   priority?: string[];
 }
 
-// Интерфейс для времени до дедлайна
+// Interface for time until deadline
 interface TimeRemaining {
   text: string;
   isOverdue: boolean;
@@ -38,7 +38,7 @@ export const useTaskLogic = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Состояние фильтров с нейтральными начальными значениями
+  // State of filters with neutral initial values
   const [filters, setFilters] = useState<{
     search: string;
     status: '' | 'completed' | 'incomplete';
@@ -51,13 +51,13 @@ export const useTaskLogic = () => {
     sort: '',
   });
 
-  // Загрузка задач с учетом фильтров
+  // Loading tasks taking into account filters
   const loadTasks = async (resetPage: boolean = false) => {
     try {
       const currentPage = resetPage ? 1 : page;
       let response;
 
-      // Формируем параметры фильтрации
+      // Forming filtering parameters
       const taskFilters: {
         page?: number;
         completed?: boolean;
@@ -72,7 +72,7 @@ export const useTaskLogic = () => {
       if (filters.priority) taskFilters.priority = mapClientPriorityToApi(filters.priority);
       if (filters.sort && !['favorites', 'today'].includes(filters.sort)) taskFilters.ordering = filters.sort;
 
-      // Выбираем подходящий эндпоинт
+      // Select the appropriate endpoint
       console.log(`Loading tasks with sort: ${filters.sort}, page: ${currentPage}, filters:`, taskFilters);
       if (filters.sort === 'favorites') {
         response = await fetchFavoriteTasks(currentPage);
@@ -85,15 +85,15 @@ export const useTaskLogic = () => {
       console.log('Loaded response:', JSON.stringify(response, null, 2));
       console.log('Tasks count:', response.results.length, 'Total count:', response.count);
 
-      // Обновляем задачи
+      // Update tasks
       const newTasks = resetPage ? response.results : [...tasks, ...response.results];
       console.log('New tasks to set:', JSON.stringify(newTasks, null, 2));
       setTasks(newTasks);
 
-      // Обновляем страницу
+      // Refresh the page
       setPage(currentPage + 1);
 
-      // Проверяем hasMore: если next === null или count <= загруженных задач
+      // Check hasMore: if next === null or count <= loaded tasks
       const totalLoadedTasks = newTasks.length;
       const newHasMore = response.next !== null && totalLoadedTasks < response.count;
       setHasMore(newHasMore);
@@ -106,21 +106,21 @@ export const useTaskLogic = () => {
     }
   };
 
-  // Загрузка начальных задач
+  // Loading initial tasks
   useEffect(() => {
     console.log('Filters changed:', filters);
-    setTasks([]); // Сбрасываем задачи при изменении фильтров
-    setPage(1); // Сбрасываем страницу
-    setHasMore(true); // Сбрасываем hasMore
+    setTasks([]); // Reset tasks when filters change
+    setPage(1); // Reset the page
+    setHasMore(true); // Reset hasMore
     loadTasks(true); // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]); // eslint-disable-next-line react-hooks/exhaustive-deps
 
-  // Отладка категорий
+  // Debugging categories
   useEffect(() => {
     console.log('Categories in useTaskLogic:', categories);
   }, [categories]);
 
-  // Подгрузка дополнительных задач
+  // Loading additional tasks
   const loadMoreTasks = async () => {
     if (!hasMore) {
       console.warn('No more tasks to load');
@@ -129,13 +129,13 @@ export const useTaskLogic = () => {
     await loadTasks();
   };
 
-  // Обновление фильтров
+  // Updating filters
   const updateFilters = (newFilters: Partial<typeof filters>) => {
     console.log('Updating filters:', newFilters);
     setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
-  // Сброс фильтров
+  // Reset filters
   const resetFilters = () => {
     setFilters({
       search: '',
@@ -148,7 +148,7 @@ export const useTaskLogic = () => {
     setHasMore(true);
   };
 
-  // Открытие попапа создания с рефетчем категорий
+  // Opening the creation popup with a category refetch
   const setCreationPopupOpenWithRefresh = async (open: boolean) => {
     if (open) {
       await refreshCategories();
@@ -156,14 +156,14 @@ export const useTaskLogic = () => {
     setCreationPopupOpen(open);
   };
 
-  // Открытие попапа редактирования с рефетчем категорий
+  // Opening an edit popup with a category refetch
   const openEditPopup = async (task: Task) => {
     await refreshCategories();
     setTaskToEdit(task);
     setEditPopupOpen(true);
   };
 
-  // Усечение длинных заголовков
+  // Truncate long headers
   const truncateTitle = (name: string, maxLength: number = 30): string => {
     if (name.length <= maxLength) return name;
     return name.slice(0, maxLength - 3) + '...';
@@ -182,8 +182,8 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
-      console.log('Исходный dueDate:', task.dueDate);
-      // Парсим dueDate
+      console.log('Original dueDate:', task.dueDate);
+      // Parse dueDate
       let currentDueDate: Date;
       try {
         if (task.dueDate.includes(' ')) {
@@ -195,21 +195,21 @@ export const useTaskLogic = () => {
           throw new Error('Invalid date format');
         }
       } catch (error) {
-        console.error('Ошибка парсинга dueDate:', error);
+        console.error('Parsing error dueDate:', error);
         throw new Error('Invalid date format');
       }
   
-      console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
-      // Если дата в прошлом, используем текущую дату и время + 2 часа
+      console.log('Parsed currentDueDate:', currentDueDate.toISOString());
+      // If the date is in the past, use the current date and time + 2 hours
       const now = new Date();
       const baseDate = isPast(currentDueDate) ? now : currentDueDate;
-      console.log('Базовая дата:', baseDate.toISOString());
-      // Добавляем 2 часа, если дата просрочена
+      console.log('Base date:', baseDate.toISOString());
+      // Add 2 hours if date is expired
       const newDueDate = isPast(currentDueDate) ? addHours(baseDate, 2) : baseDate;
-      console.log('Новая newDueDate:', newDueDate.toISOString());
-      // Форматируем дату для API (YYYY-MM-DD HH:mm:ss)
+      console.log('Base date:', newDueDate.toISOString());
+      // Format the date for the API (YYYY-MM-DD HH:mm:ss)
       const formattedDueDate = format(newDueDate, 'yyyy-MM-dd HH:mm:ss');
-      console.log('Форматированная due_date для API:', formattedDueDate);
+      console.log('Formatted due_date for API:', formattedDueDate);
   
       const updatedTask: CreateTaskPayload = {
         title: task.title,
@@ -220,7 +220,7 @@ export const useTaskLogic = () => {
         is_favorite: task.starred,
         category: task.category,
       };
-      console.log('Отправляемый объект в API:', updatedTask);
+      console.log('Object sent to API:', updatedTask);
   
       await updateTask(id, updatedTask);
       await loadTasks(true);
@@ -253,8 +253,8 @@ export const useTaskLogic = () => {
     }
     setIsUpdating(true);
     try {
-      console.log('Исходный dueDate:', task.dueDate);
-      // Парсим dueDate
+      console.log('Original dueDate:', task.dueDate);
+      // Parse dueDate
       let currentDueDate: Date;
       try {
         if (task.dueDate.includes(' ')) {
@@ -266,21 +266,21 @@ export const useTaskLogic = () => {
           throw new Error('Invalid date format');
         }
       } catch (error) {
-        console.error('Ошибка парсинга dueDate:', error);
+        console.error('Error parsing dueDate:', error);
         throw new Error('Invalid date format');
       }
   
-      console.log('Спарсенная currentDueDate:', currentDueDate.toISOString());
-      // Если дата в прошлом, используем текущую дату и время
+      console.log('Parsed currentDueDate:', currentDueDate.toISOString());
+      // If the date is in the past, use the current date and time
       const now = new Date();
       const baseDate = isPast(currentDueDate) ? now : currentDueDate;
-      console.log('Базовая дата для добавления:', baseDate.toISOString());
-      // Добавляем 2 часа
+      console.log('Base date to add:', baseDate.toISOString());
+      // Add 2 hours
       const newDueDate = addHours(baseDate, 2);
-      console.log('Новая newDueDate:', newDueDate.toISOString());
-      // Форматируем дату для API (YYYY-MM-DD HH:mm:ss)
+      console.log('New newDueDate:', newDueDate.toISOString());
+      // Format the date for the API (YYYY-MM-DD HH:mm:ss)
       const formattedDueDate = format(newDueDate, 'yyyy-MM-dd HH:mm:ss');
-      console.log('Форматированная due_date для API:', formattedDueDate);
+      console.log('Formatted due_date for API:', formattedDueDate);
   
       const updatedTask: CreateTaskPayload = {
         title: task.title,
@@ -291,7 +291,7 @@ export const useTaskLogic = () => {
         is_favorite: task.starred,
         category: task.category,
       };
-      console.log('Отправляемый объект в API:', updatedTask);
+      console.log('Object sent to API:', updatedTask);
   
       await updateTask(id, updatedTask);
       await loadTasks(true);
@@ -302,7 +302,7 @@ export const useTaskLogic = () => {
         t('notifications:taskSnoozed.message', { title: truncatedTitle })
       );
     } catch (error: unknown) {
-      console.error('Ошибка при отложении задачи:', error);
+      console.error('Error while postponing task:', error);
       addNotification('error', t('notifications:tasks.updateFailed.title'), t('notifications:tasks.updateFailed.message'));
     } finally {
       setIsUpdating(false);

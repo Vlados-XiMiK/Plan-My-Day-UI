@@ -2,18 +2,18 @@ import { Task, Category, TaskFilterParams } from "@/types";
 import { fetchTasks as fetchTasksFromApi } from "@/api/tasks";
 import { fetchCategories as fetchCategoriesFromApi } from "@/api/categories";
 
-// Получение списка задач (с пагинацией, для других компонентов)
+// Getting a list of tasks (with pagination, for other components)
 export async function fetchTasks(filters: TaskFilterParams = {}): Promise<Task[]> {
   try {
     const paginatedResponse = await fetchTasksFromApi(filters);
-    return paginatedResponse.results; // Возвращаем только задачи
+    return paginatedResponse.results; // Return only tasks
   } catch (error) {
     console.error("Error in fetchTasks:", error);
     throw error;
   }
 }
 
-// Новая функция для получения всех задач (для календаря)
+// New function to get all tasks (for calendar)
 export async function fetchAllTasks(): Promise<Task[]> {
   try {
     let allTasks: Task[] = [];
@@ -35,7 +35,7 @@ export async function fetchAllTasks(): Promise<Task[]> {
   }
 }
 
-// Получение списка категорий
+// Getting a list of categories
 export async function fetchCategories(): Promise<Category[]> {
   try {
     return await fetchCategoriesFromApi();
@@ -45,7 +45,7 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 }
 
-// Утилита для подсчета времени до дедлайна
+// Utility for calculating time until deadline
 export function calculateTimeRemaining(dueDate: string): {
   days: number;
   hours: number;

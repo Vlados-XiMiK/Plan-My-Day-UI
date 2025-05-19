@@ -19,7 +19,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   const [showCompleted, setShowCompleted] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Загрузка задач и категорий при инициализации
+// Load tasks and categories on initialization
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -37,7 +37,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
     loadData();
   }, []);
 
-  // Функция для обновления категорий
+  // Function to update categories
   const refreshCategories = useCallback(async () => {
     try {
       const categoriesData = await fetchCategories();
@@ -346,7 +346,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
     setShowCompleted((prev) => !prev);
   }, []);
 
-  // Проверка и нормализация входных данных для setTasks
+  // Validate and normalize input data for setTasks
   const setTasksSafe = useCallback((newTasks: Task[]) => {
     if (!Array.isArray(newTasks)) {
       console.error("setTasks received non-array value:", newTasks);

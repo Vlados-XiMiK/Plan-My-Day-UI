@@ -14,7 +14,7 @@ export interface LoginPayload {
   password: string;
 }
 
-// Интерфейс для структуры ответа об ошибке
+// Interface for the error response structure
 interface ErrorResponse {
   email?: string[];
   password?: string[];
@@ -25,8 +25,8 @@ export async function registerUser(payload: RegisterPayload) {
   try {
     const response = await axiosClient.post(`account/register/`, payload);
     return response.data;
-  } catch (error: unknown) { // Используем unknown вместо AxiosError
-    // Проверяем, является ли ошибка экземпляром AxiosError
+  } catch (error: unknown) { 
+    // Check if the error is an instance of AxiosError
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ErrorResponse>;
       const errorMessage =
@@ -46,7 +46,7 @@ export async function registerUser(payload: RegisterPayload) {
         },
       });
     } else {
-      // Если ошибка не от Axios, выбрасываем общую ошибку
+      // If the error is not from Axios, throw a generic error
       throw new Error("Registration failed");
     }
   }
@@ -67,7 +67,7 @@ export async function loginUser(payload: LoginPayload) {
     Cookies.set("refresh_token", refresh, { expires: 7, sameSite: "strict" });
 
     return response.data;
-  } catch (error: unknown) { // Используем unknown вместо AxiosError
+  } catch (error: unknown) { 
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<{ detail?: string }>;
       const errorMessage = axiosError.response?.data?.detail || "Login failed";
@@ -102,7 +102,7 @@ export async function logoutUser() {
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
     return response.data;
-  } catch (error: unknown) { // Используем unknown вместо AxiosError
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
       console.error("Logout failed:", axiosError.response?.data || axiosError);

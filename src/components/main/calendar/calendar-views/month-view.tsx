@@ -26,7 +26,7 @@ type MonthViewProps = {
   dayNames: string[]
   isMobile: boolean
   categories: Category[]
-  refreshCategories: () => Promise<void> // Новый пропс
+  refreshCategories: () => Promise<void> 
 }
 
 // Animation variants for month transitions
@@ -60,10 +60,10 @@ export default function MonthView({
   categories,
   refreshCategories,
 }: MonthViewProps) {
-  // Обработчик нажатия на кнопку добавления задачи
+  // Handler for clicking on the add task button
   const handleAddTask = async (e: React.MouseEvent, day: number) => {
     e.stopPropagation()
-    await refreshCategories() // Обновляем категории перед открытием модального окна
+    await refreshCategories() // Update categories before opening modal window
     openAddTaskModal(day)
   }
 
@@ -203,7 +203,7 @@ export default function MonthView({
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg absolute bottom-0 right-0"
-                      onClick={(e) => handleAddTask(e, day)} // Используем новый обработчик
+                      onClick={(e) => handleAddTask(e, day)} // Use the new handler
                     >
                       <Plus className="h-4 w-4" />
                     </Button>

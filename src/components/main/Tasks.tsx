@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { isAuthenticated } from '@/api/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Анимации из CategoriesPage
+// Animations from CategoriesPage
 const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2, ease: [0.6, 0.05, 0.01, 0.99] } },
@@ -30,7 +30,7 @@ export default function Tasks() {
   const [isFiltersCollapsed, setFiltersCollapsed] = useState(false);
   const [searchInput, setSearchInput] = useState('');
 
-  // Проверка авторизации
+// Checking authorization
   useEffect(() => {
     async function checkAuth() {
       const auth = await isAuthenticated();
@@ -67,19 +67,19 @@ export default function Tasks() {
     hasMore,
   } = useTaskLogic();
 
-  // Обработчик нажатия Enter для поиска
+  // Enter key handler for search
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       updateFilters({ search: searchInput });
     }
   };
 
-  // Обработчик нажатия кнопки поиска
+  // Search button click handler
   const handleSearchClick = () => {
     updateFilters({ search: searchInput });
   };
 
-  // Отладка категорий
+  // Debugging categories
   useEffect(() => {
     console.log('Categories in Tasks:', categories);
   }, [categories]);
@@ -88,7 +88,7 @@ export default function Tasks() {
     const [isExpanded, setIsExpanded] = useState(false);
     const descriptionLengthLimit = 100;
 
-    // Находим имя категории по category
+   // Find the category name by category
     const categoryName = typeof task.category === 'number'
       ? categories.find(cat => cat.id === task.category)?.name || 'No Category'
       : 'No Category';

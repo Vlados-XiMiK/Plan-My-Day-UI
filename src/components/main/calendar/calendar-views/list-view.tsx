@@ -16,7 +16,7 @@ type ListViewProps = {
   toggleTaskCompletion: (taskId: number) => void
   categoryColorMap: Record<string, { color: string; icon: string }>
   showCompleted: boolean
-  categories: Category[] // Новый проп
+  categories: Category[]
 }
 
 // Animation variants for month transitions
@@ -74,7 +74,7 @@ export default function ListView({
                 toggleTaskCompletion={toggleTaskCompletion}
                 view="list"
                 isTaskToday={isTaskToday}
-                categories={categories} // Передаём categories
+                categories={categories}
               />
             )
           })

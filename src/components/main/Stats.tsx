@@ -48,10 +48,10 @@ export default function StatsView() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuth, setIsAuth] = useState(false); // Для статуса авторизации
-  const [authLoading, setAuthLoading] = useState(true); // Для проверки авторизации
+  const [isAuth, setIsAuth] = useState(false); // For authorization status
+  const [authLoading, setAuthLoading] = useState(true); // To check authorization
 
-  // Проверка авторизации
+  // Checking authorization
   useEffect(() => {
     async function checkAuth() {
       const auth = await isAuthenticated();
@@ -59,7 +59,7 @@ export default function StatsView() {
       setAuthLoading(false);
 
       if (!auth) {
-        router.replace("/auth/login"); // Перенаправление на логин, если не авторизован
+        router.replace("/auth/login"); // Redirect to login if not authorized
       }
     }
     checkAuth();
@@ -68,7 +68,7 @@ export default function StatsView() {
   // Fetch tasks and categories
   useEffect(() => {
     async function loadData() {
-      if (!isAuth) return; // Не загружаем данные, если не авторизован
+      if (!isAuth) return; // Do not load data if not authorized
       try {
         const [loadedTasks, loadedCategories] = await Promise.all([
           fetchTasks(),
@@ -94,12 +94,11 @@ export default function StatsView() {
     }
   }, [isAuth, addNotification, t]);
 
-  // Показываем лоадер во время проверки авторизации
+  // Show loader during authorization check
   if (authLoading) {
     return <Loader />;
   }
 
-  // Если не авторизован, ничего не рендерим (редирект уже выполнен)
   if (!isAuth) {
     return null;
   }

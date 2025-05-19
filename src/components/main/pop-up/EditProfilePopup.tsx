@@ -183,7 +183,7 @@ export default function EditProfilePopup({
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    // Валидация только для placeOfWork (исключаем username, email, phoneNumber и age)
+    // Validation only for placeOfWork (excluding username, email, phoneNumber and age)
     if (name === "placeOfWork") {
       const error = validateField(name, value, t);
       setErrors((prev) => ({ ...prev, [name]: error }));
@@ -198,7 +198,7 @@ export default function EditProfilePopup({
         setNotificationShown(false);
       }
     } else {
-      // Очищаем ошибки для username, email, phoneNumber и age при вводе
+      // Clear errors for username, email, phoneNumber and age when entering
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };

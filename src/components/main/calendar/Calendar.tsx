@@ -113,7 +113,7 @@ export default function Calendar() {
             dayNames={isMobile ? shortDayNames : dayNames}
             isMobile={isMobile}
             categories={calendar.categories}
-            refreshCategories={calendar.refreshCategories} // Передаем refreshCategories
+            refreshCategories={calendar.refreshCategories} // Passing refreshCategories
           />
         </TabsContent>
 

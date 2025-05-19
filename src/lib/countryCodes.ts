@@ -1,9 +1,9 @@
 export interface CountryCode {
     name: string;
     code: string;
-    flag: string; // Unicode emoji для флага
-    mask: string; // Маска для форматирования номера
-    isoCode: string; // Уникальный ISO-код страны
+    flag: string; // Unicode emoji for flag
+    mask: string; // Mask for number formatting
+    isoCode: string; // Unique ISO country code
   }
   
   export const countryCodes: CountryCode[] = [

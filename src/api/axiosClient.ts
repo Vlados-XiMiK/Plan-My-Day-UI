@@ -11,7 +11,7 @@ const axiosClient = axios.create({
   withCredentials: false, // cookies manually
 });
 
-// Функция для получения нового access_token с помощью refresh_token
+// Function to get new access_token using refresh_token
 async function refreshAccessToken() {
   const refresh = Cookies.get("refresh_token");
   if (!refresh) {
@@ -34,24 +34,24 @@ async function refreshAccessToken() {
   }
 }
 
-// Интерцептор запросов: добавляем access_token или обновляем его
+// Request interceptor: add access_token or update it
 axiosClient.interceptors.request.use(async (config) => {
   let accessToken = Cookies.get("access_token");
   const refreshToken = Cookies.get("refresh_token");
 
-  // Если есть access_token, но нет refresh_token, перенаправляем на логин
+  // If there is an access_token, but no refresh_token, redirect to login
   if (accessToken && !refreshToken) {
     Cookies.remove("access_token");
     window.location.href = "/auth/login";
     throw new Error("No refresh token available");
   }
 
-  // Если access_token нет, но есть refresh_token, пытаемся обновить
+  // If there is no access_token, but there is a refresh_token, we try to update
   if (!accessToken && refreshToken) {
     accessToken = await refreshAccessToken();
   }
 
-  // Если access_token есть, добавляем его в заголовки
+  // If access_token exists, add it to the headers
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -59,7 +59,7 @@ axiosClient.interceptors.request.use(async (config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// Интерцептор ответов: обрабатываем 401 (истекший токен)
+// Response interceptor: handle 401 (expired token)
 axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {

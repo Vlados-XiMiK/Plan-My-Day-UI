@@ -36,7 +36,7 @@ export default function ProjectsList() {
   const [tasksByProject, setTasksByProject] = useState<{ [projectId: number]: Task[] }>(
     initialProjects.reduce((acc, project) => ({
       ...acc,
-      [project.id]: projectTasks.filter((task) => task.user === project.owner), // Начальная фильтрация (заменить на API)
+      [project.id]: projectTasks.filter((task) => task.user === project.owner), // Initial filtering (replace with API)
     }), {})
   )
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)

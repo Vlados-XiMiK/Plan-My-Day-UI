@@ -51,7 +51,7 @@ interface TaskDialogProps {
       | "completed_by"
       | "completed_by_name"
     >
-  ) => void; // Обновлено
+  ) => void;
   onEditTask?: (task: Task) => void;
   task?: Task;
 }
@@ -66,8 +66,8 @@ export default function TaskDialog({
   const { t, i18n } = useTranslation(["popups", "notifications"]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<"H" | "M" | "L">("M"); // Обновлено: используем 'H', 'M', 'L'
-  const [category, setCategory] = useState<string | null>(null); // Обновлено: string | null
+  const [priority, setPriority] = useState<"H" | "M" | "L">("M");
+  const [category, setCategory] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [dueTime, setDueTime] = useState<string>("23:59");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -204,7 +204,7 @@ export default function TaskDialog({
       return;
     }
 
-    let due_date: string | null = null; // Обновлено: string | null
+    let due_date: string | null = null;
     if (dueDate) {
       const [hours, minutes] = dueTime.split(":").map(Number);
       const dateWithTime = new Date(dueDate);
@@ -219,7 +219,7 @@ export default function TaskDialog({
       priority,
       category,
       completed: isEditing ? task.completed : false,
-      is_favorite: isEditing ? task.is_favorite : false, // Добавлено
+      is_favorite: isEditing ? task.is_favorite : false,
     };
 
     try {
@@ -227,7 +227,7 @@ export default function TaskDialog({
         onEditTask({
           ...task,
           ...taskData,
-          updated_at: new Date().toISOString(), // Обновляем дату изменения
+          updated_at: new Date().toISOString(), // Update the modification date
         });
       } else if (onAddTask) {
         onAddTask(taskData);

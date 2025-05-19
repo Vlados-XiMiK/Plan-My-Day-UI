@@ -25,7 +25,7 @@ export default function Profile() {
   const [authLoading, setAuthLoading] = useState(true)
   const { addNotification } = useNotification()
 
-  // Проверка авторизации
+  // Checking authorization
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -48,7 +48,7 @@ export default function Profile() {
     checkAuth()
   }, [router])
 
-  // Проверка размера экрана для десктопного отображения
+  // Checking screen size for desktop display
   useEffect(() => {
     const updateIsDesktop = () => setIsDesktop(window.innerWidth >= 768)
     updateIsDesktop()
@@ -56,7 +56,7 @@ export default function Profile() {
     return () => window.removeEventListener('resize', updateIsDesktop)
   }, [])
 
-  // Функция логаута
+  // Logout function
   const handleLogout = async () => {
     try {
       await logoutUser()

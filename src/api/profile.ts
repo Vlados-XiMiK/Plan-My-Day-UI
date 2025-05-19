@@ -1,9 +1,9 @@
-import { AxiosError } from "axios"; // Импортируем AxiosError
-import axios from "axios"; // Импортируем axios для isAxiosError
+import { AxiosError } from "axios";
+import axios from "axios";
 import axiosClient from "@/api/axiosClient";
 import { User } from "@/types";
 
-// Интерфейс для структуры ответа об ошибке (опционально)
+// Interface for error response structure
 interface ErrorResponse {
   detail?: string;
 }
@@ -23,15 +23,21 @@ export async function getUserProfile(): Promise<User> {
       last_profile_edit_at: data.last_profile_edit_at ?? null,
       last_task_completed_at: data.last_task_completed_at ?? null,
     };
-  } catch (error: unknown) { // Используем unknown вместо any
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ErrorResponse>;
-      console.error("Failed to fetch user profile:", axiosError.response?.data || axiosError.message);
-      throw new Error(axiosError.response?.data?.detail || "Failed to fetch user profile", {
-        cause: {
-          detail: axiosError.response?.data,
-        },
-      });
+      console.error(
+        "Failed to fetch user profile:",
+        axiosError.response?.data || axiosError.message
+      );
+      throw new Error(
+        axiosError.response?.data?.detail || "Failed to fetch user profile",
+        {
+          cause: {
+            detail: axiosError.response?.data,
+          },
+        }
+      );
     } else {
       console.error("Failed to fetch user profile:", error);
       throw new Error("Failed to fetch user profile");
@@ -61,15 +67,21 @@ export async function updateUserProfile(data: Partial<User>): Promise<User> {
       last_profile_edit_at: updatedData.last_profile_edit_at ?? null,
       last_task_completed_at: updatedData.last_task_completed_at ?? null,
     };
-  } catch (error: unknown) { // Используем unknown вместо any
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ErrorResponse>;
-      console.error("Failed to update user profile:", axiosError.response?.data || axiosError.message);
-      throw new Error(axiosError.response?.data?.detail || "Failed to update user profile", {
-        cause: {
-          detail: axiosError.response?.data,
-        },
-      });
+      console.error(
+        "Failed to update user profile:",
+        axiosError.response?.data || axiosError.message
+      );
+      throw new Error(
+        axiosError.response?.data?.detail || "Failed to update user profile",
+        {
+          cause: {
+            detail: axiosError.response?.data,
+          },
+        }
+      );
     } else {
       console.error("Failed to update user profile:", error);
       throw new Error("Failed to update user profile");

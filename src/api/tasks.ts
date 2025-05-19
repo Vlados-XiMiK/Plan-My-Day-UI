@@ -2,13 +2,13 @@ import { AxiosError } from "axios";
 import axiosClient from "@/api/axiosClient";
 import { Task, APITask } from "@/types";
 
-// Интерфейс для структуры ответа об ошибке
+// Interface for the error response structure
 interface ErrorResponse {
   detail?: string;
   [key: string]: string | undefined;
 }
 
-// Интерфейс для ответа API с пагинацией
+// Interface for API response with pagination
 interface PaginatedResponse {
   count: number;
   next: string | null;
@@ -16,7 +16,7 @@ interface PaginatedResponse {
   results: Task[];
 }
 
-// Интерфейс для входных данных создания/обновления задачи
+// Interface for task create/update input
 interface CreateTaskPayload {
   title: string;
   description?: string;
@@ -27,7 +27,7 @@ interface CreateTaskPayload {
   is_favorite?: boolean;
 }
 
-// Интерфейс для параметров фильтрации
+// Interface for filtering parameters
 interface TaskFilterParams {
   page?: number;
   page_size?: number;
@@ -37,7 +37,7 @@ interface TaskFilterParams {
   search?: string;
 }
 
-// Преобразование приоритета API в клиентский формат
+// Convert API priority to client format
 const mapPriorityToString = (priority: "H" | "M" | "L"): "high" | "medium" | "low" => {
   switch (priority) {
     case "H":
@@ -51,14 +51,14 @@ const mapPriorityToString = (priority: "H" | "M" | "L"): "high" | "medium" | "lo
   }
 };
 
-// Преобразование клиентского приоритета в формат API
+// Convert client priority to API format
 export const mapClientPriorityToApi = (
   priority: "high" | "medium" | "low"
 ): "H" | "M" | "L" => {
   return priority === "high" ? "H" : priority === "medium" ? "M" : "L";
 };
 
-// Получение списка задач с фильтрацией
+// Getting a list of tasks with filtering
 export async function fetchTasks(filters: TaskFilterParams = {}): Promise<PaginatedResponse> {
   try {
     const params: Record<string, string | number | boolean> = {
@@ -124,7 +124,7 @@ export async function fetchTasks(filters: TaskFilterParams = {}): Promise<Pagina
   }
 }
 
-// Получение избранных задач
+// Get selected tasks
 export async function fetchFavoriteTasks(page: number = 1): Promise<PaginatedResponse> {
   try {
     const response = await axiosClient.get("/tasks/favorites/", {
@@ -133,7 +133,7 @@ export async function fetchFavoriteTasks(page: number = 1): Promise<PaginatedRes
     const data = response.data;
     console.log("Favorite tasks API response:", JSON.stringify(data, null, 2));
 
-    // Обрабатываем как объект с results, так и прямой массив
+    // Process both the results object and the direct array
     const tasks: APITask[] = Array.isArray(data.results)
       ? data.results
       : Array.isArray(data)
@@ -186,7 +186,7 @@ export async function fetchFavoriteTasks(page: number = 1): Promise<PaginatedRes
   }
 }
 
-// Получение задач на сегодня
+// Getting tasks for today
 export async function fetchTodayTasks(page: number = 1): Promise<PaginatedResponse> {
   try {
     const response = await axiosClient.get("/tasks/today/", {
@@ -195,7 +195,7 @@ export async function fetchTodayTasks(page: number = 1): Promise<PaginatedRespon
     const data = response.data;
     console.log("Today tasks API response:", JSON.stringify(data, null, 2));
 
-    // Обрабатываем как объект с results, так и прямой массив
+    // Process both the results object and the direct array
     const tasks: APITask[] = Array.isArray(data.results)
       ? data.results
       : Array.isArray(data)
@@ -248,7 +248,7 @@ export async function fetchTodayTasks(page: number = 1): Promise<PaginatedRespon
   }
 }
 
-// Создание новой задачи
+// Create a new task
 export async function createTask(task: CreateTaskPayload): Promise<Task> {
   try {
     console.log("Creating task with payload:", task);
@@ -283,7 +283,7 @@ export async function createTask(task: CreateTaskPayload): Promise<Task> {
   }
 }
 
-// Обновление задачи
+// Update task
 export async function updateTask(id: number, task: CreateTaskPayload): Promise<Task> {
   try {
     console.log("Updating task with payload:", task);
@@ -318,7 +318,7 @@ export async function updateTask(id: number, task: CreateTaskPayload): Promise<T
   }
 }
 
-// Удаление задачи
+// Delete task
 export async function deleteTask(id: number): Promise<void> {
   try {
     await axiosClient.delete(`/tasks/${id}/`);

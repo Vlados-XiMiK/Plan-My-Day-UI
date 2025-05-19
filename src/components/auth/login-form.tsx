@@ -15,8 +15,8 @@ import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
 import Cookies from "js-cookie"
 import { loginUser, isAuthenticated } from "@/api/auth"
-import { AxiosError } from "axios" // Импортируем AxiosError
-import axios from "axios" // Импортируем axios для isAxiosError
+import { AxiosError } from "axios" 
+import axios from "axios" 
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 type MotionPProps = MotionProps & HTMLAttributes<HTMLParagraphElement>
@@ -26,7 +26,7 @@ interface FormErrors {
   password?: string
 }
 
-// Интерфейс для структуры ответа об ошибке
+// Interface for the error response structure
 interface ErrorResponse {
   detail?: string
 }
@@ -60,7 +60,7 @@ export default function LoginForm() {
       setFormData((prev) => ({ ...prev, email: registeredEmail }))
       Cookies.remove("registeredEmail")
     }
-  }, [router]) // Добавляем router в зависимости
+  }, [router])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -94,14 +94,14 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      await loginUser({ // Убираем неиспользуемую переменную data
+      await loginUser({
         email: formData.email,
         password: formData.password,
       })
 
       addNotification("success", tNotifications("welcome"), tNotifications("loginSuccess"), 3000)
       router.push("/dashboard")
-    } catch (error: unknown) { // Используем unknown вместо any
+    } catch (error: unknown) { 
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>
         console.error("Login error:", axiosError.response?.data || axiosError.message)

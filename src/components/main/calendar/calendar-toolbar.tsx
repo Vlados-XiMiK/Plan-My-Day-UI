@@ -21,7 +21,7 @@ type CalendarToolbarProps = {
   clearCategoryFilters: () => void
   showCompleted: boolean
   toggleShowCompleted: () => void
-  refreshCategories: () => Promise<void> // Новый пропс
+  refreshCategories: () => Promise<void>
 }
 
 export default function CalendarToolbar({
@@ -40,10 +40,10 @@ export default function CalendarToolbar({
   const { t } = useTranslation("calendar")
   const isMobile = useMobile()
 
-  // Обработчик открытия/закрытия DropdownMenu
+  // DropdownMenu open/close handler
   const handleOpenChange = (open: boolean) => {
     if (open) {
-      refreshCategories() // Обновляем категории при открытии меню
+      refreshCategories() // Update categories when menu is opened
     }
   }
 
@@ -62,7 +62,7 @@ export default function CalendarToolbar({
       </div>
 
       <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-        {/* Мобильная версия: компактная кнопка фильтра */}
+        {/* Mobile version: compact filter button */}
         {isMobile ? (
           <DropdownMenu onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>

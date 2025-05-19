@@ -50,9 +50,9 @@ export default function TaskItem({
   const locale = i18n.language === "ua" ? uk : enUS;
 
   const priorityColors = {
-    H: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800", // Обновлено
-    M: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800", // Обновлено
-    L: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800", // Обновлено
+    H: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800",
+    M: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
+    L: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800",
     default:
       "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700",
   };
@@ -74,14 +74,12 @@ export default function TaskItem({
 
   const createdDate = new Date(task.created_at);
   const dueDate = task.due_date ? new Date(task.due_date) : null;
-  const completedDate = task.completed_at ? new Date(task.completed_at) : null; // Обновлено
+  const completedDate = task.completed_at ? new Date(task.completed_at) : null;
 
   const handleToggleComplete = () => {
     try {
       onToggleComplete();
-    } catch {
-    
-    }
+    } catch {}
   };
 
   const handleEdit = () => {

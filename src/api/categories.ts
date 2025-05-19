@@ -2,13 +2,13 @@ import { AxiosError } from "axios";
 import axiosClient from "@/api/axiosClient";
 import { Category } from "@/types";
 
-// Интерфейс для структуры ответа об ошибке
+// Interface for the error response structure
 interface ErrorResponse {
     detail?: string;
     [key: string]: string | undefined;
   }
 
-// Интерфейс для ответа API с пагинацией
+// Interface for API response with pagination
 interface PaginatedResponse {
   count: number;
   next: string | null;
@@ -16,7 +16,7 @@ interface PaginatedResponse {
   results: Category[];
 }
 
-// Получение списка категорий
+// Getting a list of categories
 export async function fetchCategories(): Promise<Category[]> {
   try {
     const response = await axiosClient.get("/tasks/manage/categories/");
@@ -52,7 +52,7 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 }
 
-// Создание новой категории
+// Create a new category
 export async function createCategory(
   category: Partial<Category>
 ): Promise<Category> {
@@ -80,7 +80,7 @@ export async function createCategory(
   }
 }
 
-// Обновление категории
+// Category update
 export async function updateCategory(
   id: number,
   category: Partial<Category>
@@ -109,7 +109,7 @@ export async function updateCategory(
   }
 }
 
-// Удаление категории
+// Delete category
 export async function deleteCategory(id: number): Promise<void> {
   try {
     await axiosClient.delete(`/tasks/manage/categories/${id}/`);
