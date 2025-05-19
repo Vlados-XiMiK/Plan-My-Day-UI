@@ -108,7 +108,7 @@
   },
   "projectCreated": {
     "title": "Проєкт створено",
-    "message": "Успішно створено проєкт: {{title}}"
+    "message": "Успішно створено проєкт: \"{{title}}\"."
   },
   "projectCreationFailed": {
     "title": "Помилка створення",

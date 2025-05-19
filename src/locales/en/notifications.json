@@ -108,7 +108,7 @@
   },
   "projectCreated": {
     "title": "Project Created",
-    "message": "Successfully created project: {{title}}"
+    "message": "Successfully created project: \"{{ title }}\"."
   },
   "projectCreationFailed": {
     "title": "Creation Failed",

@@ -125,12 +125,6 @@ export default function ProjectsList() {
           : project
       )
     )
-    addNotification(
-      'success',
-      t('notifications:taskCreated.title'),
-      t('notifications:taskCreated.message', { taskName: newTask.title }),
-      3000
-    )
   }
 
   const handleUpdateTask = (projectId: number, updatedTask: Task) => {
@@ -138,12 +132,6 @@ export default function ProjectsList() {
       ...prev,
       [projectId]: prev[projectId].map((task) => (task.id === updatedTask.id ? updatedTask : task)),
     }))
-    addNotification(
-      'success',
-      t('notifications:taskUpdated.title'),
-      t('notifications:taskUpdated.message', { taskName: updatedTask.title }),
-      3000
-    )
   }
 
   const handleDeleteTask = (projectId: number, taskId: string) => {
@@ -157,12 +145,6 @@ export default function ProjectsList() {
           ? { ...project, tasks_count: (tasksByProject[projectId] || []).length - 1 }
           : project
       )
-    )
-    addNotification(
-      'success',
-      t('notifications:taskDeleted.title'),
-      t('notifications:taskDeleted.message'),
-      3000
     )
   }
 

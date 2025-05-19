@@ -88,9 +88,9 @@
   },
   "task_item": {
     "priorities": {
-      "low": "Low priority",
-      "medium": "Medium priority",
-      "high": "High priority"
+      "l": "Low priority",
+      "m": "Medium priority",
+      "h": "High priority"
     },
     "buttons": {
       "edit": "Edit task",

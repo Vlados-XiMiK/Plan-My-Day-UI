@@ -54,7 +54,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
         created_at: new Date().toISOString(), // Changed from createdAt to created_at
       })
 
-      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { name }), 5000)
+      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { title: name }), 5000)
 
       setName('') // Updated to match state
       setDescription('')

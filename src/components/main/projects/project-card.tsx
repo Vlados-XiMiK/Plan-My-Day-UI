@@ -195,8 +195,24 @@ export default function ProjectCard({
   }
 
   const handleDeleteProject = () => {
-    onDeleteProject(project.id)
-    setDeleteDialogOpen(false)
+    try {
+      onDeleteProject(project.id)
+      setDeleteDialogOpen(false)
+      addNotification(
+        'success',
+        t('notifications:projectDeleted.title'),
+        t('notifications:projectDeleted.message', { title: project.name }),
+        3000
+      )
+    } catch (error) {
+      console.error('Failed to delete project:', error)
+      addNotification(
+        'error',
+        t('notifications:projectDeleteFailed.title'),
+        t('notifications:projectDeleteFailed.message'),
+        5000
+      )
+    }
   }
 
   const userRole = getUserRoleInProject(mockCurrentUser, project.id, projectMembers)
