@@ -77,7 +77,7 @@ export default function StatsView() {
         setTasks(loadedTasks);
         setCategories(loadedCategories);
         setError(null);
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Error loading data:", error);
         setError(t("error.loadFailed"));
         addNotification(
@@ -272,7 +272,7 @@ export default function StatsView() {
         setTasks(loadedTasks);
         setCategories(loadedCategories);
         setError(null);
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Error loading data:", error);
         setError(t("error.loadFailed"));
         addNotification(

@@ -124,7 +124,7 @@ export const useTaskLogic = () => {
         response.next !== null && totalLoadedTasks < response.count;
       setHasMore(newHasMore);
       // console.log('Set hasMore:', newHasMore, 'Next URL:', response.next, 'Total loaded:', totalLoadedTasks, 'Count:', response.count);
-    } catch (error: unknown) {
+    } catch /* ( error: unknown )  */ { // add error for console.error 
       // console.error("Error loading tasks:", error);
       addNotification(
         "error",
@@ -228,7 +228,7 @@ export const useTaskLogic = () => {
         if (isNaN(currentDueDate.getTime())) {
           throw new Error("Invalid date format");
         }
-      } catch (error) {
+      } catch /* ( error )  */ { // add error for console.error 
         // console.error("Parsing error dueDate:", error);
         throw new Error("Invalid date format");
       }
@@ -270,7 +270,7 @@ export const useTaskLogic = () => {
           ? t("notifications:taskReopened.message", { title: truncatedTitle })
           : t("notifications:taskCompleted.message", { title: truncatedTitle })
       );
-    } catch (error: unknown) {
+    } catch /* ( error: unknown )  */ { // add error for console.error 
       // console.error("Failed to toggle task completion:", error);
       addNotification(
         "error",
@@ -311,7 +311,7 @@ export const useTaskLogic = () => {
         if (isNaN(currentDueDate.getTime())) {
           throw new Error("Invalid date format");
         }
-      } catch (error) {
+      } catch /* ( error )  */ { // add error for console.error 
         // console.error("Error parsing dueDate:", error);
         throw new Error("Invalid date format");
       }
@@ -347,7 +347,7 @@ export const useTaskLogic = () => {
         t("notifications:taskSnoozed.title"),
         t("notifications:taskSnoozed.message", { title: truncatedTitle })
       );
-    } catch (error: unknown) {
+    } catch /* ( error: unknown )  */ { // add error for console.error 
       // console.error("Error while postponing task:", error);
       addNotification(
         "error",
@@ -401,7 +401,7 @@ export const useTaskLogic = () => {
               title: truncatedTitle,
             })
       );
-    } catch (error: unknown) {
+    } catch /* ( error: unknown )  */ { // add error for console.error 
       // console.error("Failed to toggle task starred:", error);
       addNotification(
         "error",
@@ -501,7 +501,7 @@ export const useTaskLogic = () => {
         t("notifications:taskUpdated.title"),
         t("notifications:taskUpdated.message", { title: truncatedTitle })
       );
-    } catch (error: unknown) {
+    } catch /* ( error: unknown )  */ { // add error for console.error 
       // console.error("Failed to update task:", error);
       addNotification(
         "error",
@@ -538,7 +538,7 @@ export const useTaskLogic = () => {
         t("notifications:taskDeleted.title"),
         t("notifications:taskDeleted.message", { title: truncatedTitle })
       );
-    } catch (error: unknown) {
+    } catch /* ( error: unknown )  */ { // add error for console.error 
       // console.error("Failed to delete task:", error);
       addNotification(
         "error",

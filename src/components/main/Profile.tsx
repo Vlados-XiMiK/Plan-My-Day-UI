@@ -38,7 +38,7 @@ export default function Profile() {
           // console.log("Profile: Not authenticated, redirecting to login")
           router.replace('/auth/login')
         }
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Profile: Authentication check failed:", error)
         setIsAuth(false)
         setAuthLoading(false)

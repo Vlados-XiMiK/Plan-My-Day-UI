@@ -27,7 +27,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         // console.log(`Loaded ${tasksData.length} tasks and ${categoriesData.length} categories in useCalendar`);
         setTasks(tasksData);
         setCategories(categoriesData);
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Failed to load data in useCalendar:", error);
         setTasks([]);
         setCategories([]);
@@ -43,7 +43,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
       const categoriesData = await fetchCategories();
       // console.log(`Refreshed ${categoriesData.length} categories`);
       setCategories(categoriesData);
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error("Failed to refresh categories:", error);
       setCategories([]);
     }
@@ -103,7 +103,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         setTasks((prevTasks) =>
           prevTasks.map((t) => (t.id === taskId ? updatedTask : t))
         );
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Failed to toggle task completion:", error);
       }
     },
@@ -290,7 +290,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         const newTask = await createTask(taskPayload);
         setTasks((prevTasks) => [...prevTasks, newTask]);
         setIsModalOpen(false);
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Failed to create task:", error);
       }
     },

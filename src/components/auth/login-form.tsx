@@ -15,7 +15,7 @@ import { HTMLAttributes } from "react"
 import { useNotification } from "@/contexts/notification-context"
 import Cookies from "js-cookie"
 import { loginUser, isAuthenticated } from "@/api/auth"
-import { AxiosError } from "axios" 
+// import { AxiosError } from "axios" 
 import axios from "axios" 
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
@@ -27,9 +27,9 @@ interface FormErrors {
 }
 
 // Interface for the error response structure
-interface ErrorResponse {
-  detail?: string
-}
+// interface ErrorResponse {
+//  detail?: string
+// }
 
 export default function LoginForm() {
   const { t: tAuth } = useTranslation("auth")
@@ -103,7 +103,7 @@ export default function LoginForm() {
       router.push("/dashboard")
     } catch (error: unknown) { 
       if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError<ErrorResponse>
+        // const axiosError = error as AxiosError<ErrorResponse>
         // console.error("Login error:", axiosError.response?.data || axiosError.message)
         setErrors({ password: tAuth("login.invalidCredentials") })
       } else {

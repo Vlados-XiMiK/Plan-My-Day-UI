@@ -62,7 +62,7 @@ export function useCategories() {
         globalState.categories = loadedCategories
         globalState.isLoading = false
         notifyListeners()
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Error loading categories:", error)
         addNotification("error", t("categories.loadFailed.title"), t("categories.loadFailed.message"))
         globalState.isLoading = false
@@ -79,7 +79,7 @@ export function useCategories() {
       // console.log("Refreshed categories:", updatedCategories)
       globalState.categories = updatedCategories
       notifyListeners()
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error("Error refreshing categories:", error)
       addNotification("error", t("categories.loadFailed.title"), t("categories.loadFailed.message"))
     }
@@ -130,7 +130,7 @@ export function useCategories() {
         t("categories.categoryAdded.title"),
         t("categories.categoryAdded.message", { name: truncatedName }),
       )
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error("Failed to add category:", error)
       addNotification("error", t("categories.addFailed.title"), t("categories.addFailed.message"))
     } finally {
@@ -167,7 +167,7 @@ export function useCategories() {
           t("categories.categoryDeleted.title"),
           t("categories.categoryDeleted.message", { name: truncatedName }),
         )
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Failed to delete category:", error)
         addNotification("error", t("categories.deletionFailed.title"), t("categories.deletionFailed.message"))
       } finally {
@@ -242,7 +242,7 @@ export function useCategories() {
           t("categories.categoryUpdated.title"),
           t("categories.categoryUpdated.message", { name: truncatedName }),
         )
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error("Failed to update category:", error)
         addNotification("error", t("categories.updateFailed.title"), t("categories.updateFailed.message"))
       } finally {

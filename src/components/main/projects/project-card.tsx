@@ -99,7 +99,7 @@ export default function ProjectCard({
           : t('notifications:taskReopened.message', { title: task.title }),
         3000
       )
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error('Failed to toggle task:', error)
       addNotification(
         'error',
@@ -134,7 +134,7 @@ export default function ProjectCard({
         t('notifications:taskCreated.message', { title: newTask.title }),
         3000
       )
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
      //  console.error('Failed to add task:', error)
       addNotification(
         'error',
@@ -155,7 +155,7 @@ export default function ProjectCard({
         t('notifications:taskUpdated.message', { title: task.title }),
         3000
       )
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error('Failed to edit task:', error)
       addNotification(
         'error',
@@ -179,7 +179,7 @@ export default function ProjectCard({
         t('notifications:taskDeleted.message', { title: task?.title || '' }),
         3000
       )
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error('Failed to delete task:', error)
       addNotification(
         'error',
@@ -204,7 +204,7 @@ export default function ProjectCard({
         t('notifications:projectDeleted.message', { title: project.name }),
         3000
       )
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error('Failed to delete project:', error)
       addNotification(
         'error',

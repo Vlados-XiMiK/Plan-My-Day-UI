@@ -104,7 +104,7 @@ export async function logoutUser() {
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
+      // const axiosError = error as AxiosError;
       // console.error("Logout failed:", axiosError.response?.data || axiosError);
       throw new Error("Logout failed");
     } else {

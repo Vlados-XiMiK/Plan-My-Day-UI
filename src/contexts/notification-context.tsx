@@ -65,7 +65,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     (type: NotificationType, title: string, message: string, duration?: number) => {
       try {
         localStorage.setItem('pendingNotification', JSON.stringify({ type, title, message, duration }));
-      } catch (error) {
+      } catch /* ( error)  */ { // add error for console.error 
         // console.error('Error saving pendingNotification:', error);
         addNotification('error', 'Error', 'Failed to save notification', 5000);
       }
@@ -82,7 +82,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         addNotification(type, title, message, duration);
         localStorage.removeItem('pendingNotification');
       }
-    } catch (error) {
+    } catch /* ( error)  */ { // add error for console.error 
       // console.error('Error loading pendingNotification:', error);
       addNotification('error', 'Error', 'Failed to load notification', 5000);
     }
