@@ -8,7 +8,7 @@ export async function fetchTasks(filters: TaskFilterParams = {}): Promise<Task[]
     const paginatedResponse = await fetchTasksFromApi(filters);
     return paginatedResponse.results; // Return only tasks
   } catch (error) {
-    console.error("Error in fetchTasks:", error);
+    // console.error("Error in fetchTasks:", error);
     throw error;
   }
 }
@@ -27,10 +27,10 @@ export async function fetchAllTasks(): Promise<Task[]> {
       page += 1;
     }
 
-    console.log(`Fetched ${allTasks.length} tasks in total for calendar`);
+    // console.log(`Fetched ${allTasks.length} tasks in total for calendar`);
     return allTasks;
   } catch (error) {
-    console.error("Error in fetchAllTasks:", error);
+    // console.error("Error in fetchAllTasks:", error);
     throw error;
   }
 }
@@ -40,7 +40,7 @@ export async function fetchCategories(): Promise<Category[]> {
   try {
     return await fetchCategoriesFromApi();
   } catch (error) {
-    console.error("Error in fetchCategories:", error);
+    // console.error("Error in fetchCategories:", error);
     throw error;
   }
 }

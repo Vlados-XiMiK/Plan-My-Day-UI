@@ -30,16 +30,16 @@ export default function Profile() {
     async function checkAuth() {
       try {
         const auth = await isAuthenticated()
-        console.log("Profile: isAuthenticated:", auth)
+        // console.log("Profile: isAuthenticated:", auth)
         setIsAuth(auth)
         setAuthLoading(false)
 
         if (!auth) {
-          console.log("Profile: Not authenticated, redirecting to login")
+          // console.log("Profile: Not authenticated, redirecting to login")
           router.replace('/auth/login')
         }
       } catch (error) {
-        console.error("Profile: Authentication check failed:", error)
+        // console.error("Profile: Authentication check failed:", error)
         setIsAuth(false)
         setAuthLoading(false)
         router.replace('/auth/login')
@@ -63,7 +63,7 @@ export default function Profile() {
       addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
       router.replace('/auth/login')
     } catch (error: unknown) {
-      console.error('Logout error:', error)
+      // console.error('Logout error:', error)
       // Safely handle the error, assuming it might be an Error instance
       const errorMessage = error instanceof Error ? error.message : t('notifications:logoutErrorMessage')
       addNotification('error', t('notifications:logoutErrorTitle'), errorMessage)

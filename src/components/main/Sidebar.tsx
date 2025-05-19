@@ -266,7 +266,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
                       ) : (
                         <span
                           onDoubleClick={() => {
-                            console.log("Starting edit for category:", category.id, category.name)
+                            // console.log("Starting edit for category:", category.id, category.name)
                             startEditing(category.id)
                           }}
                           className={`ml-2 cursor-pointer ${
@@ -279,7 +279,7 @@ export default function Sidebar({ isVisible, isCollapsed }: SidebarProps) {
                     </div>
                     <button
                       onClick={() => {
-                        console.log("Deleting category:", category.id, category.name)
+                        // console.log("Deleting category:", category.id, category.name)
                         handleDeleteCategory(category.id)
                       }}
                       disabled={isDeleting || isCreating || isUpdating}

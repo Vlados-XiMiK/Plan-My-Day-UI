@@ -90,10 +90,10 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>
-        console.error('Logout error:', axiosError.response?.data || axiosError.message)
+        // console.error('Logout error:', axiosError.response?.data || axiosError.message)
         addNotification('error', t('notifications:logoutErrorTitle'), axiosError.response?.data?.detail || t('notifications:logoutErrorMessage'))
       } else {
-        console.error('Logout error:', error)
+        // console.error('Logout error:', error)
         addNotification('error', t('notifications:logoutErrorTitle'), t('notifications:logoutErrorMessage'))
       }
       router.replace('/auth/login')

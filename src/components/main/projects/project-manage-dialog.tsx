@@ -88,11 +88,11 @@ export default function ProjectManageDialog({
     ? projectMembers
     : dataProjectMembers.filter((m) => m.project === project.id);
 
-  useEffect(() => {
-    console.log('ProjectManageDialog: project.id =', project.id);
-    console.log('projectMembers =', projectMembers);
-    console.log('effectiveMembers =', effectiveMembers);
-  }, [project.id, projectMembers, effectiveMembers]);
+  // useEffect(() => {
+  //  console.log('ProjectManageDialog: project.id =', project.id);
+  //  console.log('projectMembers =', projectMembers);
+  //  console.log('effectiveMembers =', effectiveMembers);
+  // }, [project.id, projectMembers, effectiveMembers]);
 
   useEffect(() => {
     if (!open) {

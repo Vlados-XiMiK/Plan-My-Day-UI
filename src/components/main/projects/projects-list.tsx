@@ -110,7 +110,7 @@ export default function ProjectsList() {
   const handleUpdateMembers = (projectId: number, updatedMembers: ProjectMember[]) => {
     const otherMembers = members.filter((m) => m.project !== projectId)
     setMembers([...otherMembers, ...updatedMembers])
-    console.log('ProjectsList: Updated members for project', projectId, 'to:', updatedMembers)
+    // console.log('ProjectsList: Updated members for project', projectId, 'to:', updatedMembers)
   }
 
   const handleAddTask = (projectId: number, newTask: Task) => {

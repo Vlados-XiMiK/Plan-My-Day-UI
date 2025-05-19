@@ -80,9 +80,9 @@ export default function Tasks() {
   };
 
   // Debugging categories
-  useEffect(() => {
-    console.log('Categories in Tasks:', categories);
-  }, [categories]);
+  // useEffect(() => {
+  //  console.log('Categories in Tasks:', categories);
+  // }, [categories]);
 
   const TaskItem = ({ task }: { task: Task }) => {
     const [isExpanded, setIsExpanded] = useState(false);

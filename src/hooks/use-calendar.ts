@@ -24,11 +24,11 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
     const loadData = async () => {
       try {
         const [tasksData, categoriesData] = await Promise.all([fetchAllTasks(), fetchCategories()]);
-        console.log(`Loaded ${tasksData.length} tasks and ${categoriesData.length} categories in useCalendar`);
+        // console.log(`Loaded ${tasksData.length} tasks and ${categoriesData.length} categories in useCalendar`);
         setTasks(tasksData);
         setCategories(categoriesData);
       } catch (error) {
-        console.error("Failed to load data in useCalendar:", error);
+        // console.error("Failed to load data in useCalendar:", error);
         setTasks([]);
         setCategories([]);
       }
@@ -41,10 +41,10 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   const refreshCategories = useCallback(async () => {
     try {
       const categoriesData = await fetchCategories();
-      console.log(`Refreshed ${categoriesData.length} categories`);
+      // console.log(`Refreshed ${categoriesData.length} categories`);
       setCategories(categoriesData);
     } catch (error) {
-      console.error("Failed to refresh categories:", error);
+      // console.error("Failed to refresh categories:", error);
       setCategories([]);
     }
   }, []);
@@ -85,7 +85,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
       try {
         const task = tasks.find((t) => t.id === taskId);
         if (!task) {
-          console.error(`Task with id ${taskId} not found`);
+          // console.error(`Task with id ${taskId} not found`);
           return;
         }
 
@@ -104,7 +104,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
           prevTasks.map((t) => (t.id === taskId ? updatedTask : t))
         );
       } catch (error) {
-        console.error("Failed to toggle task completion:", error);
+        // console.error("Failed to toggle task completion:", error);
       }
     },
     [tasks]
@@ -291,7 +291,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
         setTasks((prevTasks) => [...prevTasks, newTask]);
         setIsModalOpen(false);
       } catch (error) {
-        console.error("Failed to create task:", error);
+        // console.error("Failed to create task:", error);
       }
     },
     []
@@ -325,7 +325,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   // Get all unique categories from tasks
   const allCategories = useMemo(() => {
     if (!Array.isArray(tasks)) {
-      console.error("tasks is not an array:", tasks);
+      // console.error("tasks is not an array:", tasks);
       return [];
     }
     return Array.from(new Set(tasks.map((task) => task.category).filter((c): c is number => c != null)));
@@ -349,7 +349,7 @@ export function useCalendar(initialTasks: Task[] = [], initialCategories: Catego
   // Validate and normalize input data for setTasks
   const setTasksSafe = useCallback((newTasks: Task[]) => {
     if (!Array.isArray(newTasks)) {
-      console.error("setTasks received non-array value:", newTasks);
+      // console.error("setTasks received non-array value:", newTasks);
       setTasks([]);
       return;
     }

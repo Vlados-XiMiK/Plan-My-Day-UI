@@ -58,12 +58,12 @@ export function useCategories() {
 
       try {
         const loadedCategories = await fetchCategories()
-        console.log("Loaded categories:", loadedCategories)
+        // console.log("Loaded categories:", loadedCategories)
         globalState.categories = loadedCategories
         globalState.isLoading = false
         notifyListeners()
       } catch (error) {
-        console.error("Error loading categories:", error)
+        // console.error("Error loading categories:", error)
         addNotification("error", t("categories.loadFailed.title"), t("categories.loadFailed.message"))
         globalState.isLoading = false
         notifyListeners()
@@ -76,11 +76,11 @@ export function useCategories() {
   const refreshCategories = useCallback(async () => {
     try {
       const updatedCategories = await fetchCategories()
-      console.log("Refreshed categories:", updatedCategories)
+      // console.log("Refreshed categories:", updatedCategories)
       globalState.categories = updatedCategories
       notifyListeners()
     } catch (error) {
-      console.error("Error refreshing categories:", error)
+      // console.error("Error refreshing categories:", error)
       addNotification("error", t("categories.loadFailed.title"), t("categories.loadFailed.message"))
     }
   }, [addNotification, t])
@@ -88,12 +88,12 @@ export function useCategories() {
   const isValidCategoryName = (name: string) => {
     const isValid = /^[a-zA-Zа-яА-Я0-9\s]+$/.test(name) && name.trim().length > 0
     if (!isValid) {
-      console.log(
-        "Invalid category name:",
-        name,
-        "Characters:",
-        name.split("").map((c) => c.charCodeAt(0)),
-      )
+      // console.log(
+      //  "Invalid category name:",
+      //  name,
+      //  "Characters:",
+      //  name.split("").map((c) => c.charCodeAt(0)),
+      // )
     }
     return isValid
   }
@@ -131,7 +131,7 @@ export function useCategories() {
         t("categories.categoryAdded.message", { name: truncatedName }),
       )
     } catch (error) {
-      console.error("Failed to add category:", error)
+      // console.error("Failed to add category:", error)
       addNotification("error", t("categories.addFailed.title"), t("categories.addFailed.message"))
     } finally {
       globalState.isCreating = false
@@ -150,7 +150,7 @@ export function useCategories() {
 
       const categoryToDelete = globalState.categories.find((cat) => cat.id === id)
       if (!categoryToDelete) {
-        console.error("Category with id", id, "not found in categories:", globalState.categories)
+        // console.error("Category with id", id, "not found in categories:", globalState.categories)
         addNotification("error", t("categories.deletionFailed.title"), t("categories.undefinedCategory.message"))
         return
       }
@@ -168,7 +168,7 @@ export function useCategories() {
           t("categories.categoryDeleted.message", { name: truncatedName }),
         )
       } catch (error) {
-        console.error("Failed to delete category:", error)
+        // console.error("Failed to delete category:", error)
         addNotification("error", t("categories.deletionFailed.title"), t("categories.deletionFailed.message"))
       } finally {
         globalState.isDeleting = false
@@ -189,11 +189,11 @@ export function useCategories() {
 
       const category = globalState.categories.find((cat) => cat.id === id)
       if (!category) {
-        console.error("Category with id", id, "not found")
+        // console.error("Category with id", id, "not found")
         addNotification("error", t("categories.undefinedCategory.title"), t("categories.undefinedCategory.message"))
         return
       }
-      console.log("startEditing called with id:", id, "category:", category)
+      // console.log("startEditing called with id:", id, "category:", category)
       setEditingId(id)
       setTempCategory(category.name)
     },
@@ -214,7 +214,7 @@ export function useCategories() {
       const trimmedName = tempCategory.trim()
       const category = globalState.categories.find((cat) => cat.id === id)
       if (!category) {
-        console.error("Category with id", id, "not found")
+        // console.error("Category with id", id, "not found")
         addNotification("error", t("categories.undefinedCategory.title"), t("categories.undefinedCategory.message"))
         setEditingId(null)
         return
@@ -243,7 +243,7 @@ export function useCategories() {
           t("categories.categoryUpdated.message", { name: truncatedName }),
         )
       } catch (error) {
-        console.error("Failed to update category:", error)
+        // console.error("Failed to update category:", error)
         addNotification("error", t("categories.updateFailed.title"), t("categories.updateFailed.message"))
       } finally {
         globalState.isUpdating = false

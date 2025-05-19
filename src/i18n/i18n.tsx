@@ -97,5 +97,5 @@ export const setLanguage = (lang: "en" | "ua") => {
 }
 
 i18next.on("initialized", () => {
-  console.log("i18next initialized", i18next.services.resourceStore.data)
+  // console.log("i18next initialized", i18next.services.resourceStore.data)
 })

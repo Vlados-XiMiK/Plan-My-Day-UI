@@ -136,8 +136,8 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
       return
     }
 
-    console.log('Categories at submit:', categories)
-    console.log('Selected categoryId:', categoryId)
+    // console.log('Categories at submit:', categories)
+    // console.log('Selected categoryId:', categoryId)
 
     onSave({
       ...task,

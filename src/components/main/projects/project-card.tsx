@@ -100,7 +100,7 @@ export default function ProjectCard({
         3000
       )
     } catch (error) {
-      console.error('Failed to toggle task:', error)
+      // console.error('Failed to toggle task:', error)
       addNotification(
         'error',
         t('notifications:taskUpdateFailed.title'),
@@ -135,7 +135,7 @@ export default function ProjectCard({
         3000
       )
     } catch (error) {
-      console.error('Failed to add task:', error)
+     //  console.error('Failed to add task:', error)
       addNotification(
         'error',
         t('notifications:taskCreationFailed.title'),
@@ -156,7 +156,7 @@ export default function ProjectCard({
         3000
       )
     } catch (error) {
-      console.error('Failed to edit task:', error)
+      // console.error('Failed to edit task:', error)
       addNotification(
         'error',
         t('notifications:taskUpdateFailed.title'),
@@ -180,7 +180,7 @@ export default function ProjectCard({
         3000
       )
     } catch (error) {
-      console.error('Failed to delete task:', error)
+      // console.error('Failed to delete task:', error)
       addNotification(
         'error',
         t('notifications:taskDeleteFailed.title'),
@@ -205,7 +205,7 @@ export default function ProjectCard({
         3000
       )
     } catch (error) {
-      console.error('Failed to delete project:', error)
+      // console.error('Failed to delete project:', error)
       addNotification(
         'error',
         t('notifications:projectDeleteFailed.title'),
@@ -234,7 +234,7 @@ export default function ProjectCard({
   }
 
   const handleUpdateMembers = (members: ProjectMember[]) => {
-    console.log('ProjectCard: Updating members for project', project.id, 'with members:', members)
+    // console.log('ProjectCard: Updating members for project', project.id, 'with members:', members)
     onUpdateMembers(project.id, members)
   }
 

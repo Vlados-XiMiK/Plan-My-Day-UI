@@ -78,7 +78,7 @@ export default function StatsView() {
         setCategories(loadedCategories);
         setError(null);
       } catch (error) {
-        console.error("Error loading data:", error);
+        // console.error("Error loading data:", error);
         setError(t("error.loadFailed"));
         addNotification(
           "error",
@@ -273,7 +273,7 @@ export default function StatsView() {
         setCategories(loadedCategories);
         setError(null);
       } catch (error) {
-        console.error("Error loading data:", error);
+        // console.error("Error loading data:", error);
         setError(t("error.loadFailed"));
         addNotification(
           "error",

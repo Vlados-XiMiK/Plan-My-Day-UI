@@ -11,7 +11,7 @@ interface ErrorResponse {
 export async function getUserProfile(): Promise<User> {
   try {
     const response = await axiosClient.get("/account/profile/");
-    console.log("Profile API response:", response.data);
+    // console.log("Profile API response:", response.data);
     const data = response.data;
     return {
       username: data.username || "",
@@ -26,10 +26,10 @@ export async function getUserProfile(): Promise<User> {
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ErrorResponse>;
-      console.error(
-        "Failed to fetch user profile:",
-        axiosError.response?.data || axiosError.message
-      );
+      // console.error(
+      //  "Failed to fetch user profile:",
+      //  axiosError.response?.data || axiosError.message
+      // );
       throw new Error(
         axiosError.response?.data?.detail || "Failed to fetch user profile",
         {
@@ -39,7 +39,7 @@ export async function getUserProfile(): Promise<User> {
         }
       );
     } else {
-      console.error("Failed to fetch user profile:", error);
+      // console.error("Failed to fetch user profile:", error);
       throw new Error("Failed to fetch user profile");
     }
   }
@@ -47,7 +47,7 @@ export async function getUserProfile(): Promise<User> {
 
 export async function updateUserProfile(data: Partial<User>): Promise<User> {
   try {
-    console.log("Sending updateUserProfile request with data:", data);
+    // console.log("Sending updateUserProfile request with data:", data);
     const response = await axiosClient.patch("account/update_profile/", {
       username: data.username,
       email: data.email,
@@ -55,7 +55,7 @@ export async function updateUserProfile(data: Partial<User>): Promise<User> {
       place_of_work: data.place_of_work,
       phone_number: data.phone_number,
     });
-    console.log("Update profile API response:", response.data);
+    // console.log("Update profile API response:", response.data);
     const updatedData = response.data;
     return {
       username: updatedData.username || "",
@@ -70,10 +70,10 @@ export async function updateUserProfile(data: Partial<User>): Promise<User> {
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ErrorResponse>;
-      console.error(
-        "Failed to update user profile:",
-        axiosError.response?.data || axiosError.message
-      );
+      // console.error(
+      //  "Failed to update user profile:",
+      //  axiosError.response?.data || axiosError.message
+      // );
       throw new Error(
         axiosError.response?.data?.detail || "Failed to update user profile",
         {
@@ -83,7 +83,7 @@ export async function updateUserProfile(data: Partial<User>): Promise<User> {
         }
       );
     } else {
-      console.error("Failed to update user profile:", error);
+      // console.error("Failed to update user profile:", error);
       throw new Error("Failed to update user profile");
     }
   }

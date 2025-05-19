@@ -18,7 +18,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const updatedUser = await updateUserProfile(data);
       setUser(updatedUser);
     } catch (error) {
-      console.error("Failed to update user:", error);
+      // console.error("Failed to update user:", error);
       throw error;
     }
   };
@@ -30,12 +30,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const fetchUser = async () => {
       try {
         setIsLoading(true);
-        console.log("Checking authentication...");
+        // console.log("Checking authentication...");
 
         const authenticated = await isAuthenticated();
-        console.log("Is authenticated:", authenticated);
+        // console.log("Is authenticated:", authenticated);
         if (!authenticated) {
-          console.log("Not authenticated, redirecting to login");
+          // console.log("Not authenticated, redirecting to login");
           Cookies.remove("access_token");
           Cookies.remove("refresh_token");
           if (isMounted) {
@@ -45,16 +45,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
 
         const userData = await getUserProfile();
-        console.log("User data fetched:", userData);
+        // console.log("User data fetched:", userData);
         if (isMounted) {
           setUser(userData);
         }
       } catch (error: unknown) {
         if (error instanceof Error && error.name === "AbortError") {
-          console.log("Fetch user aborted");
+          // console.log("Fetch user aborted");
           return;
         }
-        console.error("Failed to fetch user:", error);
+        // console.error("Failed to fetch user:", error);
         Cookies.remove("access_token");
         Cookies.remove("refresh_token");
         if (isMounted) {
@@ -63,7 +63,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       } finally {
         if (isMounted) {
           setIsLoading(false);
-          console.log("Loading complete, isLoading:", false);
+          // console.log("Loading complete, isLoading:", false);
         }
       }
     };

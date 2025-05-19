@@ -104,10 +104,10 @@ export default function LoginForm() {
     } catch (error: unknown) { 
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ErrorResponse>
-        console.error("Login error:", axiosError.response?.data || axiosError.message)
+        // console.error("Login error:", axiosError.response?.data || axiosError.message)
         setErrors({ password: tAuth("login.invalidCredentials") })
       } else {
-        console.error("Login error:", error)
+        // console.error("Login error:", error)
         setErrors({ password: tAuth("login.invalidCredentials") })
       }
     } finally {
