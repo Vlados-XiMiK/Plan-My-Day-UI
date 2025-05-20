@@ -24,7 +24,7 @@ export const initialProjects: Project[] = [
 // Sample tasks (separated from projects)
 export const projectTasks: Task[] = [
   {
-    id: 'task4',
+    id: 4,
     title: 'Create wireframes',
     description: 'Design wireframes for all app screens',
     category: 'design',
@@ -41,7 +41,7 @@ export const projectTasks: Task[] = [
     completed_by_name: 'tvladislav0504',
   },
   {
-    id: 'task5',
+    id: 5,
     title: 'Develop UI components',
     description: 'Build reusable UI components for the app',
     category: 'development',
@@ -58,7 +58,7 @@ export const projectTasks: Task[] = [
     completed_by_name: 'tvladislav0504',
   },
   {
-    id: 'task6',
+    id: 6,
     title: 'Implement authentication',
     description: 'Add user login and registration functionality',
     category: 'development',
@@ -75,7 +75,7 @@ export const projectTasks: Task[] = [
     completed_by_name: null,
   },
   {
-    id: 'task7',
+    id: 7,
     title: 'Test on different devices',
     description: 'Ensure app works on various device sizes and OS versions',
     category: 'testing',

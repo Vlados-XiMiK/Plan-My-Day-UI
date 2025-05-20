@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, Clock, Folder, MoreHorizontal, Plus, Trash } fr
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import type { Project, Task, User } from "@/types/project"
-import type { ProjectMember } from "@/types/roles"
+import type { ProjectMember, Role } from "@/types/roles"
 import { AvatarGroup } from "./avatar-group"
 import ProjectManageDialog from "./project-manage-dialog"
 import TaskDialog from "./task-dialog"
@@ -23,33 +23,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/projects/alert-dialog"
-import { currentUser } from "@/lib/project-data"
-import { HTMLAttributes } from 'react'
 import { useTranslation } from "react-i18next"
 import { getUserRoleInProject, hasPermission } from "@/utils/roleUtils"
 import { useNotification } from "@/contexts/notification-context"
+import { HTMLAttributes } from 'react'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectCardProps {
   project: Project
   tasks: Task[]
+  roles: Role[]
   projectMembers: ProjectMember[]
   onUpdateProject: (project: Project) => void
   onDeleteProject: (projectId: number) => void
   onUpdateMembers: (projectId: number, members: ProjectMember[]) => void
   onAddTask: (task: Task) => void
   onUpdateTask: (task: Task) => void
-  onDeleteTask: (taskId: string) => void
+  onDeleteTask: (taskId: number) => void // Изменено с string на number
   onCreateShareLink?: () => void
   isExpanded: boolean
   onToggleExpanded: () => void
-  currentUser?: User
+  currentUser: User // Сделали обязательным
 }
 
 export default function ProjectCard({
   project,
   tasks,
+  roles,
   projectMembers,
   onUpdateProject,
   onDeleteProject,
@@ -57,9 +58,10 @@ export default function ProjectCard({
   onAddTask,
   onUpdateTask,
   onDeleteTask,
+  onCreateShareLink,
   isExpanded,
   onToggleExpanded,
-  currentUser: userProp,
+  currentUser,
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
@@ -68,13 +70,11 @@ export default function ProjectCard({
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const mockCurrentUser: User = userProp || currentUser
-
   const toggleExpanded = () => {
     onToggleExpanded()
   }
 
-  const handleTaskToggle = (taskId: string) => {
+  const handleTaskToggle = (taskId: number) => { // Изменено с string на number
     const task = tasks.find((t) => t.id === taskId)
     if (!task) return
 
@@ -82,42 +82,32 @@ export default function ProjectCard({
       ...task,
       completed: !task.completed,
       completed_at: task.completed ? null : new Date().toISOString(),
-      completed_by: task.completed ? null : mockCurrentUser.id,
-      completed_by_name: task.completed ? null : mockCurrentUser.username,
+      completed_by: task.completed ? null : currentUser.id,
+      completed_by_name: task.completed ? null : currentUser.username,
       updated_at: new Date().toISOString(),
     }
 
-    try {
-      onUpdateTask(updatedTask)
-      addNotification(
-        updatedTask.completed ? 'success' : 'info',
-        updatedTask.completed
-          ? t('notifications:taskCompleted.title')
-          : t('notifications:taskReopened.title'),
-        updatedTask.completed
-          ? t('notifications:taskCompleted.message', { title: task.title })
-          : t('notifications:taskReopened.message', { title: task.title }),
-        3000
-      )
-    } catch /* ( error)  */ { // add error for console.error 
-      // console.error('Failed to toggle task:', error)
-      addNotification(
-        'error',
-        t('notifications:taskUpdateFailed.title'),
-        t('notifications:taskUpdateFailed.message'),
-        5000
-      )
-    }
+    onUpdateTask(updatedTask)
+    addNotification(
+      updatedTask.completed ? 'success' : 'info',
+      updatedTask.completed
+        ? t('notifications:taskCompleted.title')
+        : t('notifications:taskReopened.title'),
+      updatedTask.completed
+        ? t('notifications:taskCompleted.message', { title: task.title })
+        : t('notifications:taskReopened.message', { title: task.title }),
+      3000
+    )
   }
 
   const handleAddTask = (
     task: Omit<Task, "id" | "user" | "user_name" | "created_at" | "updated_at" | "completed_at" | "completed_by" | "completed_by_name">
   ) => {
     const newTask: Task = {
-      id: `task-${Date.now()}`,
+      id: 0, // Временный ID, будет заменён API
       ...task,
-      user: mockCurrentUser.id,
-      user_name: mockCurrentUser.username,
+      user: currentUser.id,
+      user_name: currentUser.username,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       completed_at: null,
@@ -125,69 +115,39 @@ export default function ProjectCard({
       completed_by_name: null,
     }
 
-    try {
-      onAddTask(newTask)
-      setTaskDialogOpen(false)
-      addNotification(
-        'success',
-        t('notifications:taskCreated.title'),
-        t('notifications:taskCreated.message', { title: newTask.title }),
-        3000
-      )
-    } catch /* ( error)  */ { // add error for console.error 
-     //  console.error('Failed to add task:', error)
-      addNotification(
-        'error',
-        t('notifications:taskCreationFailed.title'),
-        t('notifications:taskCreationFailed.message'),
-        5000
-      )
-    }
+    onAddTask(newTask)
+    setTaskDialogOpen(false)
+    addNotification(
+      'success',
+      t('notifications:taskCreated.title'),
+      t('notifications:taskCreated.message', { title: newTask.title }),
+      3000
+    )
   }
 
   const handleEditTask = (task: Task) => {
-    try {
-      onUpdateTask(task)
-      setEditingTask(null)
-      addNotification(
-        'success',
-        t('notifications:taskUpdated.title'),
-        t('notifications:taskUpdated.message', { title: task.title }),
-        3000
-      )
-    } catch /* ( error)  */ { // add error for console.error 
-      // console.error('Failed to edit task:', error)
-      addNotification(
-        'error',
-        t('notifications:taskUpdateFailed.title'),
-        t('notifications:taskUpdateFailed.message'),
-        5000
-      )
-    }
+    onUpdateTask(task)
+    setEditingTask(null)
+    addNotification(
+      'success',
+      t('notifications:taskUpdated.title'),
+      t('notifications:taskUpdated.message', { title: task.title }),
+      3000
+    )
   }
 
-  const handleDeleteTask = (taskId: string) => {
-    try {
-      onDeleteTask(taskId)
-      if (editingTask && editingTask.id === taskId) {
-        setEditingTask(null)
-      }
-      const task = tasks.find((t) => t.id === taskId)
-      addNotification(
-        'success',
-        t('notifications:taskDeleted.title'),
-        t('notifications:taskDeleted.message', { title: task?.title || '' }),
-        3000
-      )
-    } catch /* ( error)  */ { // add error for console.error 
-      // console.error('Failed to delete task:', error)
-      addNotification(
-        'error',
-        t('notifications:taskDeleteFailed.title'),
-        t('notifications:taskDeleteFailed.message'),
-        5000
-      )
+  const handleDeleteTask = (taskId: number) => { // Изменено с string на number
+    onDeleteTask(taskId)
+    if (editingTask && editingTask.id === taskId) {
+      setEditingTask(null)
     }
+    const task = tasks.find((t) => t.id === taskId)
+    addNotification(
+      'success',
+      t('notifications:taskDeleted.title'),
+      t('notifications:taskDeleted.message', { title: task?.title || '' }),
+      3000
+    )
   }
 
   const openEditTaskDialog = (task: Task) => {
@@ -195,30 +155,20 @@ export default function ProjectCard({
   }
 
   const handleDeleteProject = () => {
-    try {
-      onDeleteProject(project.id)
-      setDeleteDialogOpen(false)
-      addNotification(
-        'success',
-        t('notifications:projectDeleted.title'),
-        t('notifications:projectDeleted.message', { title: project.name }),
-        3000
-      )
-    } catch /* ( error)  */ { // add error for console.error 
-      // console.error('Failed to delete project:', error)
-      addNotification(
-        'error',
-        t('notifications:projectDeleteFailed.title'),
-        t('notifications:projectDeleteFailed.message'),
-        5000
-      )
-    }
+    onDeleteProject(project.id)
+    setDeleteDialogOpen(false)
+    addNotification(
+      'success',
+      t('notifications:projectDeleted.title'),
+      t('notifications:projectDeleted.message', { title: project.name }),
+      3000
+    )
   }
 
-  const userRole = getUserRoleInProject(mockCurrentUser, project.id, projectMembers)
+  const userRole = getUserRoleInProject(currentUser, project.id, projectMembers)
   const canEdit = hasPermission(userRole, 'edit_project')
   const canComplete = hasPermission(userRole, 'edit_task')
-  const isCreator = project.owner === mockCurrentUser.id
+  const isCreator = project.owner === currentUser.id
 
   const completedTasksCount = tasks.filter((task) => task.completed).length
   const createdDate = new Date(project.created_at)
@@ -234,7 +184,6 @@ export default function ProjectCard({
   }
 
   const handleUpdateMembers = (members: ProjectMember[]) => {
-    // console.log('ProjectCard: Updating members for project', project.id, 'with members:', members)
     onUpdateMembers(project.id, members)
   }
 
@@ -407,9 +356,10 @@ export default function ProjectCard({
         onUpdateProject={onUpdateProject}
         onUpdateMembers={handleUpdateMembers}
         onDeleteProject={onDeleteProject}
-        currentUser={mockCurrentUser}
+        currentUser={currentUser}
         canEdit={canEdit}
         isCreator={isCreator}
+        roles={roles}
       />
 
       {canEdit && (

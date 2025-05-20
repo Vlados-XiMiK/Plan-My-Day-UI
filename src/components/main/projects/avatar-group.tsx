@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/projects/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next"
 import type { User } from "@/types/project";
 import type { ProjectMember } from "@/types/roles";
 import { getUserRoleInProject } from "@/utils/roleUtils";
@@ -7,12 +8,13 @@ import CustomAvatar from "@/components/ui/Avatar";
 
 interface AvatarGroupProps {
   users: User[];
-  projectId: number; // Added to identify the project
-  projectMembers: ProjectMember[]; // Added to get roles
+  projectId: number;
+  projectMembers: ProjectMember[];
   max?: number;
 }
 
 export function AvatarGroup({ users, projectId, projectMembers, max = 5 }: AvatarGroupProps) {
+  const { t, i18n } = useTranslation(['projects', 'notifications'])
   const visibleUsers = users.slice(0, max);
   const remainingCount = users.length - max;
 
@@ -20,14 +22,13 @@ export function AvatarGroup({ users, projectId, projectMembers, max = 5 }: Avata
     <TooltipProvider>
       <div className="flex -space-x-2">
         {visibleUsers.map((user) => {
-          const role = getUserRoleInProject(user, projectId, projectMembers); // Get user role
+          const role = getUserRoleInProject(user, projectId, projectMembers);
           return (
             <Tooltip key={user.id}>
               <TooltipTrigger asChild>
                 {user.avatar ? (
-                  // Regular avatar with image
                   <Avatar className="h-8 w-8 border-2 border-background">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.username} />
+                    <AvatarImage src={user.avatar} alt={user.username} />
                     <AvatarFallback>
                       {user.username
                         .split(" ")
@@ -38,7 +39,6 @@ export function AvatarGroup({ users, projectId, projectMembers, max = 5 }: Avata
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  // Custom avatar with initials
                   <div className="border-2 border-background rounded-full">
                     <CustomAvatar name={user.username} size="small" />
                   </div>
@@ -47,7 +47,7 @@ export function AvatarGroup({ users, projectId, projectMembers, max = 5 }: Avata
               <TooltipContent>
                 <p>{user.username}</p>
                 <p className="text-xs capitalize text-muted-foreground">
-                  {role || "No role"}
+                  {role ? t(`projects:project_manage.roles.${role.toLowerCase()}`) : t("projects:noRole")}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -62,7 +62,7 @@ export function AvatarGroup({ users, projectId, projectMembers, max = 5 }: Avata
               </Avatar>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{remainingCount} more team members</p>
+              <p>{t("projects:moreTeamMembers", { count: remainingCount })}</p>
             </TooltipContent>
           </Tooltip>
         )}

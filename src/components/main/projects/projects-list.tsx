@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { LayoutGrid, LayoutList, PlusCircle } from 'lucide-react'
 import ProjectCard from './project-card'
 import CreateProjectDialog from './create-project-dialog'
-import type { Project, ProjectShareLink, Task } from '@/types/project'
-import type { ProjectMember } from '@/types/roles'
-import { initialProjects, projectMembers, projectShareLinks, projectTasks, currentUser } from '@/lib/project-data'
+import type { Project, ProjectShareLink, Task, User } from '@/types/project'
+import type { ProjectMember, Role } from '@/types/roles'
+import { getProjects, getProjectMemberships, getProjectShareLinks, getProjectTasks, getCurrentUser, createProject, createProjectShareLink, updateProject, deleteProject, createTask, updateTask, deleteTask, assignRole, getProjectRoles } from '@/api/projects'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslation } from 'react-i18next'
@@ -23,22 +23,18 @@ import {
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotification } from '@/contexts/notification-context'
-import { roles } from '@/lib/project-data'
 
 type ViewMode = 'list' | 'grid'
 
 export default function ProjectsList() {
   const { t } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
-  const [projects, setProjects] = useState<Project[]>(initialProjects)
-  const [members, setMembers] = useState<ProjectMember[]>(projectMembers)
-  const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>(projectShareLinks)
-  const [tasksByProject, setTasksByProject] = useState<{ [projectId: number]: Task[] }>(
-    initialProjects.reduce((acc, project) => ({
-      ...acc,
-      [project.id]: projectTasks.filter((task) => task.user === project.owner), // Initial filtering (replace with API)
-    }), {})
-  )
+  const [projects, setProjects] = useState<Project[]>([])
+  const [members, setMembers] = useState<ProjectMember[]>([])
+  const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>([])
+  const [tasksByProject, setTasksByProject] = useState<{ [projectId: number]: Task[] }>({})
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [roles, setRoles] = useState<Role[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
@@ -48,118 +44,204 @@ export default function ProjectsList() {
   const [maxUses, setMaxUses] = useState<string>('5')
   const [expiresAt, setExpiresAt] = useState<string>('')
 
+  // Load data on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Load current user
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+
+        // Load projects
+        const projectsData = await getProjects();
+        setProjects(projectsData.results);
+
+        // Load roles
+        const rolesData = await getProjectRoles();
+        setRoles(rolesData.results);
+
+        // Load members
+        const membersData = await getProjectMemberships();
+        setMembers(membersData.results);
+
+        // Load share links
+        const shareLinksData = await Promise.all(
+          projectsData.results.map(async (project) => {
+            const links = await getProjectShareLinks(project.id);
+            return links.results;
+          })
+        );
+        setShareLinks(shareLinksData.flat());
+
+        // Load tasks for each project
+        const tasksData = await Promise.all(
+          projectsData.results.map(async (project) => {
+            const tasks = await getProjectTasks(project.id);
+            return { projectId: project.id, tasks: tasks.results };
+          })
+        );
+        const tasksMap = tasksData.reduce((acc, { projectId, tasks }) => ({
+          ...acc,
+          [projectId]: tasks
+        }), {});
+        setTasksByProject(tasksMap);
+      } catch (error) {
+        addNotification('error', t('notifications:fetchError.title'), t('notifications:fetchError.message'), 5000);
+      }
+    };
+
+    fetchData();
+  }, [t, addNotification]);
+
   const toggleProjectExpanded = (projectId: number) => {
     setExpandedProjects((prev) => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(projectId)) {
-        newSet.delete(projectId)
+        newSet.delete(projectId);
       } else {
-        newSet.add(projectId)
+        newSet.add(projectId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
-  const handleCreateProject = (newProject: Omit<Project, 'id'>) => {
-    const projectId = Math.max(...projects.map((p) => p.id), 0) + 1
-    const project: Project = {
-      id: projectId,
-      name: newProject.name,
-      description: newProject.description,
-      owner: newProject.owner,
-      tasks_count: 0,
-      created_at: newProject.created_at,
+  const handleCreateProject = async (newProject: Omit<Project, 'id'>) => {
+    try {
+      const project = await createProject({
+        name: newProject.name,
+        description: newProject.description,
+      });
+      const newMember: ProjectMember = {
+        id: members.length + 1, // Временный ID, заменится после вызова assignRole
+        user: currentUser!.id,
+        user_name: currentUser!.username,
+        user_details: {
+          id: currentUser!.id,
+          username: currentUser!.username,
+          email: currentUser!.email,
+          avatar: currentUser!.avatar,
+        },
+        project: project.id,
+        role: 1,
+        role_name: 'Admin',
+      };
+      await assignRole(project.id, { user: currentUser!.id, role: 1 });
+
+      setProjects([...projects, project]);
+      setMembers([...members, newMember]);
+      setTasksByProject((prev) => ({ ...prev, [project.id]: [] }));
+      setIsCreateDialogOpen(false);
+      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:createProjectError.title'), t('notifications:createProjectError.message'), 5000);
     }
+  };
 
-    const newMember: ProjectMember = {
-      id: Math.max(...members.map((m) => m.id), 0) + 1,
-      user: currentUser.id,
-      user_name: currentUser.username,
-      user_details: {
-        id: currentUser.id,
-        username: currentUser.username,
-        email: currentUser.email,
-        avatar: currentUser.avatar,
-      },
-      project: projectId,
-      role: 1,
-      role_name: 'Admin',
+  const handleUpdateProject = async (updatedProject: Project) => {
+    try {
+      const project = await updateProject(updatedProject.id, updatedProject);
+      setProjects(projects.map((p) => (p.id === project.id ? project : p)));
+      addNotification('success', t('notifications:projectUpdated.title'), t('notifications:projectUpdated.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:updateProjectError.title'), t('notifications:updateProjectError.message'), 5000);
     }
+  };
 
-    setProjects([...projects, project])
-    setMembers([...members, newMember])
-    setTasksByProject((prev) => ({ ...prev, [projectId]: [] }))
-    setIsCreateDialogOpen(false)
-  }
+  const handleDeleteProject = async (projectId: number) => {
+    try {
+      await deleteProject(projectId);
+      setProjects(projects.filter((project) => project.id !== projectId));
+      setMembers(members.filter((member) => member.project !== projectId));
+      setTasksByProject((prev) => {
+        const newTasks = { ...prev };
+        delete newTasks[projectId];
+        return newTasks;
+      });
+      setShareLinks(shareLinks.filter((link) => link.id !== projectId));
+      addNotification('success', t('notifications:projectDeleted.title'), t('notifications:projectDeleted.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:deleteProjectError.title'), t('notifications:deleteProjectError.message'), 5000);
+    }
+  };
 
-  const handleUpdateProject = (updatedProject: Project) => {
-    setProjects(projects.map((project) => (project.id === updatedProject.id ? updatedProject : project)))
-  }
+  const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMember[]) => {
+    try {
+      const otherMembers = members.filter((m) => m.project !== projectId);
+      for (const member of updatedMembers) {
+        await assignRole(projectId, { user: member.user, role: member.role });
+      }
+      setMembers([...otherMembers, ...updatedMembers]);
+      addNotification('success', t('notifications:membersUpdated.title'), t('notifications:membersUpdated.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:updateMembersError.title'), t('notifications:updateMembersError.message'), 5000);
+    }
+  };
 
-  const handleDeleteProject = (projectId: number) => {
-    setProjects(projects.filter((project) => project.id !== projectId))
-    setMembers(members.filter((member) => member.project !== projectId))
-    setTasksByProject((prev) => {
-      const newTasks = { ...prev }
-      delete newTasks[projectId]
-      return newTasks
-    })
-    setShareLinks(shareLinks)
-  }
+  const handleAddTask = async (projectId: number, newTask: Task) => {
+    try {
+      const task = await createTask(projectId, newTask);
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: [...(prev[projectId] || []), task],
+      }));
+      setProjects((prev) =>
+        prev.map((project) =>
+          project.id === projectId
+            ? { ...project, tasks_count: (tasksByProject[projectId] || []).length + 1 }
+            : project
+        )
+      );
+      addNotification('success', t('notifications:taskCreated.title'), t('notifications:taskCreated.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:createTaskError.title'), t('notifications:createTaskError.message'), 5000);
+    }
+  };
 
-  const handleUpdateMembers = (projectId: number, updatedMembers: ProjectMember[]) => {
-    const otherMembers = members.filter((m) => m.project !== projectId)
-    setMembers([...otherMembers, ...updatedMembers])
-    // console.log('ProjectsList: Updated members for project', projectId, 'to:', updatedMembers)
-  }
+  const handleUpdateTask = async (projectId: number, updatedTask: Task) => {
+    try {
+      const task = await updateTask(projectId, updatedTask.id.toString(), updatedTask);
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((t) => (t.id === task.id ? task : t)),
+      }));
+      addNotification('success', t('notifications:taskUpdated.title'), t('notifications:taskUpdated.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:updateTaskError.title'), t('notifications:updateTaskError.message'), 5000);
+    }
+  };
 
-  const handleAddTask = (projectId: number, newTask: Task) => {
-    setTasksByProject((prev) => ({
-      ...prev,
-      [projectId]: [...(prev[projectId] || []), newTask],
-    }))
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === projectId
-          ? { ...project, tasks_count: (tasksByProject[projectId] || []).length + 1 }
-          : project
-      )
-    )
-  }
-
-  const handleUpdateTask = (projectId: number, updatedTask: Task) => {
-    setTasksByProject((prev) => ({
-      ...prev,
-      [projectId]: prev[projectId].map((task) => (task.id === updatedTask.id ? updatedTask : task)),
-    }))
-  }
-
-  const handleDeleteTask = (projectId: number, taskId: string) => {
-    setTasksByProject((prev) => ({
-      ...prev,
-      [projectId]: prev[projectId].filter((task) => task.id !== taskId),
-    }))
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === projectId
-          ? { ...project, tasks_count: (tasksByProject[projectId] || []).length - 1 }
-          : project
-      )
-    )
-  }
+  const handleDeleteTask = async (projectId: number, taskId: number) => {
+    try {
+      await deleteTask(projectId, taskId.toString());
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].filter((task) => task.id !== taskId),
+      }));
+      setProjects((prev) =>
+        prev.map((project) =>
+          project.id === projectId
+            ? { ...project, tasks_count: (tasksByProject[projectId] || []).length - 1 }
+            : project
+        )
+      );
+      addNotification('success', t('notifications:taskDeleted.title'), t('notifications:taskDeleted.message'), 3000);
+    } catch (error) {
+      addNotification('error', t('notifications:deleteTaskError.title'), t('notifications:deleteTaskError.message'), 5000);
+    }
+  };
 
   const openShareDialog = (projectId: number) => {
-    setSelectedProjectId(projectId)
-    setShareRole('Viewer')
-    setMaxUses('5')
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    setExpiresAt(tomorrow.toISOString().split('T')[0])
-    setIsShareDialogOpen(true)
-  }
+    setSelectedProjectId(projectId);
+    setShareRole('Viewer');
+    setMaxUses('5');
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setExpiresAt(tomorrow.toISOString().split('T')[0]);
+    setIsShareDialogOpen(true);
+  };
 
-  const handleCreateShareLink = () => {
-    if (!selectedProjectId) return
+  const handleCreateShareLink = async () => {
+    if (!selectedProjectId) return;
 
     if (!expiresAt || new Date(expiresAt) <= new Date()) {
       addNotification(
@@ -167,8 +249,8 @@ export default function ProjectsList() {
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.shareLinkExpiresAt'),
         5000
-      )
-      return
+      );
+      return;
     }
 
     if (!maxUses || parseInt(maxUses) <= 0) {
@@ -177,30 +259,30 @@ export default function ProjectsList() {
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.shareLinkMaxUses'),
         5000
-      )
-      return
+      );
+      return;
     }
 
-    const newShareLink: ProjectShareLink = {
-      id: Math.max(...shareLinks.map((link) => link.id), 0) + 1,
-      share_url: `http://localhost:8000/api/v1/projects/join/${crypto.randomUUID()}/`,
-      role_name: shareRole,
-      max_uses: parseInt(maxUses),
-      expires_at: new Date(expiresAt).toISOString(),
-      is_active: true,
-      created_by: currentUser.username,
-      created_at: new Date().toISOString(),
+    try {
+      const role = roles.find((r) => r.name === shareRole);
+      if (!role) throw new Error('Role not found');
+      const newShareLink = await createProjectShareLink(selectedProjectId, {
+        role: role.id,
+        max_uses: parseInt(maxUses),
+        expires_at: new Date(expiresAt).toISOString(),
+      });
+      setShareLinks([...shareLinks, newShareLink]);
+      setIsShareDialogOpen(false);
+      addNotification(
+        'success',
+        t('notifications:shareLinkCreated.title'),
+        t('notifications:shareLinkCreated.message', { projectId: selectedProjectId }),
+        3000
+      );
+    } catch (error) {
+      addNotification('error', t('notifications:createShareLinkError.title'), t('notifications:createShareLinkError.message'), 5000);
     }
-
-    setShareLinks([...shareLinks, newShareLink])
-    setIsShareDialogOpen(false)
-    addNotification(
-      'success',
-      t('notifications:shareLinkCreated.title'),
-      t('notifications:shareLinkCreated.message', { projectId: selectedProjectId }),
-      3000
-    )
-  }
+  };
 
   return (
     <div className='space-y-6'>
@@ -382,14 +464,15 @@ export default function ProjectsList() {
           {viewMode === 'list' ? (
             <div className='grid gap-6'>
               {projects.map((project) => {
-                const filteredMembers = members.filter((m) => m.project === project.id)
-                const filteredTasks = tasksByProject[project.id] || []
+                const filteredMembers = members.filter((m) => m.project === project.id);
+                const filteredTasks = tasksByProject[project.id] || [];
                 return (
                   <div key={project.id} className='w-full'>
                     <ProjectCard
                       project={project}
                       tasks={filteredTasks}
                       projectMembers={filteredMembers}
+                      roles={roles}
                       onUpdateProject={handleUpdateProject}
                       onDeleteProject={handleDeleteProject}
                       onUpdateMembers={handleUpdateMembers}
@@ -399,23 +482,24 @@ export default function ProjectsList() {
                       onCreateShareLink={() => openShareDialog(project.id)}
                       isExpanded={expandedProjects.has(project.id)}
                       onToggleExpanded={() => toggleProjectExpanded(project.id)}
-                      currentUser={currentUser}
+                      currentUser={currentUser!}
                     />
                   </div>
-                )
+                );
               })}
             </div>
           ) : (
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {projects.map((project) => {
-                const filteredMembers = members.filter((m) => m.project === project.id)
-                const filteredTasks = tasksByProject[project.id] || []
+                const filteredMembers = members.filter((m) => m.project === project.id);
+                const filteredTasks = tasksByProject[project.id] || [];
                 return (
                   <ProjectCard
                     key={project.id}
                     project={project}
                     tasks={filteredTasks}
                     projectMembers={filteredMembers}
+                    roles={roles}
                     onUpdateProject={handleUpdateProject}
                     onDeleteProject={handleDeleteProject}
                     onUpdateMembers={handleUpdateMembers}
@@ -425,9 +509,9 @@ export default function ProjectsList() {
                     onCreateShareLink={() => openShareDialog(project.id)}
                     isExpanded={expandedProjects.has(project.id)}
                     onToggleExpanded={() => toggleProjectExpanded(project.id)}
-                    currentUser={currentUser}
+                    currentUser={currentUser!}
                   />
-                )
+                );
               })}
             </div>
           )}
@@ -501,5 +585,5 @@ export default function ProjectsList() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

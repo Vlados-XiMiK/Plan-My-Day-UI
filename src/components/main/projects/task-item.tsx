@@ -79,7 +79,14 @@ export default function TaskItem({
   const handleToggleComplete = () => {
     try {
       onToggleComplete();
-    } catch {}
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:taskToggleFailed.title"),
+        t("notifications:taskToggleFailed.message"),
+        5000
+      );
+    }
   };
 
   const handleEdit = () => {
@@ -94,8 +101,8 @@ export default function TaskItem({
     } catch {
       addNotification(
         "error",
-        t("notifications:validationError.title"),
-        t("notifications:validationError.message"),
+        t("notifications:taskEditFailed.title"),
+        t("notifications:taskEditFailed.message"),
         5000
       );
     }
@@ -104,7 +111,14 @@ export default function TaskItem({
   const handleDelete = () => {
     try {
       onDelete();
-    } catch {}
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:taskDeleteFailed.title"),
+        t("notifications:taskDeleteFailed.message"),
+        5000
+      );
+    }
   };
 
   return (
@@ -121,7 +135,7 @@ export default function TaskItem({
         <div className="flex items-start gap-3">
           {canComplete ? (
             <Checkbox
-              id={task.id}
+              id={task.id.toString()} // Конвертируем number в string для id
               checked={task.completed}
               onCheckedChange={handleToggleComplete}
               className="mt-1 transition-all duration-300 data-[state=checked]:bg-purple-600 data-[state=checked]:text-white flex-shrink-0"
@@ -139,7 +153,7 @@ export default function TaskItem({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <label
-                htmlFor={canComplete ? task.id : undefined}
+                htmlFor={canComplete ? task.id.toString() : undefined}
                 className={`font-medium line-clamp-2 ${
                   task.completed ? "text-muted-foreground line-through" : ""
                 }`}

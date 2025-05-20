@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Project, User } from '@/types/project'
-import type { ProjectMember } from '@/types/roles'
+import type { ProjectMember, Role } from '@/types/roles'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar, ChevronDown, ChevronUp, Copy, Link, Trash2, UserPlus } from 'lucide-react'
@@ -30,26 +30,28 @@ import { cn } from '@/lib/utils'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
 import { HTMLAttributes } from 'react'
-import { projectMembers as dataProjectMembers } from '@/lib/project-data' // Keep for debugging
+import { createProjectShareLink, leaveProject, kickUser } from '@/api/projects'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectManageDialogProps {
   project: Project
   projectMembers: ProjectMember[]
+  roles: Role[] // Добавили пропс для ролей
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdateProject: (project: Project) => void
   onUpdateMembers: (members: ProjectMember[]) => void
   onDeleteProject: (projectId: number) => void
-  currentUser?: User
+  currentUser: User // Сделали обязательным
   canEdit: boolean
   isCreator: boolean
 }
 
 export default function ProjectManageDialog({
   project,
-  projectMembers = [],
+  projectMembers,
+  roles,
   open,
   onOpenChange,
   onUpdateProject,
@@ -69,6 +71,7 @@ export default function ProjectManageDialog({
   const [inviteLink, setInviteLink] = useState('')
   const [usageLimit, setUsageLimit] = useState<number>(1)
   const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined)
+  const [inviteRole, setInviteRole] = useState<string>('Viewer') // Добавили выбор роли
   const [isLinkGenerated, setIsLinkGenerated] = useState(false)
   const [isInviteSectionExpanded, setIsInviteSectionExpanded] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -76,29 +79,12 @@ export default function ProjectManageDialog({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const roles = [
-    { id: 1, name: 'Admin' },
-    { id: 2, name: 'Moderator' },
-    { id: 3, name: 'Member' },
-    { id: 4, name: 'Viewer' },
-  ]
-
-  // Debug: Fallback to dataProjectMembers if projectMembers is empty
-  const effectiveMembers = projectMembers.length > 0
-    ? projectMembers
-    : dataProjectMembers.filter((m) => m.project === project.id);
-
-  // useEffect(() => {
-  //  console.log('ProjectManageDialog: project.id =', project.id);
-  //  console.log('projectMembers =', projectMembers);
-  //  console.log('effectiveMembers =', effectiveMembers);
-  // }, [project.id, projectMembers, effectiveMembers]);
-
   useEffect(() => {
     if (!open) {
       setInviteLink('')
       setUsageLimit(1)
       setExpirationDate(undefined)
+      setInviteRole('Viewer')
       setIsLinkGenerated(false)
       setIsInviteSectionExpanded(false)
       setActiveTab('details')
@@ -133,7 +119,7 @@ export default function ProjectManageDialog({
       setHasRoleChanges(true)
       return newChanges
     })
-    const member = effectiveMembers.find((m) => m.user === userId)
+    const member = projectMembers.find((m) => m.user === userId)
     if (member) {
       addNotification(
         'info',
@@ -148,27 +134,38 @@ export default function ProjectManageDialog({
   }
 
   const saveRoleChanges = () => {
-    const updatedMembers = effectiveMembers.map((member) => {
-      if (pendingRoleChanges[member.user]) {
-        return {
-          ...member,
-          role_name: pendingRoleChanges[member.user],
-          role: roles.find((r) => r.name === pendingRoleChanges[member.user])!.id,
+    const updatedMembers = projectMembers
+      .map((member) => {
+        if (pendingRoleChanges[member.user] && pendingRoleChanges[member.user] !== member.role_name) {
+          return {
+            ...member,
+            role_name: pendingRoleChanges[member.user],
+            role: roles.find((r) => r.name === pendingRoleChanges[member.user])!.id,
+          };
         }
-      }
-      return member
-    })
-
-    onUpdateMembers(updatedMembers)
-    setPendingRoleChanges({})
-    setHasRoleChanges(false)
+        return null;
+      })
+      .filter((member): member is ProjectMember => member !== null);
+  
+    console.log('Saving role changes:', {
+      projectId: project.id,
+      updatedMembers: updatedMembers.map((m) => ({
+        user: m.user,
+        role: m.role,
+        role_name: m.role_name,
+      })),
+    });
+  
+    onUpdateMembers(updatedMembers);
+    setPendingRoleChanges({});
+    setHasRoleChanges(false);
     addNotification(
       'success',
       t('notifications:rolesUpdated.title'),
       t('notifications:rolesUpdated.message'),
       3000,
-    )
-  }
+    );
+  };
 
   const cancelRoleChanges = () => {
     setPendingRoleChanges({})
@@ -210,7 +207,7 @@ export default function ProjectManageDialog({
     onOpenChange(false)
   }
 
-  const handleRemoveMember = (userId: number) => {
+  const handleRemoveMember = async (userId: number) => {
     if (!canEdit && !isCreator) {
       addNotification(
         'error',
@@ -220,20 +217,30 @@ export default function ProjectManageDialog({
       )
       return
     }
-    const member = effectiveMembers.find((m) => m.user === userId)
-    const updatedMembers = effectiveMembers.filter((m) => m.user !== userId)
-    onUpdateMembers(updatedMembers)
-    if (member) {
+    try {
+      await kickUser(project.id, { user: userId })
+      const member = projectMembers.find((m) => m.user === userId)
+      const updatedMembers = projectMembers.filter((m) => m.user !== userId)
+      onUpdateMembers(updatedMembers)
+      if (member) {
+        addNotification(
+          'success',
+          t('notifications:memberRemoved.title'),
+          t('notifications:memberRemoved.message', { name: member.user_details.username }),
+          3000,
+        )
+      }
+    } catch (error) {
       addNotification(
-        'success',
-        t('notifications:memberRemoved.title'),
-        t('notifications:memberRemoved.message', { name: member.user_details.username }),
-        3000,
+        'error',
+        t('notifications:removeMemberError.title'),
+        t('notifications:removeMemberError.message'),
+        5000,
       )
     }
   }
 
-  const handleLeaveProject = () => {
+  const handleLeaveProject = async () => {
     if (isCreator) {
       addNotification(
         'error',
@@ -243,21 +250,28 @@ export default function ProjectManageDialog({
       )
       return
     }
-    const updatedMembers = effectiveMembers.filter((member) => member.user !== currentUser?.id)
-    onUpdateMembers(updatedMembers)
-    onOpenChange(false)
-    if (currentUser) {
-      onDeleteProject(project.id)
+    try {
+      await leaveProject(project.id)
+      const updatedMembers = projectMembers.filter((member) => member.user !== currentUser.id)
+      onUpdateMembers(updatedMembers)
+      onOpenChange(false)
       addNotification(
         'success',
         t('notifications:leftProject.title'),
         t('notifications:leftProject.message'),
         3000,
       )
+    } catch (error) {
+      addNotification(
+        'error',
+        t('notifications:leaveProjectError.title'),
+        t('notifications:leaveProjectError.message'),
+        5000,
+      )
     }
   }
 
-  const generateInviteLink = () => {
+  const generateInviteLink = async () => {
     if (!usageLimit || usageLimit < 1) {
       addNotification(
         'error',
@@ -286,16 +300,38 @@ export default function ProjectManageDialog({
       )
       return
     }
-    const randomString = Math.random().toString(36).substring(2, 10)
-    const newLink = `https://taskplanner.app/invite/${randomString}`
-    setInviteLink(newLink)
-    setIsLinkGenerated(true)
-    addNotification(
-      'success',
-      t('notifications:inviteLinkGenerated.title'),
-      t('notifications:inviteLinkGenerated.message'),
-      3000,
-    )
+    try {
+      const role = roles.find((r) => r.name === inviteRole)
+      if (!role) {
+        addNotification(
+          'error',
+          t('notifications:invalidInput.title'),
+          t('notifications:invalidInput.invalidRole'),
+          5000,
+        )
+        return
+      }
+      const newLink = await createProjectShareLink(project.id, {
+        role: role.id,
+        max_uses: usageLimit,
+        expires_at: expirationDate.toISOString(),
+      })
+      setInviteLink(newLink.share_url)
+      setIsLinkGenerated(true)
+      addNotification(
+        'success',
+        t('notifications:inviteLinkGenerated.title'),
+        t('notifications:inviteLinkGenerated.message'),
+        3000,
+      )
+    } catch (error) {
+      addNotification(
+        'error',
+        t('notifications:createShareLinkError.title'),
+        t('notifications:createShareLinkError.message'),
+        5000,
+      )
+    }
   }
 
   const copyLinkToClipboard = () => {
@@ -323,7 +359,7 @@ export default function ProjectManageDialog({
     setIsInviteSectionExpanded(!isInviteSectionExpanded)
   }
 
-  const isGenerateButtonDisabled = !usageLimit || usageLimit < 1 || !expirationDate
+  const isGenerateButtonDisabled = !usageLimit || usageLimit < 1 || !expirationDate || !inviteRole
   const createdDate = new Date(project.created_at)
 
   return (
@@ -374,7 +410,7 @@ export default function ProjectManageDialog({
                 </div>
 
                 <DialogFooter>
-                  {!isCreator && currentUser && (
+                  {!isCreator && (
                     <Button
                       type="button"
                       variant="outline"
@@ -399,8 +435,8 @@ export default function ProjectManageDialog({
             <TabsContent value="members">
               <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto pr-2">
                 <div className="space-y-4">
-                  {effectiveMembers.length > 0 ? (
-                    effectiveMembers.map((member, index) => (
+                  {projectMembers.length > 0 ? (
+                    projectMembers.map((member, index) => (
                       <motion.div
                         key={member.user}
                         initial={{ opacity: 0, y: 10 }}
@@ -412,7 +448,7 @@ export default function ProjectManageDialog({
                         <div className="flex items-center space-x-3">
                           {member.user_details.avatar ? (
                             <Avatar className="border-2 border-background shadow-sm">
-                              <AvatarImage src={member.user_details.avatar || ""} alt={member.user_details.username} />
+                              <AvatarImage src={member.user_details.avatar} alt={member.user_details.username} />
                               <AvatarFallback>
                                 {member.user_details.username
                                   .split(" ")
@@ -452,10 +488,11 @@ export default function ProjectManageDialog({
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Admin">{t('projects:project_manage.roles.admin')}</SelectItem>
-                                  <SelectItem value="Moderator">{t('projects:project_manage.roles.moderator')}</SelectItem>
-                                  <SelectItem value="Member">{t('projects:project_manage.roles.member')}</SelectItem>
-                                  <SelectItem value="Viewer">{t('projects:project_manage.roles.viewer')}</SelectItem>
+                                  {roles.map((role) => (
+                                    <SelectItem key={role.id} value={role.name}>
+                                      {t(`projects:project_manage.roles.${role.name.toLowerCase()}`)}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <Button
@@ -478,7 +515,7 @@ export default function ProjectManageDialog({
                     ))
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      {t('projects:project_manage.noMembers')} (Debug: No members found for project ID {project.id}. Check if projectMembers prop is passed correctly from parent component.)
+                      {t('projects:project_manage.noMembers')}
                     </p>
                   )}
                 </div>
@@ -565,6 +602,33 @@ export default function ProjectManageDialog({
                                     </PopoverContent>
                                   </Popover>
                                 </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor="invite-role" className="text-xs">
+                                  {t('projects:project_manage.labels.role')}
+                                </Label>
+                                <Select
+                                  value={inviteRole}
+                                  onValueChange={setInviteRole}
+                                  disabled={isLinkGenerated}
+                                >
+                                  <SelectTrigger
+                                    id="invite-role"
+                                    className={`transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 ${
+                                      isLinkGenerated ? "bg-muted cursor-not-allowed" : ""
+                                    }`}
+                                  >
+                                    <SelectValue placeholder={t('projects:project_manage.placeholders.role')} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {roles.map((role) => (
+                                      <SelectItem key={role.id} value={role.name}>
+                                        {t(`projects:project_manage.roles.${role.name.toLowerCase()}`)}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </div>
 
                               <div className="space-y-2">
