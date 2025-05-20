@@ -45,6 +45,7 @@ interface ProjectCardProps {
   isExpanded: boolean
   onToggleExpanded: () => void
   currentUser: User // Сделали обязательным
+  onLeaveProject: (projectId: number) => void // Новый пропс
 }
 
 export default function ProjectCard({
@@ -58,6 +59,7 @@ export default function ProjectCard({
   onAddTask,
   onUpdateTask,
   onDeleteTask,
+  onLeaveProject,
   onCreateShareLink,
   isExpanded,
   onToggleExpanded,
@@ -356,6 +358,7 @@ export default function ProjectCard({
         onUpdateProject={onUpdateProject}
         onUpdateMembers={handleUpdateMembers}
         onDeleteProject={onDeleteProject}
+        onLeaveProject={onLeaveProject}
         currentUser={currentUser}
         canEdit={canEdit}
         isCreator={isCreator}

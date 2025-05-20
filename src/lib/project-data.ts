@@ -104,6 +104,8 @@ export const projectShareLinks: ProjectShareLink[] = [
     is_active: true,
     created_by: 'tvladislav0504',
     created_at: '2025-05-16T12:07:08.185067+03:00',
+    project: 0,
+    role: 0
   },
 ];
 

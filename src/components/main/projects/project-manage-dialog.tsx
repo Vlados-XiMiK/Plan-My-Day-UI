@@ -46,6 +46,7 @@ interface ProjectManageDialogProps {
   currentUser: User
   canEdit: boolean
   isCreator: boolean
+  onLeaveProject?: (projectId: number) => void // Новый пропс
 }
 
 export default function ProjectManageDialog({
@@ -60,6 +61,7 @@ export default function ProjectManageDialog({
   currentUser,
   canEdit,
   isCreator,
+  onLeaveProject, // Добавляем в параметры
 }: ProjectManageDialogProps) {
   const { t, i18n } = useTranslation(['projects', 'notifications'])
   const { addNotification } = useNotification()
@@ -293,23 +295,9 @@ export default function ProjectManageDialog({
       return
     }
     try {
-      await leaveProject(project.id)
-      const updatedMembers = projectMembers.filter((member) => member.user !== currentUser.id)
-      onUpdateMembers(updatedMembers)
+      onLeaveProject?.(project.id) // Вызываем onLeaveProject для рефетча
       onOpenChange(false)
-      addNotification(
-        'success',
-        t('notifications:leftProject.title'),
-        t('notifications:leftProject.message'),
-        3000
-      )
     } catch (error) {
-      addNotification(
-        'error',
-        t('notifications:leaveProjectError.title'),
-        t('notifications:leaveProjectError.message'),
-        5000
-      )
     }
   }
 

@@ -7,7 +7,7 @@ import ProjectCard from './project-card'
 import CreateProjectDialog from './create-project-dialog'
 import type { Project, ProjectShareLink, Task, User } from '@/types/project'
 import type { ProjectMember, Role } from '@/types/roles'
-import { getProjects, getProjectMemberships, getProjectShareLinks, getProjectTasks, getCurrentUser, createProject, createProjectShareLink, updateProject, deleteProject, createTask, updateTask, deleteTask, assignRole, getProjectRoles } from '@/api/projects'
+import { getProjects, getProjectMemberships, getProjectShareLinks, getProjectTasks, getCurrentUser, createProject, createProjectShareLink, updateProject, deleteProject, createTask, updateTask, deleteTask, assignRole, getProjectRoles, leaveProject } from '@/api/projects'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslation } from 'react-i18next'
@@ -44,66 +44,67 @@ export default function ProjectsList() {
   const [maxUses, setMaxUses] = useState<string>('5')
   const [expiresAt, setExpiresAt] = useState<string>('')
 
+  // Функция для рефетча данных
+  const fetchData = async () => {
+    try {
+      // Load current user
+      const user = await getCurrentUser()
+      setCurrentUser(user)
+
+      // Load projects
+      const projectsData = await getProjects()
+      setProjects(projectsData.results)
+
+      // Load roles
+      const rolesData = await getProjectRoles()
+      setRoles(rolesData.results)
+
+      // Load members
+      const membersData = await getProjectMemberships()
+      setMembers(membersData.results)
+
+      // Load share links
+      const shareLinksData = await Promise.all(
+        projectsData.results.map(async (project) => {
+          const links = await getProjectShareLinks(project.id)
+          return links.results
+        })
+      )
+      setShareLinks(shareLinksData.flat())
+
+      // Load tasks for each project
+      const tasksData = await Promise.all(
+        projectsData.results.map(async (project) => {
+          const tasks = await getProjectTasks(project.id)
+          return { projectId: project.id, tasks: tasks.results }
+        })
+      )
+      const tasksMap = tasksData.reduce((acc, { projectId, tasks }) => ({
+        ...acc,
+        [projectId]: tasks
+      }), {})
+      setTasksByProject(tasksMap)
+    } catch (error) {
+      addNotification('error', t('notifications:fetchError.title'), t('notifications:fetchError.message'), 5000)
+    }
+  }
+
   // Load data on mount
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Load current user
-        const user = await getCurrentUser();
-        setCurrentUser(user);
-
-        // Load projects
-        const projectsData = await getProjects();
-        setProjects(projectsData.results);
-
-        // Load roles
-        const rolesData = await getProjectRoles();
-        setRoles(rolesData.results);
-
-        // Load members
-        const membersData = await getProjectMemberships();
-        setMembers(membersData.results);
-
-        // Load share links
-        const shareLinksData = await Promise.all(
-          projectsData.results.map(async (project) => {
-            const links = await getProjectShareLinks(project.id);
-            return links.results;
-          })
-        );
-        setShareLinks(shareLinksData.flat());
-
-        // Load tasks for each project
-        const tasksData = await Promise.all(
-          projectsData.results.map(async (project) => {
-            const tasks = await getProjectTasks(project.id);
-            return { projectId: project.id, tasks: tasks.results };
-          })
-        );
-        const tasksMap = tasksData.reduce((acc, { projectId, tasks }) => ({
-          ...acc,
-          [projectId]: tasks
-        }), {});
-        setTasksByProject(tasksMap);
-      } catch (error) {
-        addNotification('error', t('notifications:fetchError.title'), t('notifications:fetchError.message'), 5000);
-      }
-    };
-
-    fetchData();
-  }, [t, addNotification]);
+    fetchData()
+  }, [t, addNotification])
 
   const toggleProjectExpanded = (projectId: number) => {
     setExpandedProjects((prev) => {
-      const newSet = new Set(prev);
+      const newSet = new Set(prev)
       if (newSet.has(projectId)) {
-        newSet.delete(projectId);
+        newSet.delete(projectId)
       } else {
-        newSet.add(projectId);
+        newSet.add(projectId)
       }
-      return newSet;
-    });
-  };
+      return newSet
+    })
+  }
 
   const handleCreateProject = async (newProject: { name: string; description: string }) => {
     try {
@@ -114,12 +115,9 @@ export default function ProjectsList() {
       })
       console.log('Created project:', project)
 
-      // Загружаем актуальный список участников с сервера
-      const membersData = await getProjectMemberships()
-      setMembers(membersData.results)
+      // Вызываем рефетч для обновления данных
+      await fetchData()
 
-      setProjects([...projects, project])
-      setTasksByProject((prev) => ({ ...prev, [project.id]: [] }))
       setIsCreateDialogOpen(false)
       addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message'), 3000)
     } catch (error: any) {
@@ -130,54 +128,50 @@ export default function ProjectsList() {
 
   const handleUpdateProject = async (updatedProject: Project) => {
     try {
-      const project = await updateProject(updatedProject.id, updatedProject);
-      setProjects(projects.map((p) => (p.id === project.id ? project : p)));
-      addNotification('success', t('notifications:projectUpdated.title'), t('notifications:projectUpdated.message'), 3000);
+      const project = await updateProject(updatedProject.id, updatedProject)
+      setProjects(projects.map((p) => (p.id === project.id ? project : p)))
+      addNotification('success', t('notifications:projectUpdated.title'), t('notifications:projectUpdated.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:updateProjectError.title'), t('notifications:updateProjectError.message'), 5000);
+      addNotification('error', t('notifications:updateProjectError.title'), t('notifications:updateProjectError.message'), 5000)
     }
-  };
+  }
 
   const handleDeleteProject = async (projectId: number) => {
     try {
-      await deleteProject(projectId);
-      setProjects(projects.filter((project) => project.id !== projectId));
-      setMembers(members.filter((member) => member.project !== projectId));
+      await deleteProject(projectId)
+      setProjects(projects.filter((project) => project.id !== projectId))
+      setMembers(members.filter((member) => member.project !== projectId))
       setTasksByProject((prev) => {
-        const newTasks = { ...prev };
-        delete newTasks[projectId];
-        return newTasks;
-      });
-      setShareLinks(shareLinks.filter((link) => link.id !== projectId));
-      addNotification('success', t('notifications:projectDeleted.title'), t('notifications:projectDeleted.message'), 3000);
+        const newTasks = { ...prev }
+        delete newTasks[projectId]
+        return newTasks
+      })
+      setShareLinks(shareLinks.filter((link) => link.id !== projectId))
+      addNotification('success', t('notifications:projectDeleted.title'), t('notifications:projectDeleted.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:deleteProjectError.title'), t('notifications:deleteProjectError.message'), 5000);
+      addNotification('error', t('notifications:deleteProjectError.title'), t('notifications:deleteProjectError.message'), 5000)
     }
-  };
+  }
 
   const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMember[]) => {
     try {
-      // Сохраняем текущего пользователя из текущих members
       const currentUserMember = members.find((m) => m.project === projectId && m.user === currentUser!.id)
-      // Фильтруем участников, исключая текущий проект
       const otherMembers = members.filter((m) => m.project !== projectId)
       
-      // Выполняем назначение ролей для updatedMembers
-      for (const member of updatedMembers) {
-        await assignRole(projectId, { user: member.user, role: member.role })
+      if (updatedMembers.length > 0) {
+        for (const member of updatedMembers) {
+          await assignRole(projectId, { user: member.user, role: member.role })
+        }
       }
-  
-      // Загружаем актуальный список участников с сервера
+
       const membersData = await getProjectMemberships()
       const updatedProjectMembers = membersData.results.filter((m: ProjectMember) => m.project === projectId)
       
-      // Если текущий пользователь не в updatedMembers, добавляем его
       let finalMembers = updatedProjectMembers
       if (currentUserMember && !updatedProjectMembers.some((m: ProjectMember) => m.user === currentUser!.id)) {
         finalMembers = [...updatedProjectMembers, currentUserMember]
       }
 
-      // Обновляем состояние members
       setMembers([...otherMembers, ...finalMembers])
       addNotification('success', t('notifications:membersUpdated.title'), t('notifications:membersUpdated.message'), 3000)
     } catch (error) {
@@ -186,71 +180,82 @@ export default function ProjectsList() {
     }
   }
 
+  const handleLeaveProject = async (projectId: number) => {
+    try {
+      await leaveProject(projectId)
+      // Вызываем рефетч для обновления данных
+      await fetchData()
+      addNotification('success', t('notifications:leftProject.title'), t('notifications:leftProject.message'), 3000)
+    } catch (error) {
+      addNotification('error', t('notifications:leaveProjectError.title'), t('notifications:leaveProjectError.message'), 5000)
+    }
+  }
+
   const handleAddTask = async (projectId: number, newTask: Task) => {
     try {
-      const task = await createTask(projectId, newTask);
+      const task = await createTask(projectId, newTask)
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: [...(prev[projectId] || []), task],
-      }));
+      }))
       setProjects((prev) =>
         prev.map((project) =>
           project.id === projectId
             ? { ...project, tasks_count: (tasksByProject[projectId] || []).length + 1 }
             : project
         )
-      );
-      addNotification('success', t('notifications:taskCreated.title'), t('notifications:taskCreated.message'), 3000);
+      )
+      addNotification('success', t('notifications:taskCreated.title'), t('notifications:taskCreated.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:createTaskError.title'), t('notifications:createTaskError.message'), 5000);
+      addNotification('error', t('notifications:createTaskError.title'), t('notifications:createTaskError.message'), 5000)
     }
-  };
+  }
 
   const handleUpdateTask = async (projectId: number, updatedTask: Task) => {
     try {
-      const task = await updateTask(projectId, updatedTask.id.toString(), updatedTask);
+      const task = await updateTask(projectId, updatedTask.id.toString(), updatedTask)
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].map((t) => (t.id === task.id ? task : t)),
-      }));
-      addNotification('success', t('notifications:taskUpdated.title'), t('notifications:taskUpdated.message'), 3000);
+      }))
+      addNotification('success', t('notifications:taskUpdated.title'), t('notifications:taskUpdated.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:updateTaskError.title'), t('notifications:updateTaskError.message'), 5000);
+      addNotification('error', t('notifications:updateTaskError.title'), t('notifications:updateTaskError.message'), 5000)
     }
-  };
+  }
 
   const handleDeleteTask = async (projectId: number, taskId: number) => {
     try {
-      await deleteTask(projectId, taskId.toString());
+      await deleteTask(projectId, taskId.toString())
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].filter((task) => task.id !== taskId),
-      }));
+      }))
       setProjects((prev) =>
         prev.map((project) =>
           project.id === projectId
             ? { ...project, tasks_count: (tasksByProject[projectId] || []).length - 1 }
             : project
         )
-      );
-      addNotification('success', t('notifications:taskDeleted.title'), t('notifications:taskDeleted.message'), 3000);
+      )
+      addNotification('success', t('notifications:taskDeleted.title'), t('notifications:taskDeleted.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:deleteTaskError.title'), t('notifications:deleteTaskError.message'), 5000);
+      addNotification('error', t('notifications:deleteTaskError.title'), t('notifications:deleteTaskError.message'), 5000)
     }
-  };
+  }
 
   const openShareDialog = (projectId: number) => {
-    setSelectedProjectId(projectId);
-    setShareRole('Viewer');
-    setMaxUses('5');
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setExpiresAt(tomorrow.toISOString().split('T')[0]);
-    setIsShareDialogOpen(true);
-  };
+    setSelectedProjectId(projectId)
+    setShareRole('Viewer')
+    setMaxUses('5')
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    setExpiresAt(tomorrow.toISOString().split('T')[0])
+    setIsShareDialogOpen(true)
+  }
 
   const handleCreateShareLink = async () => {
-    if (!selectedProjectId) return;
+    if (!selectedProjectId) return
 
     if (!expiresAt || new Date(expiresAt) <= new Date()) {
       addNotification(
@@ -258,8 +263,8 @@ export default function ProjectsList() {
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.shareLinkExpiresAt'),
         5000
-      );
-      return;
+      )
+      return
     }
 
     if (!maxUses || parseInt(maxUses) <= 0) {
@@ -268,30 +273,30 @@ export default function ProjectsList() {
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.shareLinkMaxUses'),
         5000
-      );
-      return;
+      )
+      return
     }
 
     try {
-      const role = roles.find((r) => r.name === shareRole);
-      if (!role) throw new Error('Role not found');
+      const role = roles.find((r) => r.name === shareRole)
+      if (!role) throw new Error('Role not found')
       const newShareLink = await createProjectShareLink(selectedProjectId, {
         role: role.id,
         max_uses: parseInt(maxUses),
         expires_at: new Date(expiresAt).toISOString(),
-      });
-      setShareLinks([...shareLinks, newShareLink]);
-      setIsShareDialogOpen(false);
+      })
+      setShareLinks([...shareLinks, newShareLink])
+      setIsShareDialogOpen(false)
       addNotification(
         'success',
         t('notifications:shareLinkCreated.title'),
         t('notifications:shareLinkCreated.message', { projectId: selectedProjectId }),
         3000
-      );
+      )
     } catch (error) {
-      addNotification('error', t('notifications:createShareLinkError.title'), t('notifications:createShareLinkError.message'), 5000);
+      addNotification('error', t('notifications:createShareLinkError.title'), t('notifications:createShareLinkError.message'), 5000)
     }
-  };
+  }
 
   return (
     <div className='space-y-6'>
@@ -473,8 +478,8 @@ export default function ProjectsList() {
           {viewMode === 'list' ? (
             <div className='grid gap-6'>
               {projects.map((project) => {
-                const filteredMembers = members.filter((m) => m.project === project.id);
-                const filteredTasks = tasksByProject[project.id] || [];
+                const filteredMembers = members.filter((m) => m.project === project.id)
+                const filteredTasks = tasksByProject[project.id] || []
                 return (
                   <div key={project.id} className='w-full'>
                     <ProjectCard
@@ -491,17 +496,18 @@ export default function ProjectsList() {
                       onCreateShareLink={() => openShareDialog(project.id)}
                       isExpanded={expandedProjects.has(project.id)}
                       onToggleExpanded={() => toggleProjectExpanded(project.id)}
+                      onLeaveProject={() => handleLeaveProject(project.id)} // Передаем handleLeaveProject
                       currentUser={currentUser!}
                     />
                   </div>
-                );
+                )
               })}
             </div>
           ) : (
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {projects.map((project) => {
-                const filteredMembers = members.filter((m) => m.project === project.id);
-                const filteredTasks = tasksByProject[project.id] || [];
+                const filteredMembers = members.filter((m) => m.project === project.id)
+                const filteredTasks = tasksByProject[project.id] || []
                 return (
                   <ProjectCard
                     key={project.id}
@@ -518,9 +524,10 @@ export default function ProjectsList() {
                     onCreateShareLink={() => openShareDialog(project.id)}
                     isExpanded={expandedProjects.has(project.id)}
                     onToggleExpanded={() => toggleProjectExpanded(project.id)}
+                    onLeaveProject={() => handleLeaveProject(project.id)} // Передаем handleLeaveProject
                     currentUser={currentUser!}
                   />
-                );
+                )
               })}
             </div>
           )}
@@ -595,5 +602,5 @@ export default function ProjectsList() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }
