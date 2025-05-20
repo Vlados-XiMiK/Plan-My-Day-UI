@@ -46,6 +46,7 @@ interface ProjectCardProps {
   onToggleExpanded: () => void
   currentUser: User // Сделали обязательным
   onLeaveProject: (projectId: number) => void // Новый пропс
+  onToggleTaskCompleted?: (projectId: number, taskId: number, updatedTask: Task) => void; // Обновляем сигнатуру
 }
 
 export default function ProjectCard({
@@ -63,6 +64,7 @@ export default function ProjectCard({
   onCreateShareLink,
   isExpanded,
   onToggleExpanded,
+  onToggleTaskCompleted,
   currentUser,
 }: ProjectCardProps) {
   const { t, i18n } = useTranslation(['projects', 'notifications'])
@@ -76,10 +78,11 @@ export default function ProjectCard({
     onToggleExpanded()
   }
 
-  const handleTaskToggle = (taskId: number) => { // Изменено с string на number
-    const task = tasks.find((t) => t.id === taskId)
-    if (!task) return
+  const handleTaskToggle = (taskId: number) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
 
+    // Создаём локально обновлённую задачу, как раньше
     const updatedTask: Task = {
       ...task,
       completed: !task.completed,
@@ -87,20 +90,23 @@ export default function ProjectCard({
       completed_by: task.completed ? null : currentUser.id,
       completed_by_name: task.completed ? null : currentUser.username,
       updated_at: new Date().toISOString(),
-    }
+    };
 
-    onUpdateTask(updatedTask)
-    addNotification(
-      updatedTask.completed ? 'success' : 'info',
-      updatedTask.completed
-        ? t('notifications:taskCompleted.title')
-        : t('notifications:taskReopened.title'),
-      updatedTask.completed
-        ? t('notifications:taskCompleted.message', { title: task.title })
-        : t('notifications:taskReopened.message', { title: task.title }),
-      3000
-    )
-  }
+    // Вызываем onToggleTaskCompleted с updatedTask
+    if (onToggleTaskCompleted) {
+      onToggleTaskCompleted(project.id, taskId, updatedTask);
+      addNotification(
+        updatedTask.completed ? 'success' : 'info',
+        updatedTask.completed
+          ? t('notifications:taskCompleted.title')
+          : t('notifications:taskReopened.title'),
+        updatedTask.completed
+          ? t('notifications:taskCompleted.message', { title: task.title })
+          : t('notifications:taskReopened.message', { title: task.title }),
+        3000
+      );
+    }
+  };
 
   const handleAddTask = (
     task: Omit<Task, "id" | "user" | "user_name" | "created_at" | "updated_at" | "completed_at" | "completed_by" | "completed_by_name">

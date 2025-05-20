@@ -7,7 +7,7 @@ import ProjectCard from './project-card'
 import CreateProjectDialog from './create-project-dialog'
 import type { Project, ProjectShareLink, Task, User } from '@/types/project'
 import type { ProjectMember, Role } from '@/types/roles'
-import { getProjects, getProjectMemberships, getProjectShareLinks, getProjectTasks, getCurrentUser, createProject, createProjectShareLink, updateProject, deleteProject, createTask, updateTask, deleteTask, assignRole, getProjectRoles, leaveProject } from '@/api/projects'
+import { getProjects, getProjectMemberships, getProjectShareLinks, getProjectTasks, getCurrentUser, createProject, createProjectShareLink, updateProject, deleteProject, createTask, updateTask, deleteTask, assignRole, getProjectRoles, leaveProject, toggleTaskCompleted } from '@/api/projects'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslation } from 'react-i18next'
@@ -119,7 +119,6 @@ export default function ProjectsList() {
       await fetchData()
 
       setIsCreateDialogOpen(false)
-      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message'), 3000)
     } catch (error: any) {
       console.error('Error in handleCreateProject:', error.message)
       addNotification('error', t('notifications:createProjectError.title'), t('notifications:createProjectError.message'), 5000)
@@ -130,9 +129,7 @@ export default function ProjectsList() {
     try {
       const project = await updateProject(updatedProject.id, updatedProject)
       setProjects(projects.map((p) => (p.id === project.id ? project : p)))
-      addNotification('success', t('notifications:projectUpdated.title'), t('notifications:projectUpdated.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:updateProjectError.title'), t('notifications:updateProjectError.message'), 5000)
     }
   }
 
@@ -147,7 +144,6 @@ export default function ProjectsList() {
         return newTasks
       })
       setShareLinks(shareLinks.filter((link) => link.id !== projectId))
-      addNotification('success', t('notifications:projectDeleted.title'), t('notifications:projectDeleted.message'), 3000)
     } catch (error) {
       addNotification('error', t('notifications:deleteProjectError.title'), t('notifications:deleteProjectError.message'), 5000)
     }
@@ -173,10 +169,10 @@ export default function ProjectsList() {
       }
 
       setMembers([...otherMembers, ...finalMembers])
-      addNotification('success', t('notifications:membersUpdated.title'), t('notifications:membersUpdated.message'), 3000)
+     
     } catch (error) {
       console.error('Error updating members:', error)
-      addNotification('error', t('notifications:updateMembersError.title'), t('notifications:updateMembersError.message'), 5000)
+      
     }
   }
 
@@ -205,7 +201,6 @@ export default function ProjectsList() {
             : project
         )
       )
-      addNotification('success', t('notifications:taskCreated.title'), t('notifications:taskCreated.message'), 3000)
     } catch (error) {
       addNotification('error', t('notifications:createTaskError.title'), t('notifications:createTaskError.message'), 5000)
     }
@@ -218,11 +213,47 @@ export default function ProjectsList() {
         ...prev,
         [projectId]: prev[projectId].map((t) => (t.id === task.id ? task : t)),
       }))
-      addNotification('success', t('notifications:taskUpdated.title'), t('notifications:taskUpdated.message'), 3000)
     } catch (error) {
       addNotification('error', t('notifications:updateTaskError.title'), t('notifications:updateTaskError.message'), 5000)
     }
   }
+
+  const handleToggleTaskCompleted = async (projectId: number, taskId: number, updatedTask: Task) => {
+    try {
+      // Оптимистическое обновление
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((t) =>
+          t.id === taskId ? { ...updatedTask } : { ...t }
+        ),
+      }));
+  
+      // POST запрос
+      const task = await toggleTaskCompleted(projectId, taskId.toString());
+  
+      // Синхронизация с сервером
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((t) =>
+          t.id === task.id ? { ...task } : { ...t }
+        ),
+      }));
+    } catch (error) {
+      // Откат оптимистического обновления
+      setTasksByProject((prev) => ({
+        ...prev,
+        [projectId]: prev[projectId].map((t) =>
+          t.id === taskId ? { ...t, completed: !updatedTask.completed } : { ...t }
+        ),
+      }));
+      addNotification(
+        'error',
+        t('notifications:toggleTaskError.title'),
+        t('notifications:toggleTaskError.message'),
+        5000
+      );
+    }
+  };
 
   const handleDeleteTask = async (projectId: number, taskId: number) => {
     try {
@@ -238,7 +269,6 @@ export default function ProjectsList() {
             : project
         )
       )
-      addNotification('success', t('notifications:taskDeleted.title'), t('notifications:taskDeleted.message'), 3000)
     } catch (error) {
       addNotification('error', t('notifications:deleteTaskError.title'), t('notifications:deleteTaskError.message'), 5000)
     }
@@ -497,6 +527,9 @@ export default function ProjectsList() {
                       isExpanded={expandedProjects.has(project.id)}
                       onToggleExpanded={() => toggleProjectExpanded(project.id)}
                       onLeaveProject={() => handleLeaveProject(project.id)} // Передаем handleLeaveProject
+                      onToggleTaskCompleted={(projectId, taskId, updatedTask) =>
+                        handleToggleTaskCompleted(projectId, taskId, updatedTask)
+                      }
                       currentUser={currentUser!}
                     />
                   </div>
@@ -525,6 +558,9 @@ export default function ProjectsList() {
                     isExpanded={expandedProjects.has(project.id)}
                     onToggleExpanded={() => toggleProjectExpanded(project.id)}
                     onLeaveProject={() => handleLeaveProject(project.id)} // Передаем handleLeaveProject
+                    onToggleTaskCompleted={(projectId, taskId, updatedTask) =>
+                      handleToggleTaskCompleted(projectId, taskId, updatedTask)
+                    }
                     currentUser={currentUser!}
                   />
                 )
