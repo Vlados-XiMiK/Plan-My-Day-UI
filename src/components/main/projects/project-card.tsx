@@ -37,7 +37,7 @@ interface ProjectCardProps {
   projectMembers: ProjectMember[]
   onUpdateProject: (project: Project) => void
   onDeleteProject: (projectId: number) => void
-  onUpdateMembers: (projectId: number, members: ProjectMember[]) => void
+  onUpdateMembers: (projectId: number, members: ProjectMember[], isRoleUpdate?: boolean) => void
   onAddTask: (task: Task) => void
   onUpdateTask: (task: Task) => void
   onDeleteTask: (taskId: number) => void // Изменено с string на number
@@ -191,8 +191,8 @@ export default function ProjectCard({
     return formatDistanceToNow(createdDate, { addSuffix: true, locale })
   }
 
-  const handleUpdateMembers = (members: ProjectMember[]) => {
-    onUpdateMembers(project.id, members)
+  const handleUpdateMembers = (members: ProjectMember[], isRoleUpdate?: boolean) => {
+    onUpdateMembers(project.id, members, isRoleUpdate)
   }
 
   return (

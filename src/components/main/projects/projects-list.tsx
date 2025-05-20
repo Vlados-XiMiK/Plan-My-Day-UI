@@ -149,32 +149,37 @@ export default function ProjectsList() {
     }
   }
 
-  const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMember[]) => {
-    try {
-      const currentUserMember = members.find((m) => m.project === projectId && m.user === currentUser!.id)
-      const otherMembers = members.filter((m) => m.project !== projectId)
-      
-      if (updatedMembers.length > 0) {
-        for (const member of updatedMembers) {
-          await assignRole(projectId, { user: member.user, role: member.role })
-        }
+  // В projects-list.tsx
+const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMember[], isRoleUpdate: boolean = false) => {
+  try {
+    const currentUserMember = members.find((m) => m.project === projectId && m.user === currentUser!.id);
+    const otherMembers = members.filter((m) => m.project !== projectId);
+    
+    if (isRoleUpdate && updatedMembers.length > 0) {
+      for (const member of updatedMembers) {
+        await assignRole(projectId, { user: member.user, role: member.role });
       }
-
-      const membersData = await getProjectMemberships()
-      const updatedProjectMembers = membersData.results.filter((m: ProjectMember) => m.project === projectId)
-      
-      let finalMembers = updatedProjectMembers
-      if (currentUserMember && !updatedProjectMembers.some((m: ProjectMember) => m.user === currentUser!.id)) {
-        finalMembers = [...updatedProjectMembers, currentUserMember]
-      }
-
-      setMembers([...otherMembers, ...finalMembers])
-     
-    } catch (error) {
-      console.error('Error updating members:', error)
-      
     }
+
+    const membersData = await getProjectMemberships();
+    const updatedProjectMembers = membersData.results.filter((m: ProjectMember) => m.project === projectId);
+    
+    let finalMembers = updatedProjectMembers;
+    if (currentUserMember && !updatedProjectMembers.some((m: ProjectMember) => m.user === currentUser!.id)) {
+      finalMembers = [...updatedProjectMembers, currentUserMember];
+    }
+
+    setMembers([...otherMembers, ...finalMembers]);
+  } catch (error) {
+    console.error('Error updating members:', error);
+    addNotification(
+      'error',
+      t('notifications:updateMembersError.title'),
+      t('notifications:updateMembersError.message'),
+      5000
+    );
   }
+};
 
   const handleLeaveProject = async (projectId: number) => {
     try {

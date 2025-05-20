@@ -82,7 +82,10 @@ export const assignRole = async (projectId: number, data: { user: number; role: 
 
 // Kick a user from a project
 export const kickUser = async (projectId: number, data: { user: number }): Promise<void> => {
-  await axiosClient.post(`/projects/${projectId}/kick/`, data);
+  const response = await axiosClient.post(`/projects/${projectId}/kick/`, {
+    user_id: data.user,
+  });
+  return response.data;
 };
 
 // Leave a project

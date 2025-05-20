@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
 import { HTMLAttributes } from 'react'
-import { createProjectShareLink, leaveProject, kickUser, getProjectShareLinks, deleteProjectShareLink } from '@/api/projects'
+import { createProjectShareLink, kickUser, getProjectShareLinks, deleteProjectShareLink } from '@/api/projects'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
@@ -41,7 +41,7 @@ interface ProjectManageDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdateProject: (project: Project) => void
-  onUpdateMembers: (members: ProjectMember[]) => void
+  onUpdateMembers: (members: ProjectMember[], isRoleUpdate?: boolean) => void
   onDeleteProject: (projectId: number) => void
   currentUser: User
   canEdit: boolean
@@ -177,39 +177,39 @@ export default function ProjectManageDialog({
     }
   }
 
-  const saveRoleChanges = () => {
-    const updatedMembers = projectMembers
-      .map((member) => {
-        if (pendingRoleChanges[member.user] && pendingRoleChanges[member.user] !== member.role_name) {
-          return {
-            ...member,
-            role_name: pendingRoleChanges[member.user],
-            role: roles.find((r) => r.name === pendingRoleChanges[member.user])!.id,
-          }
-        }
-        return null
-      })
-      .filter((member): member is ProjectMember => member !== null)
-
-    console.log('Saving role changes:', {
-      projectId: project.id,
-      updatedMembers: updatedMembers.map((m) => ({
-        user: m.user,
-        role: m.role,
-        role_name: m.role_name,
-      })),
+const saveRoleChanges = () => {
+  const updatedMembers = projectMembers
+    .map((member) => {
+      if (pendingRoleChanges[member.user] && pendingRoleChanges[member.user] !== member.role_name) {
+        return {
+          ...member,
+          role_name: pendingRoleChanges[member.user],
+          role: roles.find((r) => r.name === pendingRoleChanges[member.user])!.id,
+        };
+      }
+      return null;
     })
+    .filter((member): member is ProjectMember => member !== null);
 
-    onUpdateMembers(updatedMembers)
-    setPendingRoleChanges({})
-    setHasRoleChanges(false)
-    addNotification(
-      'success',
-      t('notifications:rolesUpdated.title'),
-      t('notifications:rolesUpdated.message'),
-      3000
-    )
-  }
+  console.log('Saving role changes:', {
+    projectId: project.id,
+    updatedMembers: updatedMembers.map((m) => ({
+      user: m.user,
+      role: m.role,
+      role_name: m.role_name,
+    })),
+  });
+
+  onUpdateMembers(updatedMembers, true); // Передаём isRoleUpdate: true
+  setPendingRoleChanges({});
+  setHasRoleChanges(false);
+  addNotification(
+    'success',
+    t('notifications:rolesUpdated.title'),
+    t('notifications:rolesUpdated.message'),
+    3000
+  );
+};
 
   const cancelRoleChanges = () => {
     setPendingRoleChanges({})
@@ -265,7 +265,7 @@ export default function ProjectManageDialog({
       await kickUser(project.id, { user: userId })
       const member = projectMembers.find((m) => m.user === userId)
       const updatedMembers = projectMembers.filter((m) => m.user !== userId)
-      onUpdateMembers(updatedMembers)
+      onUpdateMembers(updatedMembers, false);
       if (member) {
         addNotification(
           'success',
