@@ -30,20 +30,20 @@ import { cn } from '@/lib/utils'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
 import { HTMLAttributes } from 'react'
-import { createProjectShareLink, leaveProject, kickUser } from '@/api/projects'
+import { createProjectShareLink, leaveProject, kickUser, getProjectShareLinks, deleteProjectShareLink } from '@/api/projects'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface ProjectManageDialogProps {
   project: Project
   projectMembers: ProjectMember[]
-  roles: Role[] // Добавили пропс для ролей
+  roles: Role[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdateProject: (project: Project) => void
   onUpdateMembers: (members: ProjectMember[]) => void
   onDeleteProject: (projectId: number) => void
-  currentUser: User // Сделали обязательным
+  currentUser: User
   canEdit: boolean
   isCreator: boolean
 }
@@ -71,7 +71,8 @@ export default function ProjectManageDialog({
   const [inviteLink, setInviteLink] = useState('')
   const [usageLimit, setUsageLimit] = useState<number>(1)
   const [expirationDate, setExpirationDate] = useState<Date | undefined>(undefined)
-  const [inviteRole, setInviteRole] = useState<string>('Viewer') // Добавили выбор роли
+  const [inviteRole, setInviteRole] = useState<string>('Viewer')
+  const [linkId, setLinkId] = useState<number | null>(null)
   const [isLinkGenerated, setIsLinkGenerated] = useState(false)
   const [isInviteSectionExpanded, setIsInviteSectionExpanded] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -79,12 +80,53 @@ export default function ProjectManageDialog({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  // Загрузка существующей ссылки при разворачивании секции приглашения
+  useEffect(() => {
+    if (isInviteSectionExpanded) {
+      const fetchShareLink = async () => {
+        try {
+          const shareLinksData = await getProjectShareLinks(project.id)
+          const activeLink = shareLinksData.results.find(
+            (link) => link.is_active && new Date(link.expires_at) > new Date()
+          )
+          if (activeLink) {
+            setInviteLink(activeLink.share_url)
+            setUsageLimit(activeLink.max_uses)
+            setExpirationDate(new Date(activeLink.expires_at))
+            setInviteRole(activeLink.role_name)
+            setLinkId(activeLink.id)
+            setIsLinkGenerated(true)
+          } else {
+            setInviteLink('')
+            setUsageLimit(1)
+            setExpirationDate(undefined)
+            setInviteRole('Viewer')
+            setLinkId(null)
+            setIsLinkGenerated(false)
+          }
+        } catch (error) {
+          console.error('Error fetching share link:', error)
+          addNotification(
+            'error',
+            t('notifications:fetchShareLinkError.title', 'Error'),
+            t('notifications:fetchShareLinkError.message', 'Failed to load share link.'),
+            5000
+          )
+        }
+      }
+
+      fetchShareLink()
+    }
+  }, [isInviteSectionExpanded, project.id, t, addNotification])
+
+  // Сброс полей при закрытии диалога
   useEffect(() => {
     if (!open) {
       setInviteLink('')
       setUsageLimit(1)
       setExpirationDate(undefined)
       setInviteRole('Viewer')
+      setLinkId(null)
       setIsLinkGenerated(false)
       setIsInviteSectionExpanded(false)
       setActiveTab('details')
@@ -128,7 +170,7 @@ export default function ProjectManageDialog({
           name: member.user_details.username,
           role: t(`projects:project_manage.roles.${role.toLowerCase()}`),
         }),
-        3000,
+        3000
       )
     }
   }
@@ -141,12 +183,12 @@ export default function ProjectManageDialog({
             ...member,
             role_name: pendingRoleChanges[member.user],
             role: roles.find((r) => r.name === pendingRoleChanges[member.user])!.id,
-          };
+          }
         }
-        return null;
+        return null
       })
-      .filter((member): member is ProjectMember => member !== null);
-  
+      .filter((member): member is ProjectMember => member !== null)
+
     console.log('Saving role changes:', {
       projectId: project.id,
       updatedMembers: updatedMembers.map((m) => ({
@@ -154,18 +196,18 @@ export default function ProjectManageDialog({
         role: m.role,
         role_name: m.role_name,
       })),
-    });
-  
-    onUpdateMembers(updatedMembers);
-    setPendingRoleChanges({});
-    setHasRoleChanges(false);
+    })
+
+    onUpdateMembers(updatedMembers)
+    setPendingRoleChanges({})
+    setHasRoleChanges(false)
     addNotification(
       'success',
       t('notifications:rolesUpdated.title'),
       t('notifications:rolesUpdated.message'),
-      3000,
-    );
-  };
+      3000
+    )
+  }
 
   const cancelRoleChanges = () => {
     setPendingRoleChanges({})
@@ -174,7 +216,7 @@ export default function ProjectManageDialog({
       'info',
       t('notifications:roleChangesCancelled.title'),
       t('notifications:roleChangesCancelled.message'),
-      3000,
+      3000
     )
   }
 
@@ -185,7 +227,7 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:permissionDenied.title'),
         t('notifications:permissionDenied.updateProject'),
-        5000,
+        5000
       )
       onOpenChange(false)
       return
@@ -202,7 +244,7 @@ export default function ProjectManageDialog({
       'success',
       t('notifications:projectUpdated.title'),
       t('notifications:projectUpdated.message', { title: name }),
-      3000,
+      3000
     )
     onOpenChange(false)
   }
@@ -213,7 +255,7 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:permissionDenied.title'),
         t('notifications:permissionDenied.removeMember'),
-        5000,
+        5000
       )
       return
     }
@@ -227,7 +269,7 @@ export default function ProjectManageDialog({
           'success',
           t('notifications:memberRemoved.title'),
           t('notifications:memberRemoved.message', { name: member.user_details.username }),
-          3000,
+          3000
         )
       }
     } catch (error) {
@@ -235,7 +277,7 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:removeMemberError.title'),
         t('notifications:removeMemberError.message'),
-        5000,
+        5000
       )
     }
   }
@@ -246,7 +288,7 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:permissionDenied.title'),
         t('notifications:permissionDenied.creatorCannotLeave'),
-        5000,
+        5000
       )
       return
     }
@@ -259,14 +301,14 @@ export default function ProjectManageDialog({
         'success',
         t('notifications:leftProject.title'),
         t('notifications:leftProject.message'),
-        3000,
+        3000
       )
     } catch (error) {
       addNotification(
         'error',
         t('notifications:leaveProjectError.title'),
         t('notifications:leaveProjectError.message'),
-        5000,
+        5000
       )
     }
   }
@@ -277,7 +319,7 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.usageLimit'),
-        5000,
+        5000
       )
       return
     }
@@ -286,7 +328,7 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.expirationDate'),
-        5000,
+        5000
       )
       return
     }
@@ -296,18 +338,18 @@ export default function ProjectManageDialog({
         'error',
         t('notifications:invalidInput.title'),
         t('notifications:invalidInput.invalidExpirationDate'),
-        5000,
+        5000
       )
       return
     }
     try {
-      const role = roles.find((r) => r.name === inviteRole)
+      const role = roles.find((r) => r.name === 'Viewer')
       if (!role) {
         addNotification(
           'error',
           t('notifications:invalidInput.title'),
           t('notifications:invalidInput.invalidRole'),
-          5000,
+          5000
         )
         return
       }
@@ -317,19 +359,20 @@ export default function ProjectManageDialog({
         expires_at: expirationDate.toISOString(),
       })
       setInviteLink(newLink.share_url)
+      setLinkId(newLink.id)
       setIsLinkGenerated(true)
       addNotification(
         'success',
         t('notifications:inviteLinkGenerated.title'),
         t('notifications:inviteLinkGenerated.message'),
-        3000,
+        3000
       )
     } catch (error) {
       addNotification(
         'error',
         t('notifications:createShareLinkError.title'),
         t('notifications:createShareLinkError.message'),
-        5000,
+        5000
       )
     }
   }
@@ -340,26 +383,43 @@ export default function ProjectManageDialog({
       'success',
       t('notifications:linkCopied.title'),
       t('notifications:linkCopied.message'),
-      3000,
+      3000
     )
   }
 
-  const deleteInviteLink = () => {
+  const deleteInviteLink = async () => {
+    if (linkId) {
+      try {
+        await deleteProjectShareLink(project.id, linkId)
+        addNotification(
+          'success',
+          t('notifications:linkDeleted.title'),
+          t('notifications:linkDeleted.message'),
+          3000
+        )
+      } catch (error) {
+        addNotification(
+          'error',
+          t('notifications:deleteShareLinkError.title', 'Error'),
+          t('notifications:deleteShareLinkError.message', 'Failed to delete share link.'),
+          5000
+        )
+        return
+      }
+    }
     setInviteLink('')
+    setUsageLimit(1)
+    setExpirationDate(undefined)
+    setInviteRole('Viewer')
+    setLinkId(null)
     setIsLinkGenerated(false)
-    addNotification(
-      'success',
-      t('notifications:linkDeleted.title'),
-      t('notifications:linkDeleted.message'),
-      3000,
-    )
   }
 
   const toggleInviteSection = () => {
     setIsInviteSectionExpanded(!isInviteSectionExpanded)
   }
 
-  const isGenerateButtonDisabled = !usageLimit || usageLimit < 1 || !expirationDate || !inviteRole
+  const isGenerateButtonDisabled = !usageLimit || usageLimit < 1 || !expirationDate
   const createdDate = new Date(project.created_at)
 
   return (
@@ -406,7 +466,7 @@ export default function ProjectManageDialog({
                 </div>
 
                 <div className="text-sm text-muted-foreground">
-                  {t('projects:project_manage.createdOn')} {formatDate(createdDate, "MMMM d, yyyy ',' h:mm")}
+                  {t('projects:project_manage.createdOn')} {formatDate(createdDate, 'MMMM d, yyyy \',\' h:mm')}
                 </div>
 
                 <DialogFooter>
@@ -451,9 +511,9 @@ export default function ProjectManageDialog({
                               <AvatarImage src={member.user_details.avatar} alt={member.user_details.username} />
                               <AvatarFallback>
                                 {member.user_details.username
-                                  .split(" ")
+                                  .split(' ')
                                   .map((n) => n[0])
-                                  .join("")
+                                  .join('')
                                   .substring(0, 2)
                                   .toUpperCase()}
                               </AvatarFallback>
@@ -467,7 +527,7 @@ export default function ProjectManageDialog({
                             <p className="text-sm font-medium">{member.user_details.username}</p>
                             <p className="text-xs text-muted-foreground">
                               {member.user_details.email}
-                              {member.user === project.owner ? ` ${t('projects:project_manage.creator')}` : ""}
+                              {member.user === project.owner ? ` ${t('projects:project_manage.creator')}` : ''}
                             </p>
                           </div>
                         </div>
@@ -476,13 +536,15 @@ export default function ProjectManageDialog({
                             <>
                               <Select
                                 value={pendingRoleChanges[member.user] || member.role_name}
-                                onValueChange={(value: ProjectMember['role_name']) => handleUpdateMemberRole(member.user, value)}
+                                onValueChange={(value: ProjectMember['role_name']) =>
+                                  handleUpdateMemberRole(member.user, value)
+                                }
                               >
                                 <SelectTrigger
                                   className={`h-8 min-w-[160px] ${
                                     pendingRoleChanges[member.user]
-                                      ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                                      : ""
+                                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                      : ''
                                   }`}
                                 >
                                   <SelectValue />
@@ -514,9 +576,7 @@ export default function ProjectManageDialog({
                       </motion.div>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {t('projects:project_manage.noMembers')}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('projects:project_manage.noMembers')}</p>
                   )}
                 </div>
 
@@ -545,7 +605,7 @@ export default function ProjectManageDialog({
                         {isInviteSectionExpanded && (
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
+                            animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.3 }}
                             className="overflow-hidden"
@@ -565,7 +625,7 @@ export default function ProjectManageDialog({
                                     onChange={(e) => setUsageLimit(Number.parseInt(e.target.value) || 0)}
                                     placeholder={t('projects:project_manage.placeholders.usageLimit')}
                                     className={`transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 ${
-                                      isLinkGenerated ? "bg-muted cursor-not-allowed" : ""
+                                      isLinkGenerated ? 'bg-muted cursor-not-allowed' : ''
                                     }`}
                                     disabled={isLinkGenerated}
                                   />
@@ -580,14 +640,16 @@ export default function ProjectManageDialog({
                                         id="expiration-date"
                                         variant="outline"
                                         className={cn(
-                                          "w-full justify-start text-left font-normal transition-all duration-200 focus:ring-2 focus:ring-purple-500/20",
-                                          !expirationDate && "text-muted-foreground",
-                                          isLinkGenerated && "bg-muted cursor-not-allowed",
+                                          'w-full justify-start text-left font-normal transition-all duration-200 focus:ring-2 focus:ring-purple-500/20',
+                                          !expirationDate && 'text-muted-foreground',
+                                          isLinkGenerated && 'bg-muted cursor-not-allowed'
                                         )}
                                         disabled={isLinkGenerated}
                                       >
                                         <Calendar className="mr-2 h-4 w-4" />
-                                        {expirationDate ? formatDate(expirationDate, "PPP") : t('projects:project_manage.placeholders.selectDate')}
+                                        {expirationDate
+                                          ? formatDate(expirationDate, 'PPP')
+                                          : t('projects:project_manage.placeholders.selectDate')}
                                       </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0 pointer-events-auto">
@@ -608,27 +670,12 @@ export default function ProjectManageDialog({
                                 <Label htmlFor="invite-role" className="text-xs">
                                   {t('projects:project_manage.labels.role')}
                                 </Label>
-                                <Select
-                                  value={inviteRole}
-                                  onValueChange={setInviteRole}
-                                  disabled={isLinkGenerated}
-                                >
-                                  <SelectTrigger
-                                    id="invite-role"
-                                    className={`transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 ${
-                                      isLinkGenerated ? "bg-muted cursor-not-allowed" : ""
-                                    }`}
-                                  >
-                                    <SelectValue placeholder={t('projects:project_manage.placeholders.role')} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {roles.map((role) => (
-                                      <SelectItem key={role.id} value={role.name}>
-                                        {t(`projects:project_manage.roles.${role.name.toLowerCase()}`)}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                <Input
+                                  id="invite-role"
+                                  value={t(`projects:project_manage.roles.viewer`)}
+                                  readOnly
+                                  className="bg-muted cursor-not-allowed"
+                                />
                               </div>
 
                               <div className="space-y-2">
@@ -656,7 +703,7 @@ export default function ProjectManageDialog({
                                     readOnly
                                     placeholder={t('projects:project_manage.placeholders.inviteLink')}
                                     className={`transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 ${
-                                      isLinkGenerated ? "bg-white dark:bg-gray-800" : "bg-muted"
+                                      isLinkGenerated ? 'bg-white dark:bg-gray-800' : 'bg-muted'
                                     }`}
                                   />
                                   {isLinkGenerated && (
@@ -686,8 +733,8 @@ export default function ProjectManageDialog({
                                   <p className="text-xs text-muted-foreground">
                                     {t('projects:project_manage.linkInfo', {
                                       usageLimit,
-                                      expirationDate: formatDate(expirationDate!, "MMMM d, yyyy"),
-                                      plural: usageLimit !== 1 ? "" : ""
+                                      expirationDate: formatDate(expirationDate!, 'MMMM d, yyyy'),
+                                      plural: usageLimit !== 1 ? '' : '',
                                     })}
                                     <br />
                                     <span className="text-amber-500 dark:text-amber-400">

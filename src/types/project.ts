@@ -33,14 +33,16 @@ export interface Project {
 }
 
 export interface ProjectShareLink {
-  id: number;
-  share_url: string;
-  role_name: string;
-  max_uses: number;
-  expires_at: string;
-  is_active: boolean;
-  created_by: string;
-  created_at: string;
+  id: number
+  project: number
+  share_url: string
+  role: number
+  role_name: string // Добавлено для соответствия ответу сервера
+  max_uses: number
+  expires_at: string
+  is_active: boolean // Добавлено
+  created_by: string // Добавлено
+  created_at: string
 }
 
 export interface PaginatedProjects {
