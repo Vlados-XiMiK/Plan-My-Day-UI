@@ -14,26 +14,26 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { Project } from '@/types/project'
 import { motion, MotionProps } from 'framer-motion'
-import { currentUser } from '@/lib/project-data' // Updated import path to match provided data
 import { HTMLAttributes } from 'react'
 import { useNotification } from '@/contexts/notification-context'
 import { useTranslation } from 'react-i18next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/projects/avatar'
 import { Badge } from '@/components/ui/badge'
+import { User } from '@/types/project'
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
 
 interface CreateProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreateProject: (project: Omit<Project, 'id'>) => void
+  onCreateProject: (project: { name: string; description: string }) => void
+  currentUser: User | null // Допускаем null для безопасности
 }
 
-export default function CreateProjectDialog({ open, onOpenChange, onCreateProject }: CreateProjectDialogProps) {
+export default function CreateProjectDialog({ open, onOpenChange, onCreateProject, currentUser }: CreateProjectDialogProps) {
   const { t } = useTranslation(['popups', 'notifications'])
-  const [name, setName] = useState('') // Changed from title to name
+  const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const { addNotification } = useNotification()
 
@@ -47,21 +47,35 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
 
     try {
       onCreateProject({
-        name, // Changed from title to name
+        name,
         description,
-        owner: currentUser.id, // Changed from createdBy to owner
-        tasks_count: 0, // Added required field
-        created_at: new Date().toISOString(), // Changed from createdAt to created_at
       })
 
       addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message', { title: name }), 5000)
 
-      setName('') // Updated to match state
+      setName('')
       setDescription('')
       onOpenChange(false)
     } catch {
       addNotification('error', t('notifications:projectCreationFailed.title'), t('notifications:projectCreationFailed.message'), 5000)
     }
+  }
+
+  // Если currentUser отсутствует, показываем заглушку
+  if (!currentUser) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px] max-w-[95vw] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>{t('popups:create_project.title')}</DialogTitle>
+            <DialogDescription>{t('popups:create_project.description')}</DialogDescription>
+          </DialogHeader>
+          <div className="text-center py-4 text-muted-foreground">
+            {t('popups:loading_user')}
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
   }
 
   return (
@@ -80,9 +94,9 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
               transition={{ duration: 0.3 }}
               {...({} as MotionDivProps)}
             >
-              <Label htmlFor="name">{t('popups:create_project.labels.title')}</Label> {/* Updated htmlFor to match id */}
+              <Label htmlFor="name">{t('popups:create_project.labels.title')}</Label>
               <Input
-                id="name" // Changed from title to name
+                id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('popups:create_project.placeholders.title')}
@@ -142,7 +156,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
                         .toUpperCase()}
                     </div>
                   )}
-                  <span>{currentUser.username}</span> {/* Changed from name to username */}
+                  <span>{currentUser.username}</span>
                   <span className="text-xs text-muted-foreground">{t('popups:create_project.currentUser')}</span>
                 </Badge>
               </div>

@@ -105,37 +105,28 @@ export default function ProjectsList() {
     });
   };
 
-  const handleCreateProject = async (newProject: Omit<Project, 'id'>) => {
+  const handleCreateProject = async (newProject: { name: string; description: string }) => {
     try {
+      console.log('Creating project:', newProject)
       const project = await createProject({
         name: newProject.name,
         description: newProject.description,
-      });
-      const newMember: ProjectMember = {
-        id: members.length + 1, // Временный ID, заменится после вызова assignRole
-        user: currentUser!.id,
-        user_name: currentUser!.username,
-        user_details: {
-          id: currentUser!.id,
-          username: currentUser!.username,
-          email: currentUser!.email,
-          avatar: currentUser!.avatar,
-        },
-        project: project.id,
-        role: 1,
-        role_name: 'Admin',
-      };
-      await assignRole(project.id, { user: currentUser!.id, role: 1 });
+      })
+      console.log('Created project:', project)
 
-      setProjects([...projects, project]);
-      setMembers([...members, newMember]);
-      setTasksByProject((prev) => ({ ...prev, [project.id]: [] }));
-      setIsCreateDialogOpen(false);
-      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message'), 3000);
-    } catch (error) {
-      addNotification('error', t('notifications:createProjectError.title'), t('notifications:createProjectError.message'), 5000);
+      // Загружаем актуальный список участников с сервера
+      const membersData = await getProjectMemberships()
+      setMembers(membersData.results)
+
+      setProjects([...projects, project])
+      setTasksByProject((prev) => ({ ...prev, [project.id]: [] }))
+      setIsCreateDialogOpen(false)
+      addNotification('success', t('notifications:projectCreated.title'), t('notifications:projectCreated.message'), 3000)
+    } catch (error: any) {
+      console.error('Error in handleCreateProject:', error.message)
+      addNotification('error', t('notifications:createProjectError.title'), t('notifications:createProjectError.message'), 5000)
     }
-  };
+  }
 
   const handleUpdateProject = async (updatedProject: Project) => {
     try {
@@ -166,16 +157,34 @@ export default function ProjectsList() {
 
   const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMember[]) => {
     try {
-      const otherMembers = members.filter((m) => m.project !== projectId);
+      // Сохраняем текущего пользователя из текущих members
+      const currentUserMember = members.find((m) => m.project === projectId && m.user === currentUser!.id)
+      // Фильтруем участников, исключая текущий проект
+      const otherMembers = members.filter((m) => m.project !== projectId)
+      
+      // Выполняем назначение ролей для updatedMembers
       for (const member of updatedMembers) {
-        await assignRole(projectId, { user: member.user, role: member.role });
+        await assignRole(projectId, { user: member.user, role: member.role })
       }
-      setMembers([...otherMembers, ...updatedMembers]);
-      addNotification('success', t('notifications:membersUpdated.title'), t('notifications:membersUpdated.message'), 3000);
+  
+      // Загружаем актуальный список участников с сервера
+      const membersData = await getProjectMemberships()
+      const updatedProjectMembers = membersData.results.filter((m: ProjectMember) => m.project === projectId)
+      
+      // Если текущий пользователь не в updatedMembers, добавляем его
+      let finalMembers = updatedProjectMembers
+      if (currentUserMember && !updatedProjectMembers.some((m: ProjectMember) => m.user === currentUser!.id)) {
+        finalMembers = [...updatedProjectMembers, currentUserMember]
+      }
+
+      // Обновляем состояние members
+      setMembers([...otherMembers, ...finalMembers])
+      addNotification('success', t('notifications:membersUpdated.title'), t('notifications:membersUpdated.message'), 3000)
     } catch (error) {
-      addNotification('error', t('notifications:updateMembersError.title'), t('notifications:updateMembersError.message'), 5000);
+      console.error('Error updating members:', error)
+      addNotification('error', t('notifications:updateMembersError.title'), t('notifications:updateMembersError.message'), 5000)
     }
-  };
+  }
 
   const handleAddTask = async (projectId: number, newTask: Task) => {
     try {
@@ -521,6 +530,7 @@ export default function ProjectsList() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onCreateProject={handleCreateProject}
+        currentUser={currentUser}
       />
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
         <DialogContent className='sm:max-w-[500px] max-w-[95vw]'>
