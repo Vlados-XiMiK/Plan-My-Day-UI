@@ -200,6 +200,6 @@ export const getCurrentUser = async (): Promise<User> => {
     id: response.data.id,
     username: response.data.username,
     email: response.data.email,
-    avatar: '', // Всегда пустая строка
+    avatar: '',
   };
 };

@@ -11,7 +11,7 @@ export interface Task {
   description: string;
   category: string | number | null;
   due_date: string | null;
-  priority: 'H' | 'M' | 'L';
+  priority: "H" | "M" | "L";
   completed: boolean;
   is_favorite: boolean;
   user: number;
@@ -33,16 +33,16 @@ export interface Project {
 }
 
 export interface ProjectShareLink {
-  id: number
-  project: number
-  share_url: string
-  role: number
-  role_name: string // Добавлено для соответствия ответу сервера
-  max_uses: number
-  expires_at: string
-  is_active: boolean // Добавлено
-  created_by: string // Добавлено
-  created_at: string
+  id: number;
+  project: number;
+  share_url: string;
+  role: number;
+  role_name: string;
+  max_uses: number;
+  expires_at: string;
+  is_active: boolean;
+  created_by: string;
+  created_at: string;
 }
 
 export interface PaginatedProjects {

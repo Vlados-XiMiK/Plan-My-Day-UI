@@ -1,18 +1,40 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { LayoutGrid, LayoutList, PlusCircle } from 'lucide-react'
-import ProjectCard from './project-card'
-import CreateProjectDialog from './create-project-dialog'
-import type { Project, ProjectShareLink, Task, User } from '@/types/project'
-import type { ProjectMember, Role } from '@/types/roles'
-import { getProjects, getProjectMemberships, getProjectShareLinks, getProjectTasks, getCurrentUser, createProject, createProjectShareLink, updateProject, deleteProject, createTask, updateTask, deleteTask, assignRole, getProjectRoles, leaveProject, toggleTaskCompleted } from '@/api/projects'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useTranslation } from 'react-i18next'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { LayoutGrid, LayoutList, PlusCircle } from "lucide-react";
+import ProjectCard from "./project-card";
+import CreateProjectDialog from "./create-project-dialog";
+import type { Project, ProjectShareLink, Task, User } from "@/types/project";
+import type { ProjectMember, Role } from "@/types/roles";
+import {
+  getProjects,
+  getProjectMemberships,
+  getProjectShareLinks,
+  getProjectTasks,
+  getCurrentUser,
+  createProject,
+  createProjectShareLink,
+  updateProject,
+  deleteProject,
+  createTask,
+  updateTask,
+  deleteTask,
+  assignRole,
+  getProjectRoles,
+  leaveProject,
+  toggleTaskCompleted,
+} from "@/api/projects";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -20,241 +42,316 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useNotification } from '@/contexts/notification-context'
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useNotification } from "@/contexts/notification-context";
 
-type ViewMode = 'list' | 'grid'
+type ViewMode = "list" | "grid";
 
 export default function ProjectsList() {
-  const { t } = useTranslation(['projects', 'notifications'])
-  const { addNotification } = useNotification()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [members, setMembers] = useState<ProjectMember[]>([])
-  const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>([])
-  const [tasksByProject, setTasksByProject] = useState<{ [projectId: number]: Task[] }>({})
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
-  const [roles, setRoles] = useState<Role[]>([])
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set())
-  const [shareRole, setShareRole] = useState<string>('Viewer')
-  const [maxUses, setMaxUses] = useState<string>('5')
-  const [expiresAt, setExpiresAt] = useState<string>('')
+  const { t } = useTranslation(["projects", "notifications"]);
+  const { addNotification } = useNotification();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [members, setMembers] = useState<ProjectMember[]>([]);
+  const [shareLinks, setShareLinks] = useState<ProjectShareLink[]>([]);
+  const [tasksByProject, setTasksByProject] = useState<{
+    [projectId: number]: Task[];
+  }>({});
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null
+  );
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(
+    new Set()
+  );
+  const [shareRole, setShareRole] = useState<string>("Viewer");
+  const [maxUses, setMaxUses] = useState<string>("5");
+  const [expiresAt, setExpiresAt] = useState<string>("");
 
-  // Функция для рефетча данных
+  // Function for fetching data
   const fetchData = async () => {
     try {
       // Load current user
-      const user = await getCurrentUser()
-      setCurrentUser(user)
+      const user = await getCurrentUser();
+      setCurrentUser(user);
 
       // Load projects
-      const projectsData = await getProjects()
-      setProjects(projectsData.results)
+      const projectsData = await getProjects();
+      setProjects(projectsData.results);
 
       // Load roles
-      const rolesData = await getProjectRoles()
-      setRoles(rolesData.results)
+      const rolesData = await getProjectRoles();
+      setRoles(rolesData.results);
 
       // Load members
-      const membersData = await getProjectMemberships()
-      setMembers(membersData.results)
+      const membersData = await getProjectMemberships();
+      setMembers(membersData.results);
 
       // Load share links
       const shareLinksData = await Promise.all(
         projectsData.results.map(async (project) => {
-          const links = await getProjectShareLinks(project.id)
-          return links.results
+          const links = await getProjectShareLinks(project.id);
+          return links.results;
         })
-      )
-      setShareLinks(shareLinksData.flat())
+      );
+      setShareLinks(shareLinksData.flat());
 
       // Load tasks for each project
       const tasksData = await Promise.all(
         projectsData.results.map(async (project) => {
-          const tasks = await getProjectTasks(project.id)
-          return { projectId: project.id, tasks: tasks.results }
+          const tasks = await getProjectTasks(project.id);
+          return { projectId: project.id, tasks: tasks.results };
         })
-      )
-      const tasksMap = tasksData.reduce((acc, { projectId, tasks }) => ({
-        ...acc,
-        [projectId]: tasks
-      }), {})
-      setTasksByProject(tasksMap)
-    } catch (error) {
-      addNotification('error', t('notifications:fetchError.title'), t('notifications:fetchError.message'), 5000)
+      );
+      const tasksMap = tasksData.reduce(
+        (acc, { projectId, tasks }) => ({
+          ...acc,
+          [projectId]: tasks,
+        }),
+        {}
+      );
+      setTasksByProject(tasksMap);
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:fetchError.title"),
+        t("notifications:fetchError.message"),
+        5000
+      );
     }
-  }
+  };
 
   // Load data on mount
   useEffect(() => {
-    fetchData()
-  }, [t, addNotification])
+    fetchData(); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t, addNotification]);
 
   const toggleProjectExpanded = (projectId: number) => {
     setExpandedProjects((prev) => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(projectId)) {
-        newSet.delete(projectId)
+        newSet.delete(projectId);
       } else {
-        newSet.add(projectId)
+        newSet.add(projectId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
-  const handleCreateProject = async (newProject: { name: string; description: string }) => {
+  const handleCreateProject = async (newProject: {
+    name: string;
+    description: string;
+  }) => {
     try {
-      console.log('Creating project:', newProject)
-      const project = await createProject({
+      // console.log("Creating project:", newProject);
+      /* const project = */ await createProject({
         name: newProject.name,
         description: newProject.description,
-      })
-      console.log('Created project:', project)
+      });
+      // console.log("Created project:", project);
 
-      // Вызываем рефетч для обновления данных
-      await fetchData()
+      // Call refetch to update data
+      await fetchData();
 
-      setIsCreateDialogOpen(false)
-    } catch (error: any) {
-      console.error('Error in handleCreateProject:', error.message)
-      addNotification('error', t('notifications:createProjectError.title'), t('notifications:createProjectError.message'), 5000)
+      setIsCreateDialogOpen(false);
+    } catch {
+      // console.error('Error in handleCreateProject:', error.message)
+      addNotification(
+        "error",
+        t("notifications:createProjectError.title"),
+        t("notifications:createProjectError.message"),
+        5000
+      );
     }
-  }
+  };
 
   const handleUpdateProject = async (updatedProject: Project) => {
     try {
-      const project = await updateProject(updatedProject.id, updatedProject)
-      setProjects(projects.map((p) => (p.id === project.id ? project : p)))
-    } catch (error) {
-    }
-  }
+      const project = await updateProject(updatedProject.id, updatedProject);
+      setProjects(projects.map((p) => (p.id === project.id ? project : p)));
+    } catch {}
+  };
 
   const handleDeleteProject = async (projectId: number) => {
     try {
-      await deleteProject(projectId)
-      setProjects(projects.filter((project) => project.id !== projectId))
-      setMembers(members.filter((member) => member.project !== projectId))
+      await deleteProject(projectId);
+      setProjects(projects.filter((project) => project.id !== projectId));
+      setMembers(members.filter((member) => member.project !== projectId));
       setTasksByProject((prev) => {
-        const newTasks = { ...prev }
-        delete newTasks[projectId]
-        return newTasks
-      })
-      setShareLinks(shareLinks.filter((link) => link.id !== projectId))
-    } catch (error) {
-      addNotification('error', t('notifications:deleteProjectError.title'), t('notifications:deleteProjectError.message'), 5000)
+        const newTasks = { ...prev };
+        delete newTasks[projectId];
+        return newTasks;
+      });
+      setShareLinks(shareLinks.filter((link) => link.id !== projectId));
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:deleteProjectError.title"),
+        t("notifications:deleteProjectError.message"),
+        5000
+      );
     }
-  }
+  };
 
-  // В projects-list.tsx
-const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMember[], isRoleUpdate: boolean = false) => {
-  try {
-    const currentUserMember = members.find((m) => m.project === projectId && m.user === currentUser!.id);
-    const otherMembers = members.filter((m) => m.project !== projectId);
-    
-    if (isRoleUpdate && updatedMembers.length > 0) {
-      for (const member of updatedMembers) {
-        await assignRole(projectId, { user: member.user, role: member.role });
+  const handleUpdateMembers = async (
+    projectId: number,
+    updatedMembers: ProjectMember[],
+    isRoleUpdate: boolean = false
+  ) => {
+    try {
+      const currentUserMember = members.find(
+        (m) => m.project === projectId && m.user === currentUser!.id
+      );
+      const otherMembers = members.filter((m) => m.project !== projectId);
+
+      if (isRoleUpdate && updatedMembers.length > 0) {
+        for (const member of updatedMembers) {
+          await assignRole(projectId, { user: member.user, role: member.role });
+        }
       }
-    }
 
-    const membersData = await getProjectMemberships();
-    const updatedProjectMembers = membersData.results.filter((m: ProjectMember) => m.project === projectId);
-    
-    let finalMembers = updatedProjectMembers;
-    if (currentUserMember && !updatedProjectMembers.some((m: ProjectMember) => m.user === currentUser!.id)) {
-      finalMembers = [...updatedProjectMembers, currentUserMember];
-    }
+      const membersData = await getProjectMemberships();
+      const updatedProjectMembers = membersData.results.filter(
+        (m: ProjectMember) => m.project === projectId
+      );
 
-    setMembers([...otherMembers, ...finalMembers]);
-  } catch (error) {
-    console.error('Error updating members:', error);
-    addNotification(
-      'error',
-      t('notifications:updateMembersError.title'),
-      t('notifications:updateMembersError.message'),
-      5000
-    );
-  }
-};
+      let finalMembers = updatedProjectMembers;
+      if (
+        currentUserMember &&
+        !updatedProjectMembers.some(
+          (m: ProjectMember) => m.user === currentUser!.id
+        )
+      ) {
+        finalMembers = [...updatedProjectMembers, currentUserMember];
+      }
+
+      setMembers([...otherMembers, ...finalMembers]);
+    } catch /*(error)*/ {
+      // console.error("Error updating members:", error);
+      addNotification(
+        "error",
+        t("notifications:updateMembersError.title"),
+        t("notifications:updateMembersError.message"),
+        5000
+      );
+    }
+  };
 
   const handleLeaveProject = async (projectId: number) => {
     try {
-      await leaveProject(projectId)
-      // Вызываем рефетч для обновления данных
-      await fetchData()
-      addNotification('success', t('notifications:leftProject.title'), t('notifications:leftProject.message'), 3000)
-    } catch (error) {
-      addNotification('error', t('notifications:leaveProjectError.title'), t('notifications:leaveProjectError.message'), 5000)
+      await leaveProject(projectId);
+      await fetchData();
+      addNotification(
+        "success",
+        t("notifications:leftProject.title"),
+        t("notifications:leftProject.message"),
+        3000
+      );
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:leaveProjectError.title"),
+        t("notifications:leaveProjectError.message"),
+        5000
+      );
     }
-  }
+  };
 
   const handleAddTask = async (projectId: number, newTask: Task) => {
     try {
-      const task = await createTask(projectId, newTask)
+      const task = await createTask(projectId, newTask);
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: [...(prev[projectId] || []), task],
-      }))
+      }));
       setProjects((prev) =>
         prev.map((project) =>
           project.id === projectId
-            ? { ...project, tasks_count: (tasksByProject[projectId] || []).length + 1 }
+            ? {
+                ...project,
+                tasks_count: (tasksByProject[projectId] || []).length + 1,
+              }
             : project
         )
-      )
-    } catch (error) {
-      addNotification('error', t('notifications:createTaskError.title'), t('notifications:createTaskError.message'), 5000)
+      );
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:createTaskError.title"),
+        t("notifications:createTaskError.message"),
+        5000
+      );
     }
-  }
+  };
 
   const handleUpdateTask = async (projectId: number, updatedTask: Task) => {
     try {
-      const task = await updateTask(projectId, updatedTask.id.toString(), updatedTask)
+      const task = await updateTask(
+        projectId,
+        updatedTask.id.toString(),
+        updatedTask
+      );
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].map((t) => (t.id === task.id ? task : t)),
-      }))
-    } catch (error) {
-      addNotification('error', t('notifications:updateTaskError.title'), t('notifications:updateTaskError.message'), 5000)
+      }));
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:updateTaskError.title"),
+        t("notifications:updateTaskError.message"),
+        5000
+      );
     }
-  }
+  };
 
-  const handleToggleTaskCompleted = async (projectId: number, taskId: number, updatedTask: Task) => {
+  const handleToggleTaskCompleted = async (
+    projectId: number,
+    taskId: number,
+    updatedTask: Task
+  ) => {
     try {
-      // Оптимистическое обновление
+      // Optimistic update
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].map((t) =>
           t.id === taskId ? { ...updatedTask } : { ...t }
         ),
       }));
-  
-      // POST запрос
+
       const task = await toggleTaskCompleted(projectId, taskId.toString());
-  
-      // Синхронизация с сервером
+
+      // Synchronization with the server
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].map((t) =>
           t.id === task.id ? { ...task } : { ...t }
         ),
       }));
-    } catch (error) {
-      // Откат оптимистического обновления
+    } catch {
+      // Rollback of optimistic update
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].map((t) =>
-          t.id === taskId ? { ...t, completed: !updatedTask.completed } : { ...t }
+          t.id === taskId
+            ? { ...t, completed: !updatedTask.completed }
+            : { ...t }
         ),
       }));
       addNotification(
-        'error',
-        t('notifications:toggleTaskError.title'),
-        t('notifications:toggleTaskError.message'),
+        "error",
+        t("notifications:toggleTaskError.title"),
+        t("notifications:toggleTaskError.message"),
         5000
       );
     }
@@ -262,261 +359,292 @@ const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMem
 
   const handleDeleteTask = async (projectId: number, taskId: number) => {
     try {
-      await deleteTask(projectId, taskId.toString())
+      await deleteTask(projectId, taskId.toString());
       setTasksByProject((prev) => ({
         ...prev,
         [projectId]: prev[projectId].filter((task) => task.id !== taskId),
-      }))
+      }));
       setProjects((prev) =>
         prev.map((project) =>
           project.id === projectId
-            ? { ...project, tasks_count: (tasksByProject[projectId] || []).length - 1 }
+            ? {
+                ...project,
+                tasks_count: (tasksByProject[projectId] || []).length - 1,
+              }
             : project
         )
-      )
-    } catch (error) {
-      addNotification('error', t('notifications:deleteTaskError.title'), t('notifications:deleteTaskError.message'), 5000)
+      );
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:deleteTaskError.title"),
+        t("notifications:deleteTaskError.message"),
+        5000
+      );
     }
-  }
+  };
 
   const openShareDialog = (projectId: number) => {
-    setSelectedProjectId(projectId)
-    setShareRole('Viewer')
-    setMaxUses('5')
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    setExpiresAt(tomorrow.toISOString().split('T')[0])
-    setIsShareDialogOpen(true)
-  }
+    setSelectedProjectId(projectId);
+    setShareRole("Viewer");
+    setMaxUses("5");
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setExpiresAt(tomorrow.toISOString().split("T")[0]);
+    setIsShareDialogOpen(true);
+  };
 
   const handleCreateShareLink = async () => {
-    if (!selectedProjectId) return
+    if (!selectedProjectId) return;
 
     if (!expiresAt || new Date(expiresAt) <= new Date()) {
       addNotification(
-        'error',
-        t('notifications:invalidInput.title'),
-        t('notifications:invalidInput.shareLinkExpiresAt'),
+        "error",
+        t("notifications:invalidInput.title"),
+        t("notifications:invalidInput.shareLinkExpiresAt"),
         5000
-      )
-      return
+      );
+      return;
     }
 
     if (!maxUses || parseInt(maxUses) <= 0) {
       addNotification(
-        'error',
-        t('notifications:invalidInput.title'),
-        t('notifications:invalidInput.shareLinkMaxUses'),
+        "error",
+        t("notifications:invalidInput.title"),
+        t("notifications:invalidInput.shareLinkMaxUses"),
         5000
-      )
-      return
+      );
+      return;
     }
 
     try {
-      const role = roles.find((r) => r.name === shareRole)
-      if (!role) throw new Error('Role not found')
+      const role = roles.find((r) => r.name === shareRole);
+      if (!role) throw new Error("Role not found");
       const newShareLink = await createProjectShareLink(selectedProjectId, {
         role: role.id,
         max_uses: parseInt(maxUses),
         expires_at: new Date(expiresAt).toISOString(),
-      })
-      setShareLinks([...shareLinks, newShareLink])
-      setIsShareDialogOpen(false)
+      });
+      setShareLinks([...shareLinks, newShareLink]);
+      setIsShareDialogOpen(false);
       addNotification(
-        'success',
-        t('notifications:shareLinkCreated.title'),
-        t('notifications:shareLinkCreated.message', { projectId: selectedProjectId }),
+        "success",
+        t("notifications:shareLinkCreated.title"),
+        t("notifications:shareLinkCreated.message", {
+          projectId: selectedProjectId,
+        }),
         3000
-      )
-    } catch (error) {
-      addNotification('error', t('notifications:createShareLinkError.title'), t('notifications:createShareLinkError.message'), 5000)
+      );
+    } catch {
+      addNotification(
+        "error",
+        t("notifications:createShareLinkError.title"),
+        t("notifications:createShareLinkError.message"),
+        5000
+      );
     }
-  }
+  };
 
   return (
-    <div className='space-y-6'>
-      <div className='flex justify-between items-center'>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <TooltipProvider>
           <ToggleGroup
-            type='single'
+            type="single"
             value={viewMode}
             onValueChange={(value) => value && setViewMode(value as ViewMode)}
           >
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem value='list' aria-label={t('projects:projects_list.tooltips.listView')}>
-                  <LayoutList className='h-4 w-4' />
+                <ToggleGroupItem
+                  value="list"
+                  aria-label={t("projects:projects_list.tooltips.listView")}
+                >
+                  <LayoutList className="h-4 w-4" />
                 </ToggleGroupItem>
               </TooltipTrigger>
-              <TooltipContent>{t('projects:projects_list.tooltips.listView')}</TooltipContent>
+              <TooltipContent>
+                {t("projects:projects_list.tooltips.listView")}
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem value='grid' aria-label={t('projects:projects_list.tooltips.gridView')}>
-                  <LayoutGrid className='h-4 w-4' />
+                <ToggleGroupItem
+                  value="grid"
+                  aria-label={t("projects:projects_list.tooltips.gridView")}
+                >
+                  <LayoutGrid className="h-4 w-4" />
                 </ToggleGroupItem>
               </TooltipTrigger>
-              <TooltipContent>{t('projects:projects_list.tooltips.gridView')}</TooltipContent>
+              <TooltipContent>
+                {t("projects:projects_list.tooltips.gridView")}
+              </TooltipContent>
             </Tooltip>
           </ToggleGroup>
         </TooltipProvider>
 
-        <Button onClick={() => setIsCreateDialogOpen(true)} className='bg-purple-600 hover:bg-purple-700'>
-          <PlusCircle className='mr-2 h-4 w-4' />
-          {t('projects:projects_list.buttons.newProject')}
+        <Button
+          onClick={() => setIsCreateDialogOpen(true)}
+          className="bg-purple-600 hover:bg-purple-700"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          {t("projects:projects_list.buttons.newProject")}
         </Button>
       </div>
 
       {projects?.length === 0 ? (
-        <div className='flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center relative'>
-          <div className='relative w-64 h-64 mb-6'>
-            <div className='absolute inset-0 bg-purple-100 dark:bg-purple-900/20 rounded-full opacity-70 animate-pulse'></div>
-            <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 transition-all duration-700 hover:scale-110'>
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center relative">
+          <div className="relative w-64 h-64 mb-6">
+            <div className="absolute inset-0 bg-purple-100 dark:bg-purple-900/20 rounded-full opacity-70 animate-pulse"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 transition-all duration-700 hover:scale-110">
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='text-purple-500'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-purple-500"
               >
-                <path d='M2 9V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1' />
-                <path d='M2 13h10' />
-                <path d='M5 16l-3 3 3 3' />
+                <path d="M2 9V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1" />
+                <path d="M2 13h10" />
+                <path d="M5 16l-3 3 3 3" />
               </svg>
             </div>
             <div
-              className='absolute w-20 h-20 top-0 right-0 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center animate-bounce'
-              style={{ animationDuration: '3s' }}
+              className="absolute w-20 h-20 top-0 right-0 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center animate-bounce"
+              style={{ animationDuration: "3s" }}
             >
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='w-10 h-10 text-green-500'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-10 h-10 text-green-500"
               >
-                <path d='M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z' />
-                <path d='m9 12 2 2 4-4' />
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                <path d="m9 12 2 2 4-4" />
               </svg>
             </div>
             <div
-              className='absolute w-16 h-16 bottom-0 left-0 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center animate-bounce'
-              style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
+              className="absolute w-16 h-16 bottom-0 left-0 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center animate-bounce"
+              style={{ animationDuration: "2.5s", animationDelay: "0.5s" }}
             >
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='w-8 h-8 text-blue-500'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-8 h-8 text-blue-500"
               >
-                <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                <circle cx='9' cy='7' r='4' />
-                <path d='M22 21v-2a4 4 0 0 0-3-3.87' />
-                <path d='M16 3.13a4 4 0 0 1 0 7.75' />
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
             <div
-              className='absolute w-14 h-14 bottom-5 right-5 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center animate-bounce'
-              style={{ animationDuration: '3.5s', animationDelay: '0.7s' }}
+              className="absolute w-14 h-14 bottom-5 right-5 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center animate-bounce"
+              style={{ animationDuration: "3.5s", animationDelay: "0.7s" }}
             >
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='w-7 h-7 text-yellow-500'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-7 h-7 text-yellow-500"
               >
-                <line x1='8' y1='6' x2='21' y2='6'></line>
-                <line x1='8' y1='12' x2='21' y2='12'></line>
-                <line x1='8' y1='18' x2='21' y2='18'></line>
-                <line x1='3' y1='6' x2='3.01' y2='6'></line>
-                <line x1='3' y1='12' x2='3.01' y2='12'></line>
-                <line x1='3' y1='18' x2='3.01' y2='18'></line>
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
               </svg>
             </div>
           </div>
-          <div className='relative mb-4'>
-            <div className='absolute -inset-1 bg-gradient-to-r from-purple-600 via-purple-400 to-purple-600 rounded-lg blur-lg opacity-75 animate-pulse'></div>
-            <div className='relative px-7 py-4 bg-white dark:bg-gray-900 rounded-lg border-2 border-purple-500 shadow-lg'>
+          <div className="relative mb-4">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-purple-400 to-purple-600 rounded-lg blur-lg opacity-75 animate-pulse"></div>
+            <div className="relative px-7 py-4 bg-white dark:bg-gray-900 rounded-lg border-2 border-purple-500 shadow-lg">
               <h3
-                className='text-4xl font-extrabold tracking-tight'
+                className="text-4xl font-extrabold tracking-tight"
                 style={{
-                  background: 'linear-gradient(to right, #8B5CF6, #C4B5FD, #8B5CF6)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  color: 'transparent',
+                  background:
+                    "linear-gradient(to right, #8B5CF6, #C4B5FD, #8B5CF6)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  color: "transparent",
                 }}
               >
-                {t('projects:projects_list.title')}
+                {t("projects:projects_list.title")}
               </h3>
-              <div className='h-1 w-full bg-gradient-to-r from-purple-600 via-purple-400 to-purple-600 mt-2 rounded-full'></div>
-              <div className='flex justify-center mt-3'>
+              <div className="h-1 w-full bg-gradient-to-r from-purple-600 via-purple-400 to-purple-600 mt-2 rounded-full"></div>
+              <div className="flex justify-center mt-3">
                 <div
-                  className='w-3 h-3 rounded-full bg-purple-600 mx-1 animate-bounce'
-                  style={{ animationDelay: '0s' }}
+                  className="w-3 h-3 rounded-full bg-purple-600 mx-1 animate-bounce"
+                  style={{ animationDelay: "0s" }}
                 ></div>
                 <div
-                  className='w-3 h-3 rounded-full bg-purple-500 mx-1 animate-bounce'
-                  style={{ animationDelay: '0.2s' }}
+                  className="w-3 h-3 rounded-full bg-purple-500 mx-1 animate-bounce"
+                  style={{ animationDelay: "0.2s" }}
                 ></div>
                 <div
-                  className='w-3 h-3 rounded-full bg-purple-400 mx-1 animate-bounce'
-                  style={{ animationDelay: '0.4s' }}
+                  className="w-3 h-3 rounded-full bg-purple-400 mx-1 animate-bounce"
+                  style={{ animationDelay: "0.4s" }}
                 ></div>
               </div>
             </div>
           </div>
-          <h4 className='text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2'>
-            {t('projects:projects_list.noProjects')}
+          <h4 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            {t("projects:projects_list.noProjects")}
           </h4>
-          <p className='mb-6 mt-2 text-muted-foreground max-w-md'>
-            {t('projects:projects_list.noProjectsDescription')}
+          <p className="mb-6 mt-2 text-muted-foreground max-w-md">
+            {t("projects:projects_list.noProjectsDescription")}
           </p>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
-            className='bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg'
+            className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
           >
-            <PlusCircle className='mr-2 h-4 w-4' />
-            {t('projects:projects_list.buttons.createFirstProject')}
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {t("projects:projects_list.buttons.createFirstProject")}
           </Button>
-          <div className='absolute bottom-4 left-4 flex space-x-1'>
+          <div className="absolute bottom-4 left-4 flex space-x-1">
             <div
-              className='w-2 h-2 rounded-full bg-purple-300 animate-ping'
-              style={{ animationDuration: '1.5s' }}
+              className="w-2 h-2 rounded-full bg-purple-300 animate-ping"
+              style={{ animationDuration: "1.5s" }}
             ></div>
             <div
-              className='w-2 h-2 rounded-full bg-purple-400 animate-ping'
-              style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}
+              className="w-2 h-2 rounded-full bg-purple-400 animate-ping"
+              style={{ animationDuration: "1.5s", animationDelay: "0.2s" }}
             ></div>
             <div
-              className='w-2 h-2 rounded-full bg-purple-500 animate-ping'
-              style={{ animationDuration: '1.5s', animationDelay: '0.4s' }}
+              className="w-2 h-2 rounded-full bg-purple-500 animate-ping"
+              style={{ animationDuration: "1.5s", animationDelay: "0.4s" }}
             ></div>
           </div>
         </div>
       ) : (
         <>
-          {viewMode === 'list' ? (
-            <div className='grid gap-6'>
+          {viewMode === "list" ? (
+            <div className="grid gap-6">
               {projects.map((project) => {
-                const filteredMembers = members.filter((m) => m.project === project.id)
-                const filteredTasks = tasksByProject[project.id] || []
+                const filteredMembers = members.filter(
+                  (m) => m.project === project.id
+                );
+                const filteredTasks = tasksByProject[project.id] || [];
                 return (
-                  <div key={project.id} className='w-full'>
+                  <div key={project.id} className="w-full">
                     <ProjectCard
                       project={project}
                       tasks={filteredTasks}
@@ -526,26 +654,36 @@ const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMem
                       onDeleteProject={handleDeleteProject}
                       onUpdateMembers={handleUpdateMembers}
                       onAddTask={(task) => handleAddTask(project.id, task)}
-                      onUpdateTask={(task) => handleUpdateTask(project.id, task)}
-                      onDeleteTask={(taskId) => handleDeleteTask(project.id, taskId)}
+                      onUpdateTask={(task) =>
+                        handleUpdateTask(project.id, task)
+                      }
+                      onDeleteTask={(taskId) =>
+                        handleDeleteTask(project.id, taskId)
+                      }
                       onCreateShareLink={() => openShareDialog(project.id)}
                       isExpanded={expandedProjects.has(project.id)}
                       onToggleExpanded={() => toggleProjectExpanded(project.id)}
-                      onLeaveProject={() => handleLeaveProject(project.id)} // Передаем handleLeaveProject
+                      onLeaveProject={() => handleLeaveProject(project.id)}
                       onToggleTaskCompleted={(projectId, taskId, updatedTask) =>
-                        handleToggleTaskCompleted(projectId, taskId, updatedTask)
+                        handleToggleTaskCompleted(
+                          projectId,
+                          taskId,
+                          updatedTask
+                        )
                       }
                       currentUser={currentUser!}
                     />
                   </div>
-                )
+                );
               })}
             </div>
           ) : (
-            <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => {
-                const filteredMembers = members.filter((m) => m.project === project.id)
-                const filteredTasks = tasksByProject[project.id] || []
+                const filteredMembers = members.filter(
+                  (m) => m.project === project.id
+                );
+                const filteredTasks = tasksByProject[project.id] || [];
                 return (
                   <ProjectCard
                     key={project.id}
@@ -558,17 +696,19 @@ const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMem
                     onUpdateMembers={handleUpdateMembers}
                     onAddTask={(task) => handleAddTask(project.id, task)}
                     onUpdateTask={(task) => handleUpdateTask(project.id, task)}
-                    onDeleteTask={(taskId) => handleDeleteTask(project.id, taskId)}
+                    onDeleteTask={(taskId) =>
+                      handleDeleteTask(project.id, taskId)
+                    }
                     onCreateShareLink={() => openShareDialog(project.id)}
                     isExpanded={expandedProjects.has(project.id)}
                     onToggleExpanded={() => toggleProjectExpanded(project.id)}
-                    onLeaveProject={() => handleLeaveProject(project.id)} // Передаем handleLeaveProject
+                    onLeaveProject={() => handleLeaveProject(project.id)}
                     onToggleTaskCompleted={(projectId, taskId, updatedTask) =>
                       handleToggleTaskCompleted(projectId, taskId, updatedTask)
                     }
                     currentUser={currentUser!}
                   />
-                )
+                );
               })}
             </div>
           )}
@@ -581,17 +721,23 @@ const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMem
         currentUser={currentUser}
       />
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-        <DialogContent className='sm:max-w-[500px] max-w-[95vw]'>
+        <DialogContent className="sm:max-w-[500px] max-w-[95vw]">
           <DialogHeader>
-            <DialogTitle>{t('projects:share_dialog.title')}</DialogTitle>
-            <DialogDescription>{t('projects:share_dialog.description')}</DialogDescription>
+            <DialogTitle>{t("projects:share_dialog.title")}</DialogTitle>
+            <DialogDescription>
+              {t("projects:share_dialog.description")}
+            </DialogDescription>
           </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='role'>{t('projects:share_dialog.labels.role')}</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="role">
+                {t("projects:share_dialog.labels.role")}
+              </Label>
               <Select value={shareRole} onValueChange={setShareRole}>
-                <SelectTrigger id='role'>
-                  <SelectValue placeholder={t('projects:share_dialog.placeholders.role')} />
+                <SelectTrigger id="role">
+                  <SelectValue
+                    placeholder={t("projects:share_dialog.placeholders.role")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role) => (
@@ -602,46 +748,50 @@ const handleUpdateMembers = async (projectId: number, updatedMembers: ProjectMem
                 </SelectContent>
               </Select>
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='maxUses'>{t('projects:share_dialog.labels.maxUses')}</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="maxUses">
+                {t("projects:share_dialog.labels.maxUses")}
+              </Label>
               <Input
-                id='maxUses'
-                type='number'
+                id="maxUses"
+                type="number"
                 value={maxUses}
                 onChange={(e) => setMaxUses(e.target.value)}
-                placeholder={t('projects:share_dialog.placeholders.maxUses')}
-                min='1'
+                placeholder={t("projects:share_dialog.placeholders.maxUses")}
+                min="1"
               />
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='expiresAt'>{t('projects:share_dialog.labels.expiresAt')}</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="expiresAt">
+                {t("projects:share_dialog.labels.expiresAt")}
+              </Label>
               <Input
-                id='expiresAt'
-                type='date'
+                id="expiresAt"
+                type="date"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
-                placeholder={t('projects:share_dialog.placeholders.expiresAt')}
+                placeholder={t("projects:share_dialog.placeholders.expiresAt")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button
-              type='button'
-              variant='outline'
+              type="button"
+              variant="outline"
               onClick={() => setIsShareDialogOpen(false)}
             >
-              {t('projects:share_dialog.buttons.cancel')}
+              {t("projects:share_dialog.buttons.cancel")}
             </Button>
             <Button
-              type='button'
+              type="button"
               onClick={handleCreateShareLink}
-              className='bg-purple-600 hover:bg-purple-700'
+              className="bg-purple-600 hover:bg-purple-700"
             >
-              {t('projects:share_dialog.buttons.create')}
+              {t("projects:share_dialog.buttons.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

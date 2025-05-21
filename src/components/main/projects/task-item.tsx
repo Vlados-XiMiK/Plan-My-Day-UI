@@ -95,7 +95,7 @@ export default function TaskItem({
   const dueDate = task.due_date ? new Date(task.due_date) : null;
   const completedDate = task.completed_at ? new Date(task.completed_at) : null;
 
-  // Находим имя категории по её ID
+  // Find the category name by its ID
   const categoryName = task.category
     ? categories.find((cat) => cat.id === task.category)?.name || null
     : null;

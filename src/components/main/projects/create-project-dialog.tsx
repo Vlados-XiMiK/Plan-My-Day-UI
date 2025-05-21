@@ -28,7 +28,7 @@ interface CreateProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onCreateProject: (project: { name: string; description: string }) => void
-  currentUser: User | null // Допускаем null для безопасности
+  currentUser: User | null // Allow null for safety
 }
 
 export default function CreateProjectDialog({ open, onOpenChange, onCreateProject, currentUser }: CreateProjectDialogProps) {
@@ -61,7 +61,7 @@ export default function CreateProjectDialog({ open, onOpenChange, onCreateProjec
     }
   }
 
-  // Если currentUser отсутствует, показываем заглушку
+  // If currentUser is missing, show a placeholder
   if (!currentUser) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>

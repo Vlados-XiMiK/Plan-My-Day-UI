@@ -14,7 +14,7 @@ interface AvatarGroupProps {
 }
 
 export function AvatarGroup({ users, projectId, projectMembers, max = 5 }: AvatarGroupProps) {
-  const { t, i18n } = useTranslation(['projects', 'notifications'])
+  const { t } = useTranslation(['projects', 'notifications'])
   const visibleUsers = users.slice(0, max);
   const remainingCount = users.length - max;
 

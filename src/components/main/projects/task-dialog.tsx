@@ -54,7 +54,7 @@ interface TaskDialogProps {
   ) => void;
   onEditTask?: (task: Task) => void;
   task?: Task;
-  categories?: Category[]; // Добавляем пропс для категорий
+  categories?: Category[];
 }
 
 export default function TaskDialog({
@@ -63,17 +63,19 @@ export default function TaskDialog({
   onAddTask,
   onEditTask,
   task,
-  categories: propCategories, // Принимаем категории через пропсы
+  categories: propCategories, // Accept categories via props
 }: TaskDialogProps) {
   const { t, i18n } = useTranslation(["popups", "notifications"]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"H" | "M" | "L">("M");
-  const [category, setCategory] = useState<string | null>(null); // Храним category.id как строку
+  const [category, setCategory] = useState<string | null>(null);// Store category.id as a string
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [dueTime, setDueTime] = useState<string>("23:59");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>(propCategories || []); // Используем propCategories, если переданы
+  const [categories, setCategories] = useState<Category[]>(
+    propCategories || []
+  );// Use propCategories if passed
   const { addNotification } = useNotification();
 
   const locale = i18n.language === "ua" ? uk : enUS;
@@ -86,7 +88,8 @@ export default function TaskDialog({
   const isDateSelectionEnabled = title.trim() && description.trim() && priority;
 
   useEffect(() => {
-    if (open && !propCategories) { // Загружаем категории только если не переданы через пропсы
+    if (open && !propCategories) {
+      // Load categories only if not passed through props
       fetchCategories()
         .then((fetchedCategories) => {
           setCategories(fetchedCategories);
@@ -116,7 +119,7 @@ export default function TaskDialog({
       setTitle(task.title);
       setDescription(task.description || "");
       setPriority(task.priority || "M");
-      setCategory(task.category ? task.category.toString() : null); // Преобразуем category.id в строку
+      setCategory(task.category ? task.category.toString() : null); // Convert category.id to string
 
       if (task.due_date) {
         const date = new Date(task.due_date);
@@ -219,7 +222,7 @@ export default function TaskDialog({
       description,
       due_date,
       priority,
-      category: category ? parseInt(category) : null, // Преобразуем в число для отправки
+      category: category ? parseInt(category) : null, // Convert to number for sending
       completed: isEditing ? task.completed : false,
       is_favorite: isEditing ? task.is_favorite : false,
     };
@@ -362,7 +365,9 @@ export default function TaskDialog({
                     className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
                   >
                     <SelectValue
-                      placeholder={t("popups:task_dialog.placeholders.priority")}
+                      placeholder={t(
+                        "popups:task_dialog.placeholders.priority"
+                      )}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -393,7 +398,9 @@ export default function TaskDialog({
                     className="transition-all duration-200 focus:ring-2 focus:ring-purple-500/20"
                   >
                     <SelectValue
-                      placeholder={t("popups:task_dialog.placeholders.category")}
+                      placeholder={t(
+                        "popups:task_dialog.placeholders.category"
+                      )}
                     />
                   </SelectTrigger>
                   <SelectContent>

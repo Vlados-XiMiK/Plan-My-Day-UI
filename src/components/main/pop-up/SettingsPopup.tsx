@@ -32,8 +32,8 @@ export default function SettingsPopup({ isOpen, onClose }: SettingsPopupProps) {
         setShouldStayOpen(true)
         localStorage.removeItem("settingsPopupOpen")
       }
-    } catch (error) {
-      console.error("Error parsing localStorage:", error)
+    } catch /*(error)*/ {
+      // console.error("Error parsing localStorage:", error)
       setDeadlineRemindersEnabled(true)
     }
   }, [])

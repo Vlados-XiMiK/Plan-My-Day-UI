@@ -56,8 +56,8 @@ export default function TaskEditPopup({ isOpen, onClose, onSave, categories, tas
         } else {
           setDueTime('23:59')
         }
-      } catch (error) {
-        console.error('Error parsing dueDate:', task.dueDate, error)
+      } catch /*(error)*/ {
+        // console.error('Error parsing dueDate:', task.dueDate, error)
         setDueDate('')
         setDueTime('23:59')
       }

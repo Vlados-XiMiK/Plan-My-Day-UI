@@ -1,18 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDown, ChevronUp, Clock, Folder, MoreHorizontal, Plus, Trash } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import type { Project, Task, User } from "@/types/project"
-import type { ProjectMember, Role } from "@/types/roles"
-import { AvatarGroup } from "./avatar-group"
-import ProjectManageDialog from "./project-manage-dialog"
-import TaskDialog from "./task-dialog"
-import TaskItem from "./task-item"
-import { formatDistanceToNow } from "date-fns"
-import { enUS, uk } from "date-fns/locale"
-import { motion, AnimatePresence, MotionProps } from "framer-motion"
+import { useState } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Folder,
+  MoreHorizontal,
+  Plus,
+  Trash,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import type { Project, Task, User } from "@/types/project";
+import type { ProjectMember, Role } from "@/types/roles";
+import { AvatarGroup } from "./avatar-group";
+import ProjectManageDialog from "./project-manage-dialog";
+import TaskDialog from "./task-dialog";
+import TaskItem from "./task-item";
+import { formatDistanceToNow } from "date-fns";
+import { enUS, uk } from "date-fns/locale";
+import { motion, AnimatePresence, MotionProps } from "framer-motion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,31 +35,39 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/projects/alert-dialog"
-import { useTranslation } from "react-i18next"
-import { getUserRoleInProject, hasPermission } from "@/utils/roleUtils"
-import { useNotification } from "@/contexts/notification-context"
-import { HTMLAttributes } from 'react'
+} from "@/components/ui/projects/alert-dialog";
+import { useTranslation } from "react-i18next";
+import { getUserRoleInProject, hasPermission } from "@/utils/roleUtils";
+import { useNotification } from "@/contexts/notification-context";
+import { HTMLAttributes } from "react";
 
-type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>
+type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
 interface ProjectCardProps {
-  project: Project
-  tasks: Task[]
-  roles: Role[]
-  projectMembers: ProjectMember[]
-  onUpdateProject: (project: Project) => void
-  onDeleteProject: (projectId: number) => void
-  onUpdateMembers: (projectId: number, members: ProjectMember[], isRoleUpdate?: boolean) => void
-  onAddTask: (task: Task) => void
-  onUpdateTask: (task: Task) => void
-  onDeleteTask: (taskId: number) => void // Изменено с string на number
-  onCreateShareLink?: () => void
-  isExpanded: boolean
-  onToggleExpanded: () => void
-  currentUser: User // Сделали обязательным
-  onLeaveProject: (projectId: number) => void // Новый пропс
-  onToggleTaskCompleted?: (projectId: number, taskId: number, updatedTask: Task) => void; // Обновляем сигнатуру
+  project: Project;
+  tasks: Task[];
+  roles: Role[];
+  projectMembers: ProjectMember[];
+  onUpdateProject: (project: Project) => void;
+  onDeleteProject: (projectId: number) => void;
+  onUpdateMembers: (
+    projectId: number,
+    members: ProjectMember[],
+    isRoleUpdate?: boolean
+  ) => void;
+  onAddTask: (task: Task) => void;
+  onUpdateTask: (task: Task) => void;
+  onDeleteTask: (taskId: number) => void;
+  onCreateShareLink?: () => void;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+  currentUser: User;
+  onLeaveProject: (projectId: number) => void;
+  onToggleTaskCompleted?: (
+    projectId: number,
+    taskId: number,
+    updatedTask: Task
+  ) => void;
 }
 
 export default function ProjectCard({
@@ -61,28 +82,27 @@ export default function ProjectCard({
   onUpdateTask,
   onDeleteTask,
   onLeaveProject,
-  onCreateShareLink,
   isExpanded,
   onToggleExpanded,
   onToggleTaskCompleted,
   currentUser,
 }: ProjectCardProps) {
-  const { t, i18n } = useTranslation(['projects', 'notifications'])
-  const { addNotification } = useNotification()
-  const [manageOpen, setManageOpen] = useState(false)
-  const [taskDialogOpen, setTaskDialogOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<Task | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const { t, i18n } = useTranslation(["projects", "notifications"]);
+  const { addNotification } = useNotification();
+  const [manageOpen, setManageOpen] = useState(false);
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const toggleExpanded = () => {
-    onToggleExpanded()
-  }
+    onToggleExpanded();
+  };
 
   const handleTaskToggle = (taskId: number) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
-    // Создаём локально обновлённую задачу, как раньше
+    // Create a locally updated task as before
     const updatedTask: Task = {
       ...task,
       completed: !task.completed,
@@ -92,27 +112,37 @@ export default function ProjectCard({
       updated_at: new Date().toISOString(),
     };
 
-    // Вызываем onToggleTaskCompleted с updatedTask
+    // Call onToggleTaskCompleted with updatedTask
     if (onToggleTaskCompleted) {
       onToggleTaskCompleted(project.id, taskId, updatedTask);
       addNotification(
-        updatedTask.completed ? 'success' : 'info',
+        updatedTask.completed ? "success" : "info",
         updatedTask.completed
-          ? t('notifications:taskCompleted.title')
-          : t('notifications:taskReopened.title'),
+          ? t("notifications:taskCompleted.title")
+          : t("notifications:taskReopened.title"),
         updatedTask.completed
-          ? t('notifications:taskCompleted.message', { title: task.title })
-          : t('notifications:taskReopened.message', { title: task.title }),
+          ? t("notifications:taskCompleted.message", { title: task.title })
+          : t("notifications:taskReopened.message", { title: task.title }),
         3000
       );
     }
   };
 
   const handleAddTask = (
-    task: Omit<Task, "id" | "user" | "user_name" | "created_at" | "updated_at" | "completed_at" | "completed_by" | "completed_by_name">
+    task: Omit<
+      Task,
+      | "id"
+      | "user"
+      | "user_name"
+      | "created_at"
+      | "updated_at"
+      | "completed_at"
+      | "completed_by"
+      | "completed_by_name"
+    >
   ) => {
     const newTask: Task = {
-      id: 0, // Временный ID, будет заменён API
+      id: 0, // Temporary ID, will be replaced by API
       ...task,
       user: currentUser.id,
       user_name: currentUser.username,
@@ -121,79 +151,87 @@ export default function ProjectCard({
       completed_at: null,
       completed_by: null,
       completed_by_name: null,
-    }
+    };
 
-    onAddTask(newTask)
-    setTaskDialogOpen(false)
+    onAddTask(newTask);
+    setTaskDialogOpen(false);
     addNotification(
-      'success',
-      t('notifications:taskCreated.title'),
-      t('notifications:taskCreated.message', { title: newTask.title }),
+      "success",
+      t("notifications:taskCreated.title"),
+      t("notifications:taskCreated.message", { title: newTask.title }),
       3000
-    )
-  }
+    );
+  };
 
   const handleEditTask = (task: Task) => {
-    onUpdateTask(task)
-    setEditingTask(null)
+    onUpdateTask(task);
+    setEditingTask(null);
     addNotification(
-      'success',
-      t('notifications:taskUpdated.title'),
-      t('notifications:taskUpdated.message', { title: task.title }),
+      "success",
+      t("notifications:taskUpdated.title"),
+      t("notifications:taskUpdated.message", { title: task.title }),
       3000
-    )
-  }
+    );
+  };
 
-  const handleDeleteTask = (taskId: number) => { // Изменено с string на number
-    onDeleteTask(taskId)
+  const handleDeleteTask = (taskId: number) => {
+    onDeleteTask(taskId);
     if (editingTask && editingTask.id === taskId) {
-      setEditingTask(null)
+      setEditingTask(null);
     }
-    const task = tasks.find((t) => t.id === taskId)
+    const task = tasks.find((t) => t.id === taskId);
     addNotification(
-      'success',
-      t('notifications:taskDeleted.title'),
-      t('notifications:taskDeleted.message', { title: task?.title || '' }),
+      "success",
+      t("notifications:taskDeleted.title"),
+      t("notifications:taskDeleted.message", { title: task?.title || "" }),
       3000
-    )
-  }
+    );
+  };
 
   const openEditTaskDialog = (task: Task) => {
-    setEditingTask(task)
-  }
+    setEditingTask(task);
+  };
 
   const handleDeleteProject = () => {
-    onDeleteProject(project.id)
-    setDeleteDialogOpen(false)
+    onDeleteProject(project.id);
+    setDeleteDialogOpen(false);
     addNotification(
-      'success',
-      t('notifications:projectDeleted.title'),
-      t('notifications:projectDeleted.message', { title: project.name }),
+      "success",
+      t("notifications:projectDeleted.title"),
+      t("notifications:projectDeleted.message", { title: project.name }),
       3000
-    )
-  }
+    );
+  };
 
-  const userRole = getUserRoleInProject(currentUser, project.id, projectMembers)
-  const canEdit = hasPermission(userRole, 'edit_project')
-  const canComplete = hasPermission(userRole, 'edit_task')
-  const isCreator = project.owner === currentUser.id
+  const userRole = getUserRoleInProject(
+    currentUser,
+    project.id,
+    projectMembers
+  );
+  const canEdit = hasPermission(userRole, "edit_project");
+  const canComplete = hasPermission(userRole, "edit_task");
+  const isCreator = project.owner === currentUser.id;
 
-  const completedTasksCount = tasks.filter((task) => task.completed).length
-  const createdDate = new Date(project.created_at)
+  const completedTasksCount = tasks.filter((task) => task.completed).length;
+  const createdDate = new Date(project.created_at);
 
   const getUserById = (userId: number | null) => {
-    if (!userId) return undefined
-    return projectMembers.find((member) => member.user === userId)?.user_details
-  }
+    if (!userId) return undefined;
+    return projectMembers.find((member) => member.user === userId)
+      ?.user_details;
+  };
 
   const formatCreatedDate = () => {
-    const locale = i18n.language === 'ua' ? uk : enUS
-    return formatDistanceToNow(createdDate, { addSuffix: true, locale })
-  }
+    const locale = i18n.language === "ua" ? uk : enUS;
+    return formatDistanceToNow(createdDate, { addSuffix: true, locale });
+  };
 
-  const handleUpdateMembers = (members: ProjectMember[], isRoleUpdate?: boolean) => {
-    onUpdateMembers(project.id, members, isRoleUpdate)
-  }
+  const handleUpdateMembers = (
+    members: ProjectMember[],
+    isRoleUpdate?: boolean
+  ) => {
+    onUpdateMembers(project.id, members, isRoleUpdate);
+  };
 
   return (
     <>
@@ -212,8 +250,12 @@ export default function ProjectCard({
             </div>
             <div className="flex items-start justify-between ml-10">
               <div>
-                <h3 className="text-lg font-semibold line-clamp-1">{project.name}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+                <h3 className="text-lg font-semibold line-clamp-1">
+                  {project.name}
+                </h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {project.description}
+                </p>
               </div>
               <Button
                 variant="ghost"
@@ -222,10 +264,16 @@ export default function ProjectCard({
                 className={`h-8 w-8 rounded-full transition-all duration-200 hover:bg-purple-500/10 flex-shrink-0 ${
                   !canEdit && !isCreator ? "opacity-50" : ""
                 }`}
-                title={(!canEdit && !isCreator) ? t('project_card.noEditPermission') : t('project_card.buttons.settings')}
+                title={
+                  !canEdit && !isCreator
+                    ? t("project_card.noEditPermission")
+                    : t("project_card.buttons.settings")
+                }
               >
                 <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">{t('project_card.buttons.settings')}</span>
+                <span className="sr-only">
+                  {t("project_card.buttons.settings")}
+                </span>
               </Button>
             </div>
           </CardHeader>
@@ -233,7 +281,9 @@ export default function ProjectCard({
             <div className="flex items-center justify-between">
               <div className="flex items-center text-sm text-muted-foreground">
                 <Clock className="mr-1 h-3 w-3 flex-shrink-0" />
-                <span className="line-clamp-1">{t('project_card.created')} {formatCreatedDate()}</span>
+                <span className="line-clamp-1">
+                  {t("project_card.created")} {formatCreatedDate()}
+                </span>
               </div>
               <AvatarGroup
                 users={projectMembers.map((m) => m.user_details)}
@@ -245,8 +295,12 @@ export default function ProjectCard({
           <CardFooter className="flex flex-col items-stretch pt-0">
             <div className="flex items-center justify-between py-2">
               <div className="text-sm">
-                <span className="font-medium text-purple-500">{completedTasksCount}</span> {t('project_card.of')}{" "}
-                <span className="font-medium">{tasks.length}</span> {t('project_card.tasksCompleted')}
+                <span className="font-medium text-purple-500">
+                  {completedTasksCount}
+                </span>{" "}
+                {t("project_card.of")}{" "}
+                <span className="font-medium">{tasks.length}</span>{" "}
+                {t("project_card.tasksCompleted")}
               </div>
               <Button
                 variant="ghost"
@@ -257,12 +311,16 @@ export default function ProjectCard({
                 {isExpanded ? (
                   <>
                     <ChevronUp className="mr-1 h-4 w-4" />
-                    <span className="hidden sm:inline">{t('project_card.buttons.collapse')}</span>
+                    <span className="hidden sm:inline">
+                      {t("project_card.buttons.collapse")}
+                    </span>
                   </>
                 ) : (
                   <>
                     <ChevronDown className="mr-1 h-4 w-4" />
-                    <span className="hidden sm:inline">{t('project_card.buttons.expand')}</span>
+                    <span className="hidden sm:inline">
+                      {t("project_card.buttons.expand")}
+                    </span>
                   </>
                 )}
               </Button>
@@ -283,7 +341,9 @@ export default function ProjectCard({
                     <div className="space-y-2">
                       {tasks.length === 0 ? (
                         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
-                          <p className="text-sm text-muted-foreground">{t('project_card.noTasks')}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {t("project_card.noTasks")}
+                          </p>
                           {canEdit && (
                             <Button
                               variant="outline"
@@ -292,7 +352,7 @@ export default function ProjectCard({
                               onClick={() => setTaskDialogOpen(true)}
                             >
                               <Plus className="mr-1 h-3 w-3" />
-                              {t('project_card.buttons.addTask')}
+                              {t("project_card.buttons.addTask")}
                             </Button>
                           )}
                         </div>
@@ -304,16 +364,25 @@ export default function ProjectCard({
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.2, delay: index * 0.05 }}
+                              transition={{
+                                duration: 0.2,
+                                delay: index * 0.05,
+                              }}
                             >
                               <TaskItem
                                 task={task}
-                                onToggleComplete={() => handleTaskToggle(task.id)}
+                                onToggleComplete={() =>
+                                  handleTaskToggle(task.id)
+                                }
                                 onEdit={() => openEditTaskDialog(task)}
                                 onDelete={() => handleDeleteTask(task.id)}
                                 canEdit={canEdit}
                                 canComplete={canComplete}
-                                completedByUser={task.completed_by ? getUserById(task.completed_by) : undefined}
+                                completedByUser={
+                                  task.completed_by
+                                    ? getUserById(task.completed_by)
+                                    : undefined
+                                }
                               />
                             </motion.div>
                           ))}
@@ -330,8 +399,12 @@ export default function ProjectCard({
                           onClick={() => setDeleteDialogOpen(true)}
                         >
                           <Trash className="mr-1 h-4 w-4" />
-                          <span className="hidden sm:inline">{t('project_card.buttons.deleteProject')}</span>
-                          <span className="sm:hidden">{t('project_card.buttons.delete')}</span>
+                          <span className="hidden sm:inline">
+                            {t("project_card.buttons.deleteProject")}
+                          </span>
+                          <span className="sm:hidden">
+                            {t("project_card.buttons.delete")}
+                          </span>
                         </Button>
 
                         {tasks.length > 0 && (
@@ -342,8 +415,12 @@ export default function ProjectCard({
                             onClick={() => setTaskDialogOpen(true)}
                           >
                             <Plus className="mr-1 h-4 w-4" />
-                            <span className="hidden sm:inline">{t('project_card.buttons.addTask')}</span>
-                            <span className="sm:hidden">{t('project_card.buttons.add')}</span>
+                            <span className="hidden sm:inline">
+                              {t("project_card.buttons.addTask")}
+                            </span>
+                            <span className="sm:hidden">
+                              {t("project_card.buttons.add")}
+                            </span>
                           </Button>
                         )}
                       </div>
@@ -373,7 +450,11 @@ export default function ProjectCard({
 
       {canEdit && (
         <>
-          <TaskDialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen} onAddTask={handleAddTask} />
+          <TaskDialog
+            open={taskDialogOpen}
+            onOpenChange={setTaskDialogOpen}
+            onAddTask={handleAddTask}
+          />
 
           {editingTask && (
             <TaskDialog
@@ -389,22 +470,28 @@ export default function ProjectCard({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('project_card.deleteDialog.title')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("project_card.deleteDialog.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('project_card.deleteDialog.description', { title: project.name })}
+              {t("project_card.deleteDialog.description", {
+                title: project.name,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('project_card.deleteDialog.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("project_card.deleteDialog.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteProject}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {t('project_card.deleteDialog.delete')}
+              {t("project_card.deleteDialog.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }
