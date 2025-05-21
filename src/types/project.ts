@@ -9,7 +9,7 @@ export interface Task {
   id: number;
   title: string;
   description: string;
-  category: string | null;
+  category: string | number | null;
   due_date: string | null;
   priority: 'H' | 'M' | 'L';
   completed: boolean;

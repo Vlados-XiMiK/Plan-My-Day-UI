@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Task, User } from "@/types/project";
+import type { Category } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Check, Clock, Edit, Trash2 } from "lucide-react";
@@ -22,6 +24,7 @@ import { motion, MotionProps } from "framer-motion";
 import { HTMLAttributes } from "react";
 import { useNotification } from "@/contexts/notification-context";
 import { useTranslation } from "react-i18next";
+import { fetchCategories } from "@/lib/tasks-data";
 
 type MotionDivProps = MotionProps & HTMLAttributes<HTMLDivElement>;
 
@@ -46,8 +49,24 @@ export default function TaskItem({
 }: TaskItemProps) {
   const { t, i18n } = useTranslation(["projects", "notifications"]);
   const { addNotification } = useNotification();
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const locale = i18n.language === "ua" ? uk : enUS;
+
+  useEffect(() => {
+    fetchCategories()
+      .then((fetchedCategories) => {
+        setCategories(fetchedCategories);
+      })
+      .catch(() => {
+        addNotification(
+          "error",
+          t("notifications:fetchCategoriesFailed.title"),
+          t("notifications:fetchCategoriesFailed.message"),
+          5000
+        );
+      });
+  }, [t, addNotification]);
 
   const priorityColors = {
     H: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800",
@@ -75,6 +94,11 @@ export default function TaskItem({
   const createdDate = new Date(task.created_at);
   const dueDate = task.due_date ? new Date(task.due_date) : null;
   const completedDate = task.completed_at ? new Date(task.completed_at) : null;
+
+  // Находим имя категории по её ID
+  const categoryName = task.category
+    ? categories.find((cat) => cat.id === task.category)?.name || null
+    : null;
 
   const handleToggleComplete = () => {
     try {
@@ -135,7 +159,7 @@ export default function TaskItem({
         <div className="flex items-start gap-3">
           {canComplete ? (
             <Checkbox
-              id={task.id.toString()} // Конвертируем number в string для id
+              id={task.id.toString()}
               checked={task.completed}
               onCheckedChange={handleToggleComplete}
               className="mt-1 transition-all duration-300 data-[state=checked]:bg-purple-600 data-[state=checked]:text-white flex-shrink-0"
@@ -182,7 +206,6 @@ export default function TaskItem({
                         {t("projects:task_item.buttons.edit")}
                       </TooltipContent>
                     </Tooltip>
-
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -232,16 +255,16 @@ export default function TaskItem({
                 </Badge>
               )}
 
-              {task.category && (
+              {categoryName && (
                 <Badge
                   variant="outline"
                   className={`${
                     categoryColors[
-                      task.category as keyof typeof categoryColors
+                      categoryName as keyof typeof categoryColors
                     ] || categoryColors.default
                   } transition-all duration-300 hover:shadow-sm text-xs`}
                 >
-                  {task.category}
+                  {categoryName}
                 </Badge>
               )}
             </div>
