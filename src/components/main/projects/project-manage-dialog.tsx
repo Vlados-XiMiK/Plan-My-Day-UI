@@ -81,12 +81,13 @@ export default function ProjectManageDialog({
   projectMembers,
   roles,
   open,
+  currentUser,
   onOpenChange,
   onUpdateProject,
   onUpdateMembers,
   canEdit,
   isCreator,
-  onLeaveProject, // Add to parameters
+  onLeaveProject,
 }: ProjectManageDialogProps) {
   const { t, i18n } = useTranslation(["projects", "notifications"]);
   const { addNotification } = useNotification();
@@ -102,7 +103,6 @@ export default function ProjectManageDialog({
   const [expirationDate, setExpirationDate] = useState<Date | undefined>(
     undefined
   );
-  // const [inviteRole, setInviteRole] = useState<string>('Viewer')
   const [linkId, setLinkId] = useState<number | null>(null);
   const [isLinkGenerated, setIsLinkGenerated] = useState(false);
   const [isInviteSectionExpanded, setIsInviteSectionExpanded] = useState(false);
@@ -111,7 +111,7 @@ export default function ProjectManageDialog({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Load an existing link when expanding the invite section
+  // Load an existing invite link when opening a section
   useEffect(() => {
     if (isInviteSectionExpanded) {
       const fetchShareLink = async () => {
@@ -124,31 +124,27 @@ export default function ProjectManageDialog({
             setInviteLink(activeLink.share_url);
             setUsageLimit(activeLink.max_uses);
             setExpirationDate(new Date(activeLink.expires_at));
-            // setInviteRole(activeLink.role_name)
             setLinkId(activeLink.id);
             setIsLinkGenerated(true);
           } else {
             setInviteLink("");
             setUsageLimit(1);
             setExpirationDate(undefined);
-            // setInviteRole('Viewer')
             setLinkId(null);
             setIsLinkGenerated(false);
           }
-        } catch /*(error)*/ {
-          // console.error("Error fetching share link:", error);
+        } catch {
           addNotification(
             "error",
-            t("notifications:fetchShareLinkError.title", "Error"),
+            t("notifications:fetchShareLinkError.title", "Ошибка"),
             t(
               "notifications:fetchShareLinkError.message",
-              "Failed to load share link."
+              "Не удалось загрузить ссылку для приглашения."
             ),
             5000
           );
         }
       };
-
       fetchShareLink();
     }
   }, [isInviteSectionExpanded, project.id, t, addNotification]);
@@ -159,7 +155,6 @@ export default function ProjectManageDialog({
       setInviteLink("");
       setUsageLimit(1);
       setExpirationDate(undefined);
-      // setInviteRole('Viewer')
       setLinkId(null);
       setIsLinkGenerated(false);
       setIsInviteSectionExpanded(false);
@@ -171,6 +166,7 @@ export default function ProjectManageDialog({
     }
   }, [open, project.name, project.description]);
 
+  // Scroll to the invitation section when it is opened
   useEffect(() => {
     if (
       isInviteSectionExpanded &&
@@ -188,11 +184,13 @@ export default function ProjectManageDialog({
     }
   }, [isInviteSectionExpanded]);
 
+  // Date formatting depending on language
   const formatDate = (date: Date, formatStr: string) => {
     const locale = i18n.language === "ua" ? uk : enUS;
     return format(date, formatStr, { locale });
   };
 
+  // Handle change of participant role
   const handleUpdateMemberRole = (
     userId: number,
     role: ProjectMember["role_name"]
@@ -216,6 +214,7 @@ export default function ProjectManageDialog({
     }
   };
 
+  // Saving role changes
   const saveRoleChanges = () => {
     const updatedMembers = projectMembers
       .map((member) => {
@@ -233,17 +232,7 @@ export default function ProjectManageDialog({
         return null;
       })
       .filter((member): member is ProjectMember => member !== null);
-    /* 
-    console.log("Saving role changes:", {
-      projectId: project.id,
-      updatedMembers: updatedMembers.map((m) => ({
-        user: m.user,
-        role: m.role,
-        role_name: m.role_name,
-      })),
-    });
-    */
-    onUpdateMembers(updatedMembers, true); // Pass isRoleUpdate: true
+    onUpdateMembers(updatedMembers, true);
     setPendingRoleChanges({});
     setHasRoleChanges(false);
     addNotification(
@@ -254,6 +243,7 @@ export default function ProjectManageDialog({
     );
   };
 
+  // Undo role changes
   const cancelRoleChanges = () => {
     setPendingRoleChanges({});
     setHasRoleChanges(false);
@@ -265,6 +255,7 @@ export default function ProjectManageDialog({
     );
   };
 
+  // Updating project data
   const handleUpdateProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canEdit && !isCreator) {
@@ -294,6 +285,7 @@ export default function ProjectManageDialog({
     onOpenChange(false);
   };
 
+  // Removing a member from a project with restrictions
   const handleRemoveMember = async (userId: number) => {
     if (!canEdit && !isCreator) {
       addNotification(
@@ -304,21 +296,73 @@ export default function ProjectManageDialog({
       );
       return;
     }
+    // Prohibition on deleting yourself
+    if (userId === currentUser.id) {
+      addNotification(
+        "error",
+        t("notifications:permissionDenied.title"),
+        t("notifications:permissionDenied.selfKick"),
+        5000
+      );
+      return;
+    }
+    const member = projectMembers.find((m) => m.user === userId);
+    if (!member) return;
+
+    const isCurrentUserAdmin =
+      projectMembers.find((m) => m.user === currentUser.id)?.role_name ===
+      "Admin";
+    const isCurrentUserModerator =
+      projectMembers.find((m) => m.user === currentUser.id)?.role_name ===
+      "Moderator";
+    const isTargetAdminOrModerator = ["Admin", "Moderator"].includes(
+      member.role_name
+    );
+    const isTargetOwner = member.user === project.owner;
+
+    // Prohibition on deleting the owner
+    if (isTargetOwner) {
+      addNotification(
+        "error",
+        t("notifications:permissionDenied.title"),
+        t("notifications:permissionDenied.removeOwner"),
+        5000
+      );
+      return;
+    }
+    // Moderators cannot remove admins or other moderators
+    if (isCurrentUserModerator && isTargetAdminOrModerator) {
+      addNotification(
+        "error",
+        t("notifications:permissionDenied.title"),
+        t("notifications:permissionDenied.removeAdminOrModerator"),
+        5000
+      );
+      return;
+    }
+    // Administrators cannot delete other administrators
+    if (isCurrentUserAdmin && member.role_name === "Admin") {
+      addNotification(
+        "error",
+        t("notifications:permissionDenied.title"),
+        t("notifications:permissionDenied.removeAdmin"),
+        5000
+      );
+      return;
+    }
+
     try {
       await kickUser(project.id, { user: userId });
-      const member = projectMembers.find((m) => m.user === userId);
       const updatedMembers = projectMembers.filter((m) => m.user !== userId);
       onUpdateMembers(updatedMembers, false);
-      if (member) {
-        addNotification(
-          "success",
-          t("notifications:memberRemoved.title"),
-          t("notifications:memberRemoved.message", {
-            name: member.user_details.username,
-          }),
-          3000
-        );
-      }
+      addNotification(
+        "success",
+        t("notifications:memberRemoved.title"),
+        t("notifications:memberRemoved.message", {
+          name: member.user_details.username,
+        }),
+        3000
+      );
     } catch {
       addNotification(
         "error",
@@ -329,6 +373,7 @@ export default function ProjectManageDialog({
     }
   };
 
+  // Handling user exit from the project
   const handleLeaveProject = async () => {
     if (isCreator) {
       addNotification(
@@ -340,11 +385,12 @@ export default function ProjectManageDialog({
       return;
     }
     try {
-      onLeaveProject?.(project.id); // Call onLeaveProject for the fetch
+      onLeaveProject?.(project.id);
       onOpenChange(false);
     } catch {}
   };
 
+  // Generate an invitation link
   const generateInviteLink = async () => {
     if (!usageLimit || usageLimit < 1) {
       addNotification(
@@ -409,6 +455,7 @@ export default function ProjectManageDialog({
     }
   };
 
+  // Copy the link to the clipboard
   const copyLinkToClipboard = () => {
     navigator.clipboard.writeText(inviteLink);
     addNotification(
@@ -419,6 +466,7 @@ export default function ProjectManageDialog({
     );
   };
 
+  // Remove invitation link
   const deleteInviteLink = async () => {
     if (linkId) {
       try {
@@ -432,10 +480,10 @@ export default function ProjectManageDialog({
       } catch {
         addNotification(
           "error",
-          t("notifications:deleteShareLinkError.title", "Error"),
+          t("notifications:deleteShareLinkError.title", "Ошибка"),
           t(
             "notifications:deleteShareLinkError.message",
-            "Failed to delete share link."
+            "Не удалось удалить ссылку для приглашения."
           ),
           5000
         );
@@ -445,11 +493,11 @@ export default function ProjectManageDialog({
     setInviteLink("");
     setUsageLimit(1);
     setExpirationDate(undefined);
-    // setInviteRole('Viewer')
     setLinkId(null);
     setIsLinkGenerated(false);
   };
 
+  // Toggle the visibility of the invitation section
   const toggleInviteSection = () => {
     setIsInviteSectionExpanded(!isInviteSectionExpanded);
   };
@@ -548,107 +596,169 @@ export default function ProjectManageDialog({
               <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto pr-2">
                 <div className="space-y-4">
                   {projectMembers.length > 0 ? (
-                    projectMembers.map((member, index) => (
-                      <motion.div
-                        key={member.user}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2, delay: index * 0.05 }}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-all duration-200 gap-2"
-                        {...({} as MotionDivProps)}
-                      >
-                        <div className="flex items-center space-x-3">
-                          {member.user_details.avatar ? (
-                            <Avatar className="border-2 border-background shadow-sm">
-                              <AvatarImage
-                                src={member.user_details.avatar}
-                                alt={member.user_details.username}
-                              />
-                              <AvatarFallback>
-                                {member.user_details.username
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .substring(0, 2)
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          ) : (
-                            <div className="border-2 border-background rounded-full shadow-sm">
-                              <CustomAvatar
-                                name={member.user_details.username}
-                                size="small"
-                              />
+                    projectMembers.map((member, index) => {
+                      // Checking the roles of the current user
+                      const isCurrentUserAdmin =
+                        projectMembers.find((m) => m.user === currentUser.id)
+                          ?.role_name === "Admin";
+                      const isCurrentUserModerator =
+                        projectMembers.find((m) => m.user === currentUser.id)
+                          ?.role_name === "Moderator";
+                      // const isMemberAdminOrModerator = ["Admin", "Moderator"].includes(member.role_name);
+                      const isMemberOwner = member.user === project.owner;
+
+                      // Check if the current user is the creator and is not trying to change their role
+                      const isSelf = member.user === currentUser.id;
+                      const canChangeRole =
+                        (isCreator && !isSelf) || // The creator can change the roles of everyone except himself
+                        (isCurrentUserAdmin &&
+                          !isMemberOwner &&
+                          !isSelf &&
+                          member.role_name !== "Admin") || // Admins can change roles except the owner, themselves and other admins
+                        (isCurrentUserModerator &&
+                          ["Viewer", "Member"].includes(member.role_name)); // Moderators can only change Viewer and Member
+
+                      // Check if user can delete member
+                      const canRemoveMember =
+                        (isCreator && !isSelf) || // The creator can delete everyone except himself
+                        (isCurrentUserAdmin &&
+                          !isMemberOwner &&
+                          !isSelf &&
+                          member.role_name !== "Admin") || // Admins can delete non-owners, non-themselves and non-admins
+                        (isCurrentUserModerator &&
+                          ["Viewer", "Member"].includes(member.role_name)); // Moderators can only delete Viewer and Member
+
+                      // Display creator role as Admin if he is the owner
+                      const displayedRole = isMemberOwner
+                        ? "Admin"
+                        : pendingRoleChanges[member.user] || member.role_name;
+
+                      return (
+                        <motion.div
+                          key={member.user}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border hover:shadow-sm transition-all duration-200 gap-2"
+                          {...({} as MotionDivProps)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            {member.user_details.avatar ? (
+                              <Avatar className="border-2 border-background shadow-sm">
+                                <AvatarImage
+                                  src={member.user_details.avatar}
+                                  alt={member.user_details.username}
+                                />
+                                <AvatarFallback>
+                                  {member.user_details.username
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .substring(0, 2)
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                            ) : (
+                              <div className="border-2 border-background rounded-full shadow-sm">
+                                <CustomAvatar
+                                  name={member.user_details.username}
+                                  size="small"
+                                />
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-sm font-medium">
+                                {member.user_details.username}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {member.user_details.email}
+                                {isMemberOwner
+                                  ? ` ${t("projects:project_manage.creator")}`
+                                  : ""}
+                              </p>
                             </div>
-                          )}
-                          <div>
-                            <p className="text-sm font-medium">
-                              {member.user_details.username}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {member.user_details.email}
-                              {member.user === project.owner
-                                ? ` ${t("projects:project_manage.creator")}`
-                                : ""}
-                            </p>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-                          {(canEdit || isCreator) &&
-                          member.user !== project.owner ? (
-                            <>
-                              <Select
-                                value={
-                                  pendingRoleChanges[member.user] ||
-                                  member.role_name
-                                }
-                                onValueChange={(
-                                  value: ProjectMember["role_name"]
-                                ) => handleUpdateMemberRole(member.user, value)}
-                              >
-                                <SelectTrigger
-                                  className={`h-8 min-w-[160px] ${
-                                    pendingRoleChanges[member.user]
-                                      ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
-                                      : ""
-                                  }`}
+                          <div className="flex items-center space-x-2 mt-2 sm:mt-0">
+                            {canChangeRole ? (
+                              <>
+                                <Select
+                                  value={displayedRole}
+                                  onValueChange={(
+                                    value: ProjectMember["role_name"]
+                                  ) =>
+                                    handleUpdateMemberRole(member.user, value)
+                                  }
                                 >
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {roles.map((role) => (
-                                    <SelectItem key={role.id} value={role.name}>
-                                      {t(
-                                        `projects:project_manage.roles.${role.name.toLowerCase()}`
-                                      )}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleRemoveMember(member.user)}
-                                className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive/10"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">
-                                  {t(
-                                    "projects:project_manage.buttons.removeMember"
+                                  <SelectTrigger
+                                    className={`h-8 min-w-[160px] ${
+                                      pendingRoleChanges[member.user]
+                                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
+                                        : ""
+                                    }`}
+                                  >
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {roles
+                                      .filter((role) => {
+                                        // Moderators can only assign Viewer and Member
+                                        if (isCurrentUserModerator) {
+                                          return ["Viewer", "Member"].includes(
+                                            role.name
+                                          );
+                                        }
+                                        // The creator can assign any roles, including Admin
+                                        if (isCreator) {
+                                          return true;
+                                        }
+                                        // Regular admins cannot assign Admin
+                                        if (isCurrentUserAdmin) {
+                                          return role.name !== "Admin";
+                                        }
+                                        return true;
+                                      })
+                                      .map((role) => (
+                                        <SelectItem
+                                          key={role.id}
+                                          value={role.name}
+                                        >
+                                          {t(
+                                            `projects:project_manage.roles.${role.name.toLowerCase()}`
+                                          )}
+                                        </SelectItem>
+                                      ))}
+                                  </SelectContent>
+                                </Select>
+                                {canRemoveMember &&
+                                  member.user !== currentUser.id && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() =>
+                                        handleRemoveMember(member.user)
+                                      }
+                                      className="h-8 w-8 text-destructive transition-all duration-200 hover:bg-destructive/10"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                      <span className="sr-only">
+                                        {t(
+                                          "projects:project_manage.buttons.removeMember"
+                                        )}
+                                      </span>
+                                    </Button>
                                   )}
-                                </span>
-                              </Button>
-                            </>
-                          ) : (
-                            <div className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md">
-                              {t(
-                                `projects:project_manage.roles.${member.role_name.toLowerCase()}`
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))
+                              </>
+                            ) : (
+                              <div className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-md">
+                                {t(
+                                  `projects:project_manage.roles.${displayedRole.toLowerCase()}`
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      );
+                    })
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       {t("projects:project_manage.noMembers")}

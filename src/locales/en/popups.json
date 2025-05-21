@@ -122,6 +122,7 @@
       "emailRequired": "Email is required",
       "invalidEmail": "Invalid email format",
       "emailTaken": "This email is already taken.",
+      "usernameTaken": "This username is already taken.",
       "onlyDigits": "Only digits are allowed.",
       "invalidAge": "Age must be a positive number",
       "invalidPhoneFormat": "Phone number must contain only digits, spaces, '+' or '-'",

@@ -43,7 +43,8 @@
       "inviteViaLink": "Invite via Link",
       "usageLimit": "Usage Limit",
       "expiresOn": "Expires On",
-      "inviteLink": "Invite Link"
+      "inviteLink": "Invite Link",
+      "role": "Select a role for invite link"
     },
     "placeholders": {
       "email": "Enter member's email",
