@@ -121,7 +121,7 @@ export default function ProjectManageDialog({
             (link) => link.is_active && new Date(link.expires_at) > new Date()
           );
           if (activeLink) {
-            setInviteLink(activeLink.share_url);
+            setInviteLink(activeLink.token);
             setUsageLimit(activeLink.max_uses);
             setExpirationDate(new Date(activeLink.expires_at));
             setLinkId(activeLink.id);
@@ -436,7 +436,7 @@ export default function ProjectManageDialog({
         max_uses: usageLimit,
         expires_at: expirationDate.toISOString(),
       });
-      setInviteLink(newLink.share_url);
+      setInviteLink(newLink.token);
       setLinkId(newLink.id);
       setIsLinkGenerated(true);
       addNotification(
@@ -457,7 +457,8 @@ export default function ProjectManageDialog({
 
   // Copy the link to the clipboard
   const copyLinkToClipboard = () => {
-    navigator.clipboard.writeText(inviteLink);
+    const fullLink = `http://localhost:3000/dashboard/projects/join/${inviteLink}/`;
+    navigator.clipboard.writeText(fullLink);
     addNotification(
       "success",
       t("notifications:linkCopied.title"),
@@ -926,7 +927,7 @@ export default function ProjectManageDialog({
                                 <div className="flex gap-2">
                                   <Input
                                     id="invite-link"
-                                    value={inviteLink}
+                                    value={`http://localhost:3000/dashboard/projects/join/${inviteLink}/`}
                                     readOnly
                                     placeholder={t(
                                       "projects:project_manage.placeholders.inviteLink"

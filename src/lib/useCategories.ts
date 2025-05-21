@@ -72,10 +72,10 @@ export function useCategories() {
     loadCategories()
   }, [addNotification, t])
 
-  // Функция для сброса глобального состояния
+  // Function to reset global state
   const resetCategories = useCallback(() => {
     globalState.categories = []
-    globalState.isLoading = true // Устанавливаем isLoading в true, чтобы вызвать loadCategories
+    globalState.isLoading = true // Set isLoading to true to call loadCategories
     globalState.isCreating = false
     globalState.isUpdating = false
     globalState.isDeleting = false

@@ -184,6 +184,14 @@
     "title": "Update Failed",
     "message": "Failed to update member roles. Please try again."
   },
+  "joinProjectSuccess": {
+    "title": "Success",
+    "message": "You have successfully joined the project!"
+  },
+  "joinProjectError": {
+    "title": "Error",
+    "message": "Failed to join the project. Please check the link or log in."
+  },
   "logoutSuccessTitle": "Logout Successful",
   "logoutSuccessMessage": "You have been logged out successfully.",
   "logoutErrorTitle": "Logout Failed",

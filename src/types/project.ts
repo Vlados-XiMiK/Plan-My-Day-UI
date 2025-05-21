@@ -35,7 +35,7 @@ export interface Project {
 export interface ProjectShareLink {
   id: number;
   project: number;
-  share_url: string;
+  token: string;
   role: number;
   role_name: string;
   max_uses: number;

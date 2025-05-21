@@ -97,7 +97,7 @@ export const projectTasks: Task[] = [
 export const projectShareLinks: ProjectShareLink[] = [
   {
     id: 7,
-    share_url: 'http://localhost:8000/api/v1/projects/join/11542c8d-69bc-488c-926d-fa96d61eee16/',
+    token: '11542c8d-69bc-488c-926d-fa96d61eee16/',
     role_name: 'Viewer',
     max_uses: 5,
     expires_at: '2025-05-16T13:47:08.184647+03:00',
