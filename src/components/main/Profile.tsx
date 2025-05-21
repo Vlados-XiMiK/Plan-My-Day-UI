@@ -13,6 +13,7 @@ import Avatar from '@/components/ui/Avatar'
 import Loader from '@/components/ui/preloader'
 import { isAuthenticated, logoutUser } from '@/api/auth'
 import { useNotification } from '@/contexts/notification-context'
+import { useCategories } from '@/lib/useCategories';
 
 export default function Profile() {
   const { t, i18n } = useTranslation(['profile', 'notifications'])
@@ -24,6 +25,7 @@ export default function Profile() {
   const [isAuth, setIsAuth] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
   const { addNotification } = useNotification()
+  const { resetCategories } = useCategories();
 
   // Checking authorization
   useEffect(() => {
@@ -60,9 +62,11 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       await logoutUser()
+      resetCategories();
       addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
       router.replace('/auth/login')
     } catch (error: unknown) {
+      resetCategories();
       // console.error('Logout error:', error)
       // Safely handle the error, assuming it might be an Error instance
       const errorMessage = error instanceof Error ? error.message : t('notifications:logoutErrorMessage')

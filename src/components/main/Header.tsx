@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next"
 import SettingsPopup from "@/components/main/pop-up/SettingsPopup"
 import Avatar from "@/components/ui/Avatar"
 import { logoutUser } from "@/api/auth"
+import { useCategories } from '@/lib/useCategories';
 import { useNotification } from "@/contexts/notification-context"
 import { AxiosError } from "axios"
 import axios from "axios"
@@ -37,6 +38,7 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const { user } = useUser()
   const { addNotification } = useNotification()
   const [isDarkTheme, setIsDarkTheme] = useState(false)
+  const { resetCategories } = useCategories();
 
   const locale = t("language") === "ua" ? uk : enUS
   const now = new Date()
@@ -85,10 +87,12 @@ export default function Header({ toggleSidebar, toggleCollapse, isCollapsed, onP
   const handleLogout = async () => {
     try {
       await logoutUser()
+      resetCategories();
       addNotification('success', t('notifications:logoutSuccessTitle'), t('notifications:logoutSuccessMessage'))
       router.replace('/auth/login')
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
+        resetCategories();
         const axiosError = error as AxiosError<ErrorResponse>
         // console.error('Logout error:', axiosError.response?.data || axiosError.message)
         addNotification('error', t('notifications:logoutErrorTitle'), axiosError.response?.data?.detail || t('notifications:logoutErrorMessage'))

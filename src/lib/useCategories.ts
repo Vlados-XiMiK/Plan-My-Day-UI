@@ -72,6 +72,16 @@ export function useCategories() {
     loadCategories()
   }, [addNotification, t])
 
+  // Функция для сброса глобального состояния
+  const resetCategories = useCallback(() => {
+    globalState.categories = []
+    globalState.isLoading = true // Устанавливаем isLoading в true, чтобы вызвать loadCategories
+    globalState.isCreating = false
+    globalState.isUpdating = false
+    globalState.isDeleting = false
+    notifyListeners()
+  }, [])
+
   // Function to refresh categories
   const refreshCategories = useCallback(async () => {
     try {
@@ -269,6 +279,7 @@ export function useCategories() {
     editingId,
     tempCategory,
     setTempCategory,
+    resetCategories,
     // Return functions
     addCategory,
     deleteCategory,
